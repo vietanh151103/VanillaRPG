@@ -1,0 +1,32 @@
+name: VanillaRPG-Core
+version: '${version}'
+main: vn.vietanhrpg.core.VanillaRpgPlugin
+api-version: '26.2'
+author: VietAnh
+description: Portable Vanilla+ RPG core for a small Paper server.
+
+# Paper downloads this dependency from its configured Maven Central mirror.
+libraries:
+  - org.xerial:sqlite-jdbc:3.50.3.0
+
+commands:
+  coin:
+    description: View or transfer Coin.
+    usage: /coin [pay <player> <amount>]
+  token:
+    description: View Token balance.
+    usage: /token
+  profile:
+    description: View your RPG profile.
+    usage: /profile
+  forge:
+    description: Upgrade, reroll, or inspect the held item.
+    usage: /forge <upgrade|reroll|inspect>
+  rpg:
+    description: VanillaRPG administration.
+    usage: /rpg <reload|givecoin|givetoken|setrarity>
+
+permissions:
+  vanillarpg.admin:
+    description: VanillaRPG administrative commands.
+    default: op

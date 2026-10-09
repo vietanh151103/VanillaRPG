@@ -1,0 +1,102 @@
+# VanillaRPG-Core 0.1.0
+# All values are intentionally conservative for a ~10 player survival server.
+
+particles:
+  weapon-effects-enabled: false
+  swing-cooldown-ms: 180
+  motion-min-distance: 0.055
+  motion-max-distance: 2.5
+  forging-materials:
+    enabled: true
+    points: 3
+  weapon-interval-ticks: 5
+  enabled: true
+  view-distance: 48.0
+  interval-ticks: 10
+  legendary:
+    trail-duration-ticks: 6
+    motion-trail: true
+    swing-trail: true
+    swing-points: 7
+    weapon-points: 2
+    amount: 3
+  mythic:
+    trail-duration-ticks: 7
+    motion-trail: true
+    swing-trail: true
+    swing-points: 10
+    weapon-points: 4
+    amount: 6
+  combat-effects: true
+  craft-effects: true
+  broadcast-endgame-crafts: true
+starting-balance:
+  coin: 250
+  token: 0
+
+forge:
+  lock-named-endgame-reroll: true
+  reroll-custom-materials:
+    EPIC:
+      epic_shard: 2
+  reroll-cost:
+    MYTHIC: 15000
+    UNCOMMON: 250
+    RARE: 750
+    EPIC: 2500
+    LEGENDARY: 7500
+  
+  # Legendary is intentionally locked until the boss/blueprint module is added.
+  allow-legendary-without-blueprint: false
+  
+  upgrade:
+    COMMON-to-UNCOMMON:
+      coin: 500
+      token: 0
+      materials:
+        EMERALD: 2
+    
+    UNCOMMON-to-RARE:
+      coin: 1500
+      token: 0
+      materials:
+        DIAMOND: 4
+        NETHERITE_INGOT: 1
+        NETHERITE_UPGRADE_SMITHING_TEMPLATE: 1
+    
+    RARE-to-EPIC:
+      custom-materials:
+        epic_shard: 8
+      coin: 5000
+      token: 2
+      materials:
+        NETHER_STAR: 1
+        ECHO_SHARD: 4
+    
+    EPIC-to-LEGENDARY:
+      coin: 15000
+      token: 10
+      materials:
+        HEAVY_CORE: 1
+        NETHER_STAR: 1
+        DRAGON_BREATH: 8
+
+combat:
+  apply-to-players: false
+  crit-message: true
+  lifesteal-max-heal-per-hit: 4.0
+
+# Initial weapon affix ranges. Values are percentages.
+affixes:
+  damage_bonus:
+    min: 2.0
+    max: 8.0
+  crit_chance:
+    min: 2.0
+    max: 8.0
+  crit_damage:
+    min: 10.0
+    max: 30.0
+  lifesteal:
+    min: 1.0
+    max: 5.0

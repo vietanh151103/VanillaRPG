@@ -1,0 +1,13 @@
+.gradle/
+build/
+.idea/
+*.iml
+server-template/world/
+server-template/world_nether/
+server-template/world_the_end/
+server-template/logs/
+server-template/cache/
+server-template/backups/*.zip
+server-template/paper.jar
+server-template/runtime/
+server-template/plugins/*.jar

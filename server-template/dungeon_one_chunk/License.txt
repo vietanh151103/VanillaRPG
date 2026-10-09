@@ -1,0 +1,45 @@
+Subject License – All Rights Reserved for Minecraft
+
+© 2026 [ STM19 ]. All Rights Reserved.
+
+This Minecraft Resource Pack / Texture Pack / Data Pack and all of its contents are original works protected under the Indian Copyright Act, 1957 and international copyright laws.
+
+This includes but is not limited to:
+
+Textures, models, sprites, sounds, and visual assets
+
+Functions, commands, loot tables, JSON files, and game logic
+
+Folder structure, configuration, and implementation design
+
+Documentation, descriptions, and branding
+
+You are permitted to:
+
+Use this pack in your personal Minecraft game
+
+Use this pack on private servers for gameplay
+
+You are NOT permitted to, without explicit written permission from the author:
+
+Copy, modify, remix, or extract any part of this pack
+
+Re-upload or redistribute this pack anywhere
+
+Include this pack in modpacks, bundles, or servers for download
+
+Claim this work as your own
+
+Sell, monetize, or commercially use this pack or any part of it
+
+Use any assets from this pack in your own projects
+
+Publish edited or “fixed” versions of this pack
+
+Share direct download links outside the official source
+
+Content creators (YouTube, Twitch, etc.) may showcase this pack in videos or streams, provided proper credit is given and the official download link is used.
+
+Any unauthorized use, redistribution, or modification of this pack constitutes copyright infringement and may result in legal action.
+
+For permissions, contact: [CurseForge , Modrinth and Planet Minecraft] Profile - STM19
