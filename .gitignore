@@ -11,3 +11,5 @@ server-template/backups/*.zip
 server-template/paper.jar
 server-template/runtime/
 server-template/plugins/*.jar
+*.db-wal
+*.db-shm
