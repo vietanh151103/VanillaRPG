@@ -53,20 +53,6 @@ public final class MarketService {
     }
 
     public void sell(Player player, long price) {
-        if (!ready(player)) return;
-        long minPrice = Math.max(1, plugin.getConfig().getLong("market.min-price", 1));
-        long maxPrice = Math.max(minPrice, plugin.getConfig().getLong("market.max-price", 1_000_000_000L));
-        if (price < minPrice || price > maxPrice) {
-            player.sendMessage(Component.text("Price must be between " + minPrice + " and " + maxPrice + " Coin.", NamedTextColor.RED));
-            return;
-        }
-
-        int maxListings = Math.max(1, plugin.getConfig().getInt("market.max-active-listings-per-player", 10));
-        if (database.activeMarketListingCount(player.getUniqueId()) >= maxListings) {
-            player.sendMessage(Component.text("You already have the maximum of " + maxListings + " active listings.", NamedTextColor.RED));
-            return;
-        }
-
         ItemStack hand = player.getInventory().getItemInMainHand();
         if (hand.getType().isAir() || hand.getAmount() <= 0) {
             player.sendMessage(Component.text("Hold the item stack you want to sell.", NamedTextColor.RED));
@@ -74,26 +60,66 @@ public final class MarketService {
         }
 
         ItemStack escrow = hand.clone();
+        player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+        if (!listEscrow(player, escrow, price)) {
+            player.getInventory().setItemInMainHand(escrow);
+        }
+    }
+
+    /**
+     * Creates a listing for an item that has already been removed from the player's inventory.
+     * The caller retains ownership of {@code escrow} when this method returns false.
+     */
+    public boolean listEscrow(Player player, ItemStack escrow, long price) {
+        if (!ready(player)) return false;
+        if (escrow == null || escrow.getType().isAir() || escrow.getAmount() <= 0) {
+            player.sendMessage(Component.text("Place an item stack in the sell slot first.", NamedTextColor.RED));
+            return false;
+        }
+        if (price < minPrice() || price > maxPrice()) {
+            player.sendMessage(Component.text("Price must be between " + minPrice() + " and " + maxPrice() + " Coin.", NamedTextColor.RED));
+            return false;
+        }
+
+        int maxListings = Math.max(1, plugin.getConfig().getInt("market.max-active-listings-per-player", 10));
+        if (database.activeMarketListingCount(player.getUniqueId()) >= maxListings) {
+            player.sendMessage(Component.text("You already have the maximum of " + maxListings + " active listings.", NamedTextColor.RED));
+            return false;
+        }
+
         byte[] serialized;
         try {
             serialized = escrow.serializeAsBytes();
         } catch (Exception exception) {
             player.sendMessage(Component.text("This item could not be serialized for the market.", NamedTextColor.RED));
             plugin.getLogger().warning("Could not serialize market item for " + player.getName() + ": " + exception.getMessage());
-            return;
+            return false;
         }
 
-        player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
         try {
             long listingId = database.createMarketListing(player.getUniqueId(), player.getName(), serialized,
                     escrow.getType().getKey().asString(), escrow.getAmount(), price);
             player.sendMessage(Component.text("Listed " + escrow.getAmount() + "x " + pretty(escrow.getType().name())
                     + " for " + price + " Coin. Listing #" + listingId + ".", NamedTextColor.GREEN));
+            return true;
         } catch (RuntimeException exception) {
-            player.getInventory().setItemInMainHand(escrow);
             player.sendMessage(Component.text("Listing failed; your item was returned.", NamedTextColor.RED));
             plugin.getLogger().severe("Market listing failed for " + player.getName() + ": " + exception.getMessage());
+            return false;
         }
+    }
+
+    public long minPrice() {
+        return Math.max(1, plugin.getConfig().getLong("market.min-price", 1));
+    }
+
+    public long maxPrice() {
+        return Math.max(minPrice(), plugin.getConfig().getLong("market.max-price", 1_000_000_000L));
+    }
+
+    public long guiDefaultPrice() {
+        long configured = plugin.getConfig().getLong("market.gui-default-price", minPrice());
+        return Math.max(minPrice(), Math.min(maxPrice(), configured));
     }
 
     public boolean buy(Player player, long listingId) {

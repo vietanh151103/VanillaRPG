@@ -1,0 +1,27 @@
+VanillaRPG-Core 0.5.1 - GUI selling update
+
+What changes
+- /market has a Sell an item button.
+- The sell screen accepts one whole ItemStack, lets the player choose a Coin price,
+  and creates the same market listing used by /market sell <price>.
+- Closing/cancelling the screen, or a failed listing, returns the item to the
+  player inventory. If inventory is full, it drops naturally at the player.
+
+Config
+Add this optional setting under market: in plugins/VanillaRPG-Core/config.yml:
+
+  gui-default-price: 100
+
+If omitted, the GUI uses min-price. The configured value is limited by
+market.min-price and market.max-price.
+
+Install
+1. Stop the server completely.
+2. Back up the whole server folder.
+3. Build with build-plugin.bat (or gradle clean build in plugin/).
+4. Replace only the old VanillaRPG-Core JAR in plugins/ with
+   VanillaRPG-Core-0.5.1.jar.
+5. Keep plugins/VanillaRPG-Core/rpg.db and every existing config/world file.
+6. Start the server and test /market -> Sell an item with a non-valuable stack.
+
+No SQLite schema migration is required for 0.5.1.

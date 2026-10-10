@@ -1,6 +1,14 @@
-# VanillaRPG-Core 0.5.0
+# VanillaRPG-Core 0.5.1
 
 Target: Paper 26.2 / Java 25
+
+## New in 0.5.1 - GUI Selling
+
+- `/market` now includes **Sell an item**.
+- Put exactly one item stack in the center slot, adjust its Coin price, then click **Confirm listing**.
+- Closing or cancelling the screen returns the item to the player's inventory; if full, it drops naturally at their location.
+- A failed listing also returns the escrow item. Existing `/market sell <price>` remains available.
+- `market.gui-default-price` controls the initial GUI price and is clamped to `min-price` and `max-price`.
 
 ## New in 0.5.0 - Player Market
 
@@ -23,6 +31,7 @@ market:
   enabled: true
   min-price: 1
   max-price: 1000000000
+  gui-default-price: 100
   max-active-listings-per-player: 10
   page-size: 45
 ```
@@ -48,7 +57,7 @@ Or from `plugin/`:
 gradle clean build
 ```
 
-Output: `plugin/build/libs/VanillaRPG-Core-0.5.0.jar`
+Output: `plugin/build/libs/VanillaRPG-Core-0.5.1.jar`
 
 0.4.0 keeps the 0.3 progression systems and adds the first playable dungeon loop. It deliberately uses vanilla Minecraft mobs with light RPG tuning instead of a custom mob engine.
 

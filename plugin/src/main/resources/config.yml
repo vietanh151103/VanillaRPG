@@ -1,4 +1,4 @@
-# VanillaRPG-Core 0.5.0
+# VanillaRPG-Core 0.5.1
 # Paper 26.2 / Java 25
 # Missing keys are merged automatically when upgrading from 0.1.x.
 
@@ -10,6 +10,8 @@ market:
   enabled: true
   min-price: 1
   max-price: 1000000000
+  # Initial price shown in the GUI sell screen. It is clamped to min/max-price.
+  gui-default-price: 100
   max-active-listings-per-player: 10
   page-size: 45
 

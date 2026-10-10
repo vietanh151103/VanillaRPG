@@ -24,9 +24,11 @@ import java.util.Map;
 
 public final class MarketGuiService implements Listener {
     private final MarketService market;
+    private final MarketSellGuiService sellGui;
 
-    public MarketGuiService(MarketService market) {
+    public MarketGuiService(MarketService market, MarketSellGuiService sellGui) {
         this.market = market;
+        this.sellGui = sellGui;
     }
 
     public void open(Player player, int requestedPage) {
@@ -52,6 +54,7 @@ public final class MarketGuiService implements Listener {
         }
 
         if (page > 0) inventory.setItem(45, button(Material.ARROW, "Previous page", NamedTextColor.YELLOW));
+        inventory.setItem(46, button(Material.EMERALD, "Sell an item", NamedTextColor.GREEN));
         inventory.setItem(47, button(Material.CHEST, "My listings", NamedTextColor.GOLD));
         inventory.setItem(49, info(total, page, maxPage));
         inventory.setItem(51, button(Material.ENDER_CHEST, "Claim deliveries", NamedTextColor.AQUA));
@@ -69,6 +72,10 @@ public final class MarketGuiService implements Listener {
 
         if (slot == 45 && holder.page > 0) {
             open(player, holder.page - 1);
+            return;
+        }
+        if (slot == 46) {
+            sellGui.open(player);
             return;
         }
         if (slot == 47) {
