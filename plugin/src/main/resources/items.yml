@@ -1,1 +1,112 @@
-# Reserved for named Epic/Legendary items and blueprint recipes.
+content-version: 4
+
+# VanillaRPG 0.2 content file.
+# You can rebalance materials/recipes without recompiling the plugin.
+
+custom-materials:
+  epic_shard:
+    material: AMETHYST_SHARD
+    name: "✦ Epic Essence Shard ✦"
+    color: DARK_PURPLE
+    glint: true
+    lore:
+      - "Condensed violet essence from high-tier encounters."
+      - "A forging catalyst used from EPIC progression onward."
+      - "It hums with unstable arcane light."
+
+  legendary_shard:
+    material: PRISMARINE_CRYSTALS
+    name: "✦ Legendary Starshard ✦"
+    color: GOLD
+    glint: true
+    lore:
+      - "A radiant fragment used in Legendary forging."
+      - "Its surface shines like a captured star."
+
+  mythic_core:
+    material: HEART_OF_THE_SEA
+    name: "✦✦ Crimson Mythic Heartcore ✦✦"
+    color: RED
+    glint: true
+    lore:
+      - "A living core saturated with Mythic energy."
+      - "Reserved for the highest-tier forging rituals."
+      - "A crimson pulse can be felt through the shell."
+
+blueprints:
+  ashbringer:
+    target-item: ashbringer
+    material: PAPER
+    name: "Blueprint: Hero Sword"
+    color: GOLD
+
+  bloodreaver:
+    target-item: bloodreaver
+    material: PAPER
+    name: "Blueprint: Demonic Blade"
+    color: RED
+
+unique-items:
+  ashbringer:
+    material: NETHERITE_SWORD
+    rarity: LEGENDARY
+    name: "Hero Sword"
+    blueprint: ashbringer
+    base:
+      material: NETHERITE_SWORD
+      rarity: EPIC
+    cost:
+      coin: 20000
+      token: 15
+      materials:
+        NETHER_STAR: 2
+        HEAVY_CORE: 1
+        DRAGON_BREATH: 8
+      custom-materials:
+        epic_shard: 12
+        legendary_shard: 8
+    affixes:
+      damage_bonus: 8.0
+      crit_chance: 5.0
+      crit_damage: 18.0
+      lifesteal: 2.0
+    passive:
+      id: infernal_soul
+      values:
+        burning-damage-bonus: 12.0
+      lore:
+        - "Infernal Soul"
+        - "Deals +12% damage to burning targets."
+
+  bloodreaver:
+    material: NETHERITE_SWORD
+    rarity: MYTHIC
+    name: "Demonic Blade"
+    blueprint: bloodreaver
+    base:
+      item-id: ashbringer
+    cost:
+      coin: 50000
+      token: 30
+      materials:
+        NETHER_STAR: 4
+        HEAVY_CORE: 1
+        ECHO_SHARD: 16
+      custom-materials:
+        legendary_shard: 16
+        mythic_core: 1
+    affixes:
+      damage_bonus: 10.0
+      crit_chance: 8.0
+      crit_damage: 25.0
+      lifesteal: 3.0
+    passive:
+      id: blood_pact
+      values:
+        crit-max-health-heal: 2.0
+        execute-threshold: 20.0
+        execute-damage-bonus: 25.0
+      lore:
+        - "Blood Pact"
+        - "Critical hits heal 2% of max health."
+        - "Deals +25% damage to targets below 20% health."

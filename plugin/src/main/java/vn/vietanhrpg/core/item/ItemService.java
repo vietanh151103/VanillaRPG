@@ -11,11 +11,15 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import vn.vietanhrpg.core.content.BlueprintDefinition;
+import vn.vietanhrpg.core.content.MaterialDefinition;
+import vn.vietanhrpg.core.content.UniqueItemDefinition;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -23,11 +27,17 @@ public final class ItemService {
     private final JavaPlugin plugin;
     private final NamespacedKey rarityKey;
     private final NamespacedKey uuidKey;
+    private final NamespacedKey itemIdKey;
+    private final NamespacedKey materialIdKey;
+    private final NamespacedKey blueprintIdKey;
 
     public ItemService(JavaPlugin plugin) {
         this.plugin = plugin;
         this.rarityKey = new NamespacedKey(plugin, "rarity");
         this.uuidKey = new NamespacedKey(plugin, "item_uuid");
+        this.itemIdKey = new NamespacedKey(plugin, "item_id");
+        this.materialIdKey = new NamespacedKey(plugin, "material_id");
+        this.blueprintIdKey = new NamespacedKey(plugin, "blueprint_id");
     }
 
     public boolean isSupportedWeapon(ItemStack item) {
@@ -56,9 +66,26 @@ public final class ItemService {
         }
     }
 
+    public String itemId(ItemStack item) {
+        return readString(item, itemIdKey);
+    }
+
+    public String customMaterialId(ItemStack item) {
+        return readString(item, materialIdKey);
+    }
+
+    public String blueprintId(ItemStack item) {
+        return readString(item, blueprintIdKey);
+    }
+
+    public boolean isCustomMaterial(ItemStack item, String id) {
+        String stored = customMaterialId(item);
+        return stored != null && stored.equalsIgnoreCase(id);
+    }
+
     public void applyRarity(ItemStack item, Rarity rarity) {
         if (!isSupportedWeapon(item)) {
-            throw new IllegalArgumentException("Only swords, axes, tridents and maces are supported in V1");
+            throw new IllegalArgumentException("Only swords, axes, tridents and maces are supported in 0.2");
         }
 
         ItemMeta meta = item.getItemMeta();
@@ -68,6 +95,8 @@ public final class ItemService {
             pdc.set(uuidKey, PersistentDataType.STRING, UUID.randomUUID().toString());
         }
 
+        // Generic upgrades must never inherit the identity of a named endgame item.
+        pdc.remove(itemIdKey);
         clearAffixes(pdc);
         List<Affix> pool = new ArrayList<>(List.of(Affix.values()));
         Collections.shuffle(pool);
@@ -77,11 +106,95 @@ public final class ItemService {
             pdc.set(key(affix), PersistentDataType.DOUBLE, roll(affix));
         }
 
-        meta.displayName(Component.text("[" + rarity.name() + "] ", rarity.color())
-                .append(Component.text(prettyMaterial(item.getType()), NamedTextColor.WHITE))
-                .decoration(TextDecoration.ITALIC, false));
-        meta.lore(buildLore(pdc, rarity));
+        meta.setEnchantmentGlintOverride(rarity.isEndgame() ? Boolean.TRUE : null);
+        meta.displayName(genericDisplayName(item.getType(), rarity));
+        meta.lore(buildGenericLore(pdc, rarity));
         item.setItemMeta(meta);
+    }
+
+    public ItemStack createCustomMaterial(MaterialDefinition definition, int amount) {
+        ItemStack item = new ItemStack(definition.material(), Math.max(1, amount));
+        ItemMeta meta = item.getItemMeta();
+        meta.getPersistentDataContainer().set(materialIdKey, PersistentDataType.STRING, definition.id());
+        meta.displayName(Component.text(definition.name(), definition.color())
+                .decorate(TextDecoration.BOLD)
+                .decoration(TextDecoration.ITALIC, false));
+        if (definition.glint()) {
+            meta.setEnchantmentGlintOverride(true);
+        }
+
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text("✧ RPG FORGING MATERIAL ✧", definition.color())
+                .decorate(TextDecoration.BOLD)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("━━━━━━━━━━━━━━━━━━━━", definition.color())
+                .decoration(TextDecoration.ITALIC, false));
+        for (String line : definition.lore()) {
+            lore.add(Component.text(line, NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+        }
+        lore.add(Component.text("━━━━━━━━━━━━━━━━━━━━", definition.color())
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("VanillaRPG • " + definition.id(), NamedTextColor.DARK_GRAY)
+                .decoration(TextDecoration.ITALIC, false));
+        meta.lore(lore);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    public ItemStack createBlueprint(BlueprintDefinition definition) {
+        ItemStack item = new ItemStack(definition.material());
+        ItemMeta meta = item.getItemMeta();
+        meta.getPersistentDataContainer().set(blueprintIdKey, PersistentDataType.STRING, definition.id());
+        meta.displayName(Component.text(definition.name(), definition.color())
+                .decorate(TextDecoration.BOLD)
+                .decoration(TextDecoration.ITALIC, false));
+        meta.setEnchantmentGlintOverride(true);
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text("Right-click to learn this recipe.", NamedTextColor.GRAY)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("Blueprint ID: " + definition.id(), NamedTextColor.DARK_GRAY)
+                .decoration(TextDecoration.ITALIC, false));
+        meta.lore(lore);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    public ItemStack createUniqueItem(UniqueItemDefinition definition) {
+        ItemStack item = new ItemStack(definition.material());
+        ItemMeta meta = item.getItemMeta();
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        pdc.set(rarityKey, PersistentDataType.STRING, definition.rarity().name());
+        pdc.set(itemIdKey, PersistentDataType.STRING, definition.id());
+        pdc.set(uuidKey, PersistentDataType.STRING, UUID.randomUUID().toString());
+        clearAffixes(pdc);
+        for (Map.Entry<Affix, Double> entry : definition.affixes().entrySet()) {
+            pdc.set(key(entry.getKey()), PersistentDataType.DOUBLE, entry.getValue());
+        }
+
+        meta.setEnchantmentGlintOverride(definition.rarity().isEndgame() ? Boolean.TRUE : null);
+        applyUniqueItemModel(meta, definition.id());
+        meta.displayName(uniqueDisplayName(definition));
+        meta.lore(buildUniqueLore(pdc, definition));
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    public boolean refreshUniquePresentation(ItemStack item, UniqueItemDefinition definition) {
+        if (item == null || item.getType().isAir() || definition == null || !item.hasItemMeta()) {
+            return false;
+        }
+        String storedId = itemId(item);
+        if (storedId == null || !storedId.equalsIgnoreCase(definition.id())) {
+            return false;
+        }
+        ItemMeta meta = item.getItemMeta();
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        meta.setEnchantmentGlintOverride(definition.rarity().isEndgame() ? Boolean.TRUE : null);
+        applyUniqueItemModel(meta, definition.id());
+        meta.displayName(uniqueDisplayName(definition));
+        meta.lore(buildUniqueLore(pdc, definition));
+        item.setItemMeta(meta);
+        return true;
     }
 
     public double affix(ItemStack item, Affix affix) {
@@ -101,6 +214,18 @@ public final class ItemService {
         player.sendMessage(Component.text("--- Item Inspect ---", NamedTextColor.GOLD));
         player.sendMessage(Component.text("Type: " + item.getType().name(), NamedTextColor.GRAY));
         player.sendMessage(Component.text("Rarity: " + rarity.name(), rarity.color()));
+        String id = itemId(item);
+        if (id != null) {
+            player.sendMessage(Component.text("Item ID: " + id, NamedTextColor.YELLOW));
+        }
+        String materialId = customMaterialId(item);
+        if (materialId != null) {
+            player.sendMessage(Component.text("Material ID: " + materialId, NamedTextColor.AQUA));
+        }
+        String blueprint = blueprintId(item);
+        if (blueprint != null) {
+            player.sendMessage(Component.text("Blueprint ID: " + blueprint, NamedTextColor.GOLD));
+        }
         if (item.hasItemMeta()) {
             PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
             String uuid = pdc.get(uuidKey, PersistentDataType.STRING);
@@ -116,12 +241,91 @@ public final class ItemService {
         }
     }
 
-    private List<Component> buildLore(PersistentDataContainer pdc, Rarity rarity) {
+
+    private Component genericDisplayName(Material type, Rarity rarity) {
+        if (rarity == Rarity.LEGENDARY) {
+            return Component.text("✦ [LEGENDARY] ✦ ", rarity.color())
+                    .decorate(TextDecoration.BOLD)
+                    .append(Component.text(prettyMaterial(type), NamedTextColor.WHITE))
+                    .decoration(TextDecoration.ITALIC, false);
+        }
+        if (rarity == Rarity.MYTHIC) {
+            return Component.text("✦✦ [MYTHIC] ✦✦ ", rarity.color())
+                    .decorate(TextDecoration.BOLD)
+                    .append(Component.text(prettyMaterial(type), NamedTextColor.WHITE))
+                    .decoration(TextDecoration.ITALIC, false);
+        }
+        return Component.text("[" + rarity.name() + "] ", rarity.color())
+                .append(Component.text(prettyMaterial(type), NamedTextColor.WHITE))
+                .decoration(TextDecoration.ITALIC, false);
+    }
+
+    private void applyUniqueItemModel(ItemMeta meta, String itemId) {
+        if (itemId == null) {
+            return;
+        }
+        switch (itemId.toLowerCase(Locale.ROOT)) {
+            case "ashbringer" -> meta.setItemModel(new NamespacedKey("vanillarpg", "hero_sword"));
+            case "bloodreaver" -> meta.setItemModel(new NamespacedKey("vanillarpg", "demonic_blade"));
+            default -> { }
+        }
+    }
+
+    private Component uniqueDisplayName(UniqueItemDefinition definition) {
+        return Component.text(definition.name(), definition.rarity().color())
+                .decorate(TextDecoration.BOLD)
+                .decoration(TextDecoration.ITALIC, false);
+    }
+
+    private List<Component> buildGenericLore(PersistentDataContainer pdc, Rarity rarity) {
         List<Component> lore = new ArrayList<>();
-        lore.add(Component.text(rarity.name(), rarity.color()).decoration(TextDecoration.ITALIC, false));
+        if (rarity.isEndgame()) {
+            lore.add(Component.text("━━━━━━━━━━━━━━━━━━━━", rarity.color())
+                    .decoration(TextDecoration.ITALIC, false));
+        }
+        lore.add(Component.text(rarity.name(), rarity.color())
+                .decorate(rarity.isEndgame() ? TextDecoration.BOLD : TextDecoration.ITALIC)
+                .decoration(TextDecoration.ITALIC, false));
         if (rarity != Rarity.COMMON) {
             lore.add(Component.empty());
         }
+        appendAffixes(lore, pdc);
+        if (rarity.isEndgame()) {
+            lore.add(Component.text("━━━━━━━━━━━━━━━━━━━━", rarity.color())
+                    .decoration(TextDecoration.ITALIC, false));
+        }
+        lore.add(Component.text("VanillaRPG", NamedTextColor.DARK_GRAY).decoration(TextDecoration.ITALIC, false));
+        return lore;
+    }
+
+    private List<Component> buildUniqueLore(PersistentDataContainer pdc, UniqueItemDefinition definition) {
+        List<Component> lore = new ArrayList<>();
+        NamedTextColor color = definition.rarity().color();
+        lore.add(Component.text("━━━━━━━━━━━━━━━━━━━━", color).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text(definition.rarity().name() + " UNIQUE", color)
+                .decorate(TextDecoration.BOLD)
+                .decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.empty());
+        appendAffixes(lore, pdc);
+        if (!definition.passiveLore().isEmpty()) {
+            lore.add(Component.empty());
+            for (int i = 0; i < definition.passiveLore().size(); i++) {
+                String line = definition.passiveLore().get(i);
+                NamedTextColor lineColor = i == 0 ? color : NamedTextColor.GRAY;
+                Component component = Component.text(line, lineColor).decoration(TextDecoration.ITALIC, false);
+                if (i == 0) {
+                    component = component.decorate(TextDecoration.BOLD);
+                }
+                lore.add(component);
+            }
+        }
+        lore.add(Component.text("━━━━━━━━━━━━━━━━━━━━", color).decoration(TextDecoration.ITALIC, false));
+        lore.add(Component.text("VanillaRPG • " + definition.id(), NamedTextColor.DARK_GRAY)
+                .decoration(TextDecoration.ITALIC, false));
+        return lore;
+    }
+
+    private void appendAffixes(List<Component> lore, PersistentDataContainer pdc) {
         for (Affix affix : Affix.values()) {
             Double value = pdc.get(key(affix), PersistentDataType.DOUBLE);
             if (value != null) {
@@ -129,9 +333,6 @@ public final class ItemService {
                         .decoration(TextDecoration.ITALIC, false));
             }
         }
-        lore.add(Component.empty());
-        lore.add(Component.text("VanillaRPG", NamedTextColor.DARK_GRAY).decoration(TextDecoration.ITALIC, false));
-        return lore;
     }
 
     private void clearAffixes(PersistentDataContainer pdc) {
@@ -155,6 +356,13 @@ public final class ItemService {
         }
         double value = ThreadLocalRandom.current().nextDouble(min, max + 0.0001);
         return Math.round(value * 10.0) / 10.0;
+    }
+
+    private String readString(ItemStack item, NamespacedKey key) {
+        if (item == null || item.getType().isAir() || !item.hasItemMeta()) {
+            return null;
+        }
+        return item.getItemMeta().getPersistentDataContainer().get(key, PersistentDataType.STRING);
     }
 
     private String prettyMaterial(Material material) {

@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "vn.vietanhrpg"
-version = "0.1.0"
+version = "0.5.0"
 
 repositories {
     maven(url = "https://repo.papermc.io/repository/maven-public/") {
@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:26.2.build.+")
+    compileOnly("io.papermc.paper:paper-api:26.2.build.132-stable")
 }
 
 java {

@@ -5,7 +5,6 @@ api-version: '26.2'
 author: VietAnh
 description: Portable Vanilla+ RPG core for a small Paper server.
 
-# Paper downloads this dependency from its configured Maven Central mirror.
 libraries:
   - org.xerial:sqlite-jdbc:3.50.3.0
 
@@ -17,16 +16,49 @@ commands:
     description: View Token balance.
     usage: /token
   profile:
-    description: View your RPG profile.
+    description: Open your RPG profile.
     usage: /profile
+  quests:
+    description: View Daily and Weekly quests.
+    usage: /quests
+  achievements:
+    description: View RPG achievements.
+    usage: /achievements
+  titles:
+    description: View and select unlocked titles.
+    usage: /titles
+  dungeons:
+    description: Open the dungeon finder.
+    usage: /dungeons
+  dungeon:
+    description: Join, leave or configure VanillaRPG dungeons.
+    usage: /dungeon [join <id>|leave|status|setspawn <id>|resetcooldown <id>|reload]
   forge:
-    description: Upgrade, reroll, or inspect the held item.
-    usage: /forge <upgrade|reroll|inspect>
+    description: Open the RPG Forge or use a forge action.
+    usage: /forge [upgrade|reroll|inspect|recipes]
+  blueprints:
+    description: View learned and locked blueprint recipes.
+    usage: /blueprints
+  particles:
+    description: Configure Legendary/Mythic particle effects.
+    usage: /particles [all|legendary|mythic|combat|craft|materials|others] [on|off]
+  market:
+    description: Browse, sell, buy, cancel and claim player market items.
+    usage: /market [browse|sell <price>|buy <id>|cancel <id>|claim|mine|history]
   rpg:
     description: VanillaRPG administration.
-    usage: /rpg <reload|givecoin|givetoken|setrarity>
+    usage: /rpg <reload|givecoin|givetoken|giveitem|givegear|giveblueprint|setrarity>
 
 permissions:
   vanillarpg.admin:
     description: VanillaRPG administrative commands.
     default: op
+  vanillarpg.dungeon.admin:
+    description: Configure and reload VanillaRPG dungeons.
+    default: op
+  vanillarpg.market.use:
+    description: Browse, buy and claim items from the player market.
+    default: true
+  vanillarpg.market.sell:
+    description: Create and cancel player market listings.
+    default: true

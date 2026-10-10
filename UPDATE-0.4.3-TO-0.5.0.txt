@@ -1,0 +1,48 @@
+VanillaRPG-Core 0.5.0 - Player Market
+
+Compatibility
+- Paper 26.2 build 132 stable
+- Java 25
+- Upgrade path: VanillaRPG-Core 0.4.2 or 0.4.3
+- Existing player, Coin, Token, item PDC, blueprint, quest, achievement, title and dungeon data is retained.
+
+Database migration
+0.5.0 only adds these SQLite objects with CREATE TABLE/INDEX IF NOT EXISTS:
+- market_listings
+- market_deliveries
+- market_transactions
+- supporting market indexes
+
+No existing table or column is removed or reset.
+
+Build
+1. Install Java 25 and Gradle.
+2. Run build-plugin.bat from the project root, or `gradle clean build` inside plugin/.
+3. Output: plugin/build/libs/VanillaRPG-Core-0.5.0.jar
+
+Safe manual installation
+1. In the Minecraft console, run `stop` and wait for a clean shutdown.
+2. Back up world/, dungeon_one_chunk/, and plugins/VanillaRPG-Core/.
+3. Remove only the previous VanillaRPG-Core JAR from server-template/plugins/.
+4. Keep plugins/VanillaRPG-Core/rpg.db and every YAML file.
+5. Copy VanillaRPG-Core-0.5.0.jar into server-template/plugins/.
+6. Start the server and confirm the log says VanillaRPG-Core 0.5.0 enabled.
+
+Commands
+- /market
+- /market sell <price>
+- /market buy <listing-id>
+- /market cancel <listing-id>
+- /market claim
+- /market mine
+- /market history
+
+Market behavior
+- Selling places the complete held stack into SQLite escrow.
+- Buying uses VanillaRPG Coin and works while the seller is offline.
+- Purchased and cancelled items go to market deliveries.
+- If inventory is full, the delivery remains pending until /market claim succeeds.
+- A player cannot buy their own listing.
+- Listing count and price limits are controlled by config.yml.
+
+Do not delete or replace rpg.db during the upgrade.

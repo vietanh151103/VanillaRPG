@@ -1,9 +1,17 @@
-# VanillaRPG-Core 0.1.0
-# All values are intentionally conservative for a ~10 player survival server.
+# VanillaRPG-Core 0.5.0
+# Paper 26.2 / Java 25
+# Missing keys are merged automatically when upgrading from 0.1.x.
 
 starting-balance:
   coin: 250
   token: 0
+
+market:
+  enabled: true
+  min-price: 1
+  max-price: 1000000000
+  max-active-listings-per-player: 10
+  page-size: 45
 
 forge:
   reroll-cost:
@@ -11,16 +19,25 @@ forge:
     RARE: 750
     EPIC: 2500
     LEGENDARY: 7500
+    MYTHIC: 15000
 
-  # Legendary is intentionally locked until the boss/blueprint module is added.
-  allow-legendary-without-blueprint: false
+  # Named Legendary/Mythic items keep their identity and cannot reroll in 0.2.
+  lock-named-endgame-reroll: true
 
+  reroll-custom-materials:
+    EPIC:
+      epic_shard: 2
+
+  # Progression rule:
+  # COMMON -> UNCOMMON -> RARE: vanilla resources only.
+  # RARE -> EPIC: farming material starts here.
+  # LEGENDARY/MYTHIC: crafted from learned blueprint recipes in items.yml.
   upgrade:
     COMMON-to-UNCOMMON:
       coin: 500
       token: 0
       materials:
-        EMERALD: 2
+        EMERALD: 4
 
     UNCOMMON-to-RARE:
       coin: 1500
@@ -28,28 +45,58 @@ forge:
       materials:
         NETHERITE_INGOT: 1
         NETHERITE_UPGRADE_SMITHING_TEMPLATE: 1
+        DIAMOND: 4
 
     RARE-to-EPIC:
       coin: 5000
-      token: 2
+      token: 5
       materials:
         NETHER_STAR: 1
         ECHO_SHARD: 4
-
-    EPIC-to-LEGENDARY:
-      coin: 15000
-      token: 10
-      materials:
-        HEAVY_CORE: 1
-        NETHER_STAR: 1
-        DRAGON_BREATH: 8
+      custom-materials:
+        epic_shard: 8
 
 combat:
   apply-to-players: false
   crit-message: true
   lifesteal-max-heal-per-hit: 4.0
 
-# Initial weapon affix ranges. Values are percentages.
+particles:
+  enabled: true
+  # Resource-pack models replace persistent weapon particles in 0.2.8.
+  weapon-effects-enabled: false
+  view-distance: 48.0
+  # Dedicated weapon-aura cadence. Lower = smoother, higher = lighter.
+  weapon-interval-ticks: 4
+  # Persistent weapon glow cadence. All effects below use Particle.TRAIL only.
+  # No smoke, ash, cloud or end-rod particles are used by these weapon effects.
+  swing-cooldown-ms: 180
+  motion-min-distance: 0.055
+  motion-max-distance: 2.5
+
+  legendary:
+    # Thin gold blade streak + movement afterimage + gold swing crescent.
+    weapon-points: 6
+    trail-duration-ticks: 6
+    motion-trail: true
+    swing-trail: true
+    swing-points: 7
+
+  mythic:
+    # Longer double crimson helix, movement ribbon and double slash crescent.
+    weapon-points: 9
+    trail-duration-ticks: 7
+    motion-trail: true
+    swing-trail: true
+    swing-points: 10
+  forging-materials:
+    enabled: true
+    points: 3
+  combat-effects: true
+  craft-effects: true
+  broadcast-endgame-crafts: true
+
+# Generic weapon affix ranges. Values are percentages.
 affixes:
   damage_bonus:
     min: 2.0

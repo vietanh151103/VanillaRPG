@@ -1,7 +1,11 @@
 .gradle/
 build/
+releases/
+VanillaRPG-0.4.3-Paper-26.2/
+VanillaRPG-0.5.0/
 .idea/
 *.iml
+javac.*.args
 server-template/world/
 server-template/world_nether/
 server-template/world_the_end/

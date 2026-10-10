@@ -1,0 +1,34 @@
+VanillaRPG-Core 0.4.3 - safe source and configuration validation update
+
+Compatibility
+- Paper 26.2
+- Java 25
+- Existing VanillaRPG-Core 0.4.2 data is retained.
+- The SQLite schema is unchanged from 0.4.2.
+- Existing rpg.db, YAML files, item PDC data, worlds and resource packs remain compatible.
+
+Build
+1. Install Java 25 and Gradle.
+2. Open this project folder.
+3. Run build-plugin.bat, or run `gradle clean build` inside plugin/.
+4. The output is plugin/build/libs/VanillaRPG-Core-0.4.3.jar.
+
+Manual installation
+1. In the Minecraft console, run `stop` and wait for a clean shutdown.
+2. Back up the server, including:
+   - world/
+   - dungeon_one_chunk/
+   - plugins/VanillaRPG-Core/rpg.db
+   - plugins/VanillaRPG-Core/*.yml
+3. Remove only the old plugin JAR from server-template/plugins/.
+4. Do not delete the plugins/VanillaRPG-Core/ data directory.
+5. Copy VanillaRPG-Core-0.4.3.jar into server-template/plugins/.
+6. Start the server and confirm the log says VanillaRPG-Core 0.4.3 enabled.
+
+Safety behavior
+- Existing YAML files are never overwritten merely because they contain a syntax error.
+- Invalid YAML disables startup initialization before the SQLite database is opened.
+- Invalid YAML during /rpg reload cancels the reload and keeps the active in-memory configuration.
+- Database initialization remains additive (CREATE TABLE IF NOT EXISTS / missing-column migration).
+
+Do not replace or delete rpg.db when upgrading.
