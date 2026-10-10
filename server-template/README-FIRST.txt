@@ -3,11 +3,12 @@ VanillaRPG portable server template - target: Minecraft/Paper 26.2, Java 25
 1) Install Java 25, OR place a portable Java runtime in:
    runtime\bin\java.exe
 
-2) Download a stable Paper 26.2 server JAR and rename it:
-   paper.jar
+2) Run start.bat (Windows) or start.sh (Linux/macOS). On first start it
+   downloads the pinned Paper 26.2 build 132 server JAR automatically.
+   Internet is needed only when paper.jar is missing.
 
-3) Build VanillaRPG-Core from ../plugin and copy the JAR to:
-   plugins\VanillaRPG-Core.jar
+3) A release clone already includes the matching VanillaRPG-Core JAR in
+   plugins\. To rebuild it, use ../build-plugin.bat and replace that JAR.
 
 4) Start once with start.bat.
 
