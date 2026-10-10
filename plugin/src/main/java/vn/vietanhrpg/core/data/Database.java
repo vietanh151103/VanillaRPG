@@ -9,6 +9,7 @@ import vn.vietanhrpg.core.market.MarketListing;
 import vn.vietanhrpg.core.market.MarketPurchaseResult;
 import vn.vietanhrpg.core.market.MarketPurchaseStatus;
 import vn.vietanhrpg.core.market.MarketTransaction;
+import vn.vietanhrpg.core.shop.ShopTransaction;
 
 import java.io.File;
 import java.sql.Connection;
@@ -182,6 +183,18 @@ public final class Database {
             statement.executeUpdate("CREATE INDEX IF NOT EXISTS market_deliveries_recipient_claimed ON market_deliveries(recipient_uuid, claimed_at)");
             statement.executeUpdate("CREATE INDEX IF NOT EXISTS market_transactions_buyer ON market_transactions(buyer_uuid, created_at DESC)");
             statement.executeUpdate("CREATE INDEX IF NOT EXISTS market_transactions_seller ON market_transactions(seller_uuid, created_at DESC)");
+            statement.executeUpdate("""
+                    CREATE TABLE IF NOT EXISTS shop_transactions (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        uuid TEXT NOT NULL,
+                        direction TEXT NOT NULL,
+                        material TEXT NOT NULL,
+                        amount INTEGER NOT NULL,
+                        coin_amount INTEGER NOT NULL,
+                        created_at INTEGER NOT NULL
+                    )
+                    """);
+            statement.executeUpdate("CREATE INDEX IF NOT EXISTS shop_transactions_player_created ON shop_transactions(uuid, created_at DESC)");
             statement.executeUpdate("""
                     CREATE TABLE IF NOT EXISTS shop_sales_daily (
                         uuid TEXT NOT NULL,
@@ -430,6 +443,10 @@ public final class Database {
                     """);
                  PreparedStatement credit = connection.prepareStatement("""
                     UPDATE players SET coin = coin + ?, updated_at = ? WHERE uuid = ?
+                    """);
+                 PreparedStatement history = connection.prepareStatement("""
+                    INSERT INTO shop_transactions(uuid, direction, material, amount, coin_amount, created_at)
+                    VALUES(?, 'SELL', ?, ?, ?, ?)
                     """)) {
                 sale.setString(1, uuid.toString());
                 sale.setString(2, dayKey);
@@ -446,6 +463,13 @@ public final class Database {
                 credit.setLong(2, System.currentTimeMillis());
                 credit.setString(3, uuid.toString());
                 if (credit.executeUpdate() != 1) throw new SQLException("Player row is missing");
+
+                history.setString(1, uuid.toString());
+                history.setString(2, material);
+                history.setInt(3, itemAmount);
+                history.setLong(4, coinAmount);
+                history.setLong(5, System.currentTimeMillis());
+                history.executeUpdate();
             }
             connection.commit();
             return true;
@@ -454,6 +478,51 @@ public final class Database {
             throw new IllegalStateException("Could not credit shop sale", exception);
         } finally {
             try { connection.setAutoCommit(true); } catch (SQLException ignored) {}
+        }
+    }
+
+    public synchronized void recordShopPurchase(UUID uuid, String material, int amount, long coinAmount) {
+        requireConnection();
+        if (amount <= 0 || coinAmount <= 0) return;
+        try (PreparedStatement statement = connection.prepareStatement("""
+                INSERT INTO shop_transactions(uuid, direction, material, amount, coin_amount, created_at)
+                VALUES(?, 'BUY', ?, ?, ?, ?)
+                """)) {
+            statement.setString(1, uuid.toString());
+            statement.setString(2, material);
+            statement.setInt(3, amount);
+            statement.setLong(4, coinAmount);
+            statement.setLong(5, System.currentTimeMillis());
+            statement.executeUpdate();
+        } catch (SQLException exception) {
+            throw new IllegalStateException("Could not record shop purchase", exception);
+        }
+    }
+
+    public synchronized List<ShopTransaction> shopHistory(UUID uuid, int limit) {
+        requireConnection();
+        List<ShopTransaction> result = new ArrayList<>();
+        try (PreparedStatement statement = connection.prepareStatement("""
+                SELECT id, uuid, direction, material, amount, coin_amount, created_at
+                FROM shop_transactions
+                WHERE uuid = ?
+                ORDER BY created_at DESC, id DESC
+                LIMIT ?
+                """)) {
+            statement.setString(1, uuid.toString());
+            statement.setInt(2, Math.max(1, Math.min(20, limit)));
+            try (ResultSet rows = statement.executeQuery()) {
+                while (rows.next()) {
+                    result.add(new ShopTransaction(
+                            rows.getLong("id"), UUID.fromString(rows.getString("uuid")),
+                            rows.getString("direction"), rows.getString("material"), rows.getInt("amount"),
+                            rows.getLong("coin_amount"), rows.getLong("created_at")
+                    ));
+                }
+            }
+            return result;
+        } catch (SQLException exception) {
+            throw new IllegalStateException("Could not read shop history", exception);
         }
     }
 

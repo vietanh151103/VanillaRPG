@@ -1,4 +1,4 @@
-# VanillaRPG-Core 0.6.6
+# VanillaRPG-Core 0.6.7
 # Paper 26.2 / Java 25
 # Missing keys are merged automatically when upgrading from 0.1.x.
 
@@ -24,62 +24,77 @@ shop:
   max-sell-coin-per-day: 750
   items:
     bread_bundle:
+      category: FOOD
       material: BREAD
       amount: 16
       price: 30
     baked_potato_bundle:
+      category: FOOD
       material: BAKED_POTATO
       amount: 16
       price: 30
     cooked_beef_bundle:
+      category: FOOD
       material: COOKED_BEEF
       amount: 8
       price: 45
     apple_bundle:
+      category: FOOD
       material: APPLE
       amount: 16
       price: 20
     honey_bottle_bundle:
+      category: FOOD
       material: HONEY_BOTTLE
       amount: 4
       price: 35
     dirt_bundle:
+      category: BUILDING
       material: DIRT
       amount: 64
       price: 24
     cobblestone_bundle:
+      category: BUILDING
       material: COBBLESTONE
       amount: 64
       price: 32
     deepslate_bundle:
+      category: BUILDING
       material: DEEPSLATE
       amount: 64
       price: 44
     stone_bundle:
+      category: BUILDING
       material: STONE
       amount: 64
       price: 70
     gravel_bundle:
+      category: BUILDING
       material: GRAVEL
       amount: 64
       price: 50
     sand_bundle:
+      category: BUILDING
       material: SAND
       amount: 64
       price: 64
     oak_log_bundle:
+      category: BUILDING
       material: OAK_LOG
       amount: 32
       price: 80
     oak_planks_bundle:
+      category: BUILDING
       material: OAK_PLANKS
       amount: 64
       price: 64
     glass_bundle:
+      category: BUILDING
       material: GLASS
       amount: 32
       price: 110
     bricks_bundle:
+      category: BUILDING
       material: BRICKS
       amount: 32
       price: 160

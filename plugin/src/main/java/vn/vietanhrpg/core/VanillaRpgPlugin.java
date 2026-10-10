@@ -143,7 +143,7 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         registerCommand("blueprints", new BlueprintCommand(forgeGuiService));
         registerCommand("particles", new ParticleCommand(particleGuiService));
         registerCommand("market", new MarketCommand(marketService, marketGuiService));
-        registerCommand("shop", new ShopCommand(shopGuiService));
+        registerCommand("shop", new ShopCommand(shopGuiService, shopService));
         registerCommand("rpg", new RpgCommand(this, database, economyService, itemService, contentService));
 
         getServer().getPluginManager().registerEvents(new PlayerListener(this, database, itemService, contentService, progressionService), this);

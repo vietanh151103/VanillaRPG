@@ -1,6 +1,12 @@
-# VanillaRPG-Core 0.6.6
+# VanillaRPG-Core 0.6.7
 
 Target: Paper 26.2 / Java 25
+
+## New in 0.6.7 - Shop Categories, Cart Total and History
+
+- `/shop` now opens **Food**, **Building**, and **Sell minerals** categories.
+- The sell chest shows an **expected cart payout** calculated across all 36 slots, including shared daily Coin and item limits.
+- `/shop history` shows the player's 10 latest server-shop purchases and sales. New transactions are stored in SQLite automatically.
 
 ## New in 0.6.6 - Per-Stack Hover Sale Preview
 
@@ -113,7 +119,7 @@ Or from `plugin/`:
 gradle clean build
 ```
 
-Output: `plugin/build/libs/VanillaRPG-Core-0.6.6.jar`
+Output: `plugin/build/libs/VanillaRPG-Core-0.6.7.jar`
 
 0.4.0 keeps the 0.3 progression systems and adds the first playable dungeon loop. It deliberately uses vanilla Minecraft mobs with light RPG tuning instead of a custom mob engine.
 

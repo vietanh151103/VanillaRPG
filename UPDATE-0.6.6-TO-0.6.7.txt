@@ -1,0 +1,13 @@
+VanillaRPG-Core 0.6.7 update
+
+1. Stop the server before replacing the plugin JAR.
+2. Replace the old VanillaRPG-Core JAR with VanillaRPG-Core-0.6.7.jar.
+3. Keep the existing VanillaRPG-Core/config.yml and rpg.db. No manual database migration is needed.
+4. Start the server, then use /shop or /shop history.
+
+New features
+- /shop now has Food, Building, and Sell minerals categories.
+- The 36-slot sell chest shows the expected combined payout before selling.
+- /shop history lists the 10 newest server-shop purchases and sales.
+- Existing shop item entries without category keep working: food is inferred as FOOD,
+  and the configured common blocks are inferred as BUILDING.

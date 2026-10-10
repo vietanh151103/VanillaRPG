@@ -14,6 +14,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import vn.vietanhrpg.core.shop.ShopCategory;
 import vn.vietanhrpg.core.shop.ShopEntry;
 import vn.vietanhrpg.core.service.ShopService;
 
@@ -31,19 +32,30 @@ public final class ShopGuiService implements Listener {
         this.sellGui = sellGui;
     }
 
-    public void open(Player player, int requestedPage) {
+    public void open(Player player) {
         if (!shop.enabled()) {
             player.sendMessage(Component.text("The server shop is disabled.", NamedTextColor.RED));
             return;
         }
-        List<ShopEntry> entries = shop.entries();
+        CategoryHolder holder = new CategoryHolder();
+        Inventory inventory = Bukkit.createInventory(holder, 27,
+                Component.text("Shop Categories", NamedTextColor.DARK_GREEN));
+        holder.inventory = inventory;
+        inventory.setItem(11, categoryItem(ShopCategory.FOOD, shop.entries(ShopCategory.FOOD).size()));
+        inventory.setItem(13, sellItem(player));
+        inventory.setItem(15, categoryItem(ShopCategory.BUILDING, shop.entries(ShopCategory.BUILDING).size()));
+        inventory.setItem(22, historyItem());
+        player.openInventory(inventory);
+    }
+
+    private void openBuy(Player player, ShopCategory category, int requestedPage) {
+        List<ShopEntry> entries = shop.entries(category);
         int pageSize = shop.pageSize();
         int maxPage = Math.max(0, (entries.size() - 1) / pageSize);
         int page = Math.max(0, Math.min(requestedPage, maxPage));
-
-        ShopHolder holder = new ShopHolder(page);
+        BuyHolder holder = new BuyHolder(category, page);
         Inventory inventory = Bukkit.createInventory(holder, 54,
-                Component.text("Shop - Buy Supplies - Page " + (page + 1), NamedTextColor.DARK_GREEN));
+                Component.text("Shop - " + category.displayName() + " - Page " + (page + 1), NamedTextColor.DARK_GREEN));
         holder.inventory = inventory;
         int start = page * pageSize;
         for (int slot = 0; slot < pageSize && start + slot < entries.size(); slot++) {
@@ -51,10 +63,10 @@ public final class ShopGuiService implements Listener {
             holder.entryBySlot.put(slot, entry.id());
             inventory.setItem(slot, entryItem(entry));
         }
-
         if (page > 0) inventory.setItem(45, button(Material.ARROW, "Previous page", NamedTextColor.YELLOW));
-        inventory.setItem(47, button(Material.GOLD_INGOT, "Open sell chest and price list", NamedTextColor.GOLD));
-        inventory.setItem(49, info(player, entries.size(), page, maxPage));
+        inventory.setItem(47, button(Material.COMPASS, "Back to categories", NamedTextColor.AQUA));
+        inventory.setItem(49, sellItem(player));
+        inventory.setItem(51, info(category, entries.size(), page, maxPage));
         if (page < maxPage) inventory.setItem(53, button(Material.ARROW, "Next page", NamedTextColor.YELLOW));
         player.openInventory(inventory);
     }
@@ -62,38 +74,78 @@ public final class ShopGuiService implements Listener {
     @EventHandler
     public void onClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
-        if (!(event.getView().getTopInventory().getHolder() instanceof ShopHolder holder)) return;
+        InventoryHolder holder = event.getView().getTopInventory().getHolder();
+        if (!(holder instanceof CategoryHolder) && !(holder instanceof BuyHolder)) return;
         event.setCancelled(true);
         int slot = event.getRawSlot();
         if (slot < 0 || slot >= event.getView().getTopInventory().getSize()) return;
 
-        if (slot == 45 && holder.page > 0) {
-            open(player, holder.page - 1);
+        if (holder instanceof CategoryHolder) {
+            if (slot == 11) openBuy(player, ShopCategory.FOOD, 0);
+            else if (slot == 13) sellGui.open(player);
+            else if (slot == 15) openBuy(player, ShopCategory.BUILDING, 0);
+            else if (slot == 22) player.performCommand("shop history");
+            return;
+        }
+
+        BuyHolder buy = (BuyHolder) holder;
+        if (slot == 45 && buy.page > 0) {
+            openBuy(player, buy.category, buy.page - 1);
             return;
         }
         if (slot == 47) {
-            sellGui.open(player);
+            open(player);
             return;
         }
         if (slot == 49) {
-            open(player, holder.page);
+            sellGui.open(player);
             return;
         }
         if (slot == 53) {
-            open(player, holder.page + 1);
+            openBuy(player, buy.category, buy.page + 1);
             return;
         }
-        String entryId = holder.entryBySlot.get(slot);
+        String entryId = buy.entryBySlot.get(slot);
         if (entryId == null) return;
         shop.buy(player, entryId);
-        open(player, holder.page);
+        openBuy(player, buy.category, buy.page);
     }
 
     @EventHandler
     public void onDrag(InventoryDragEvent event) {
-        if (event.getView().getTopInventory().getHolder() instanceof ShopHolder) {
-            event.setCancelled(true);
-        }
+        InventoryHolder holder = event.getView().getTopInventory().getHolder();
+        if (holder instanceof CategoryHolder || holder instanceof BuyHolder) event.setCancelled(true);
+    }
+
+    private ItemStack categoryItem(ShopCategory category, int count) {
+        ItemStack stack = button(category.icon(), category.displayName(), NamedTextColor.GREEN);
+        ItemMeta meta = stack.getItemMeta();
+        meta.lore(List.of(
+                line(count + " available bundle(s)", NamedTextColor.GRAY),
+                line("Click to browse", NamedTextColor.YELLOW)
+        ));
+        stack.setItemMeta(meta);
+        return stack;
+    }
+
+    private ItemStack sellItem(Player player) {
+        ItemStack stack = button(Material.GOLD_INGOT, "Sell minerals", NamedTextColor.GOLD);
+        ItemMeta meta = stack.getItemMeta();
+        meta.lore(List.of(
+                line("Open the 36-slot sell chest", NamedTextColor.GRAY),
+                line("Daily Coin remaining: " + shop.dailySellRemaining(player), NamedTextColor.GOLD),
+                line("Click to sell", NamedTextColor.YELLOW)
+        ));
+        stack.setItemMeta(meta);
+        return stack;
+    }
+
+    private ItemStack historyItem() {
+        ItemStack stack = button(Material.BOOK, "Recent shop history", NamedTextColor.AQUA);
+        ItemMeta meta = stack.getItemMeta();
+        meta.lore(List.of(line("Click or use /shop history", NamedTextColor.YELLOW)));
+        stack.setItemMeta(meta);
+        return stack;
     }
 
     private ItemStack entryItem(ShopEntry entry) {
@@ -110,16 +162,13 @@ public final class ShopGuiService implements Listener {
         return stack;
     }
 
-    private ItemStack info(Player player, int total, int page, int maxPage) {
-        ItemStack stack = button(Material.EMERALD, "Everyday supplies", NamedTextColor.GREEN);
+    private ItemStack info(ShopCategory category, int total, int page, int maxPage) {
+        ItemStack stack = button(Material.EMERALD, category.displayName() + " supplies", NamedTextColor.GREEN);
         ItemMeta meta = stack.getItemMeta();
         meta.lore(List.of(
-                line(total + " configured item(s)", NamedTextColor.GRAY),
-                line("Gold button: sell chest with each mineral's sell price.", NamedTextColor.YELLOW),
-                line("Daily mineral sale remaining: " + shop.dailySellRemaining(player) + " Coin", NamedTextColor.GOLD),
-                line("Rare gear and RPG materials are player-trade only.", NamedTextColor.YELLOW),
+                line(total + " configured bundle(s)", NamedTextColor.GRAY),
                 line("Page " + (page + 1) + "/" + (maxPage + 1), NamedTextColor.GRAY),
-                line("Click to refresh", NamedTextColor.YELLOW)
+                line("Use Sell minerals for mining resources.", NamedTextColor.YELLOW)
         ));
         stack.setItemMeta(meta);
         return stack;
@@ -137,12 +186,23 @@ public final class ShopGuiService implements Listener {
         return Component.text(text, color).decoration(TextDecoration.ITALIC, false);
     }
 
-    private static final class ShopHolder implements InventoryHolder {
+    private static final class CategoryHolder implements InventoryHolder {
         private Inventory inventory;
+
+        @Override
+        public Inventory getInventory() {
+            return inventory;
+        }
+    }
+
+    private static final class BuyHolder implements InventoryHolder {
+        private Inventory inventory;
+        private final ShopCategory category;
         private final int page;
         private final Map<Integer, String> entryBySlot = new HashMap<>();
 
-        private ShopHolder(int page) {
+        private BuyHolder(ShopCategory category, int page) {
+            this.category = category;
             this.page = page;
         }
 

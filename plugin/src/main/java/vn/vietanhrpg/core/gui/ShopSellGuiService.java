@@ -21,6 +21,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import vn.vietanhrpg.core.service.ShopService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -148,12 +149,22 @@ public final class ShopSellGuiService implements Listener {
 
     private void drawControls(Player player, SellHolder holder) {
         Inventory inventory = holder.inventory;
+        ShopService.SellCartPreview cart = cartPreview(player, holder);
         for (int slot = INPUT_SLOTS; slot < INFO_SLOT; slot++) {
             inventory.setItem(slot, new ItemStack(Material.AIR));
         }
-        inventory.setItem(INFO_SLOT, info(player));
-        inventory.setItem(SELL_SLOT, sellButton(player));
+        inventory.setItem(INFO_SLOT, info(player, cart));
+        inventory.setItem(SELL_SLOT, sellButton(player, cart));
         inventory.setItem(CLOSE_SLOT, button(Material.BARRIER, "Close and return unsold items", NamedTextColor.RED));
+    }
+
+    private ShopService.SellCartPreview cartPreview(Player player, SellHolder holder) {
+        List<ItemStack> items = new ArrayList<>();
+        for (int slot = 0; slot < INPUT_SLOTS; slot++) {
+            ItemStack item = holder.inventory.getItem(slot);
+            if (item != null && !item.getType().isAir()) items.add(undecorate(item));
+        }
+        return shop.sellCartPreview(player, items);
     }
 
     private void sellAll(Player player, SellHolder holder) {
@@ -187,12 +198,15 @@ public final class ShopSellGuiService implements Listener {
         drawControls(player, holder);
     }
 
-    private ItemStack info(Player player) {
-        ItemStack stack = button(Material.CHEST, "Hover your items for sale details", NamedTextColor.AQUA);
+    private ItemStack info(Player player, ShopService.SellCartPreview cart) {
+        ItemStack stack = button(Material.CHEST, "Sell cart summary", NamedTextColor.AQUA);
         ItemMeta meta = stack.getItemMeta();
         meta.lore(List.of(
                 line("Put plain minerals in any of the 36 chest slots.", NamedTextColor.GRAY),
                 line("Hover a stack to view its price and current limits.", NamedTextColor.YELLOW),
+                line("EXPECTED CART PAYOUT: " + cart.payout() + " Coin", NamedTextColor.GOLD).decorate(TextDecoration.BOLD),
+                line("Can sell: " + cart.sellableItems() + " item(s) in " + cart.eligibleStacks() + " stack(s)", NamedTextColor.GREEN),
+                line("Unavailable stack(s): " + cart.unavailableStacks(), NamedTextColor.GRAY),
                 line("Daily Coin remaining: " + shop.dailySellRemaining(player), NamedTextColor.GOLD),
                 line("Rare/RPG and modified items stay unsold.", NamedTextColor.RED)
         ));
@@ -200,11 +214,12 @@ public final class ShopSellGuiService implements Listener {
         return stack;
     }
 
-    private ItemStack sellButton(Player player) {
+    private ItemStack sellButton(Player player, ShopService.SellCartPreview cart) {
         ItemStack stack = button(Material.GOLD_INGOT, "Sell all stacks", NamedTextColor.GOLD);
         ItemMeta meta = stack.getItemMeta();
         meta.lore(List.of(
                 line("Sell every eligible stack in the 36 chest slots.", NamedTextColor.GRAY),
+                line("Expected payout: " + cart.payout() + " Coin", NamedTextColor.GOLD),
                 line("Daily Coin remaining: " + shop.dailySellRemaining(player), NamedTextColor.GOLD),
                 line("Invalid or limited items stay in the chest.", NamedTextColor.YELLOW)
         ));

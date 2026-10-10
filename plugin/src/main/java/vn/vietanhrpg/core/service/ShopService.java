@@ -8,7 +8,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import vn.vietanhrpg.core.data.Database;
+import vn.vietanhrpg.core.shop.ShopCategory;
 import vn.vietanhrpg.core.shop.ShopEntry;
+import vn.vietanhrpg.core.shop.ShopTransaction;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -78,9 +80,14 @@ public final class ShopService {
                 plugin.getLogger().warning("Ignoring invalid or non-approved shop item: " + id);
                 continue;
             }
-            entries.add(new ShopEntry(id, material, amount, price));
+            entries.add(new ShopEntry(id, material, amount, price,
+                    ShopCategory.parse(item.getString("category"), material)));
         }
         return entries;
+    }
+
+    public List<ShopEntry> entries(ShopCategory category) {
+        return entries().stream().filter(entry -> entry.category() == category).toList();
     }
 
     public boolean buy(Player player, String id) {
@@ -108,6 +115,11 @@ public final class ShopService {
         if (!leftovers.isEmpty()) {
             // This should be unreachable after canFit, but never discard a paid item.
             leftovers.values().forEach(item -> player.getWorld().dropItemNaturally(player.getLocation(), item));
+        }
+        try {
+            database.recordShopPurchase(player.getUniqueId(), entry.material().name(), entry.amount(), entry.price());
+        } catch (RuntimeException exception) {
+            plugin.getLogger().warning("Could not record shop purchase for " + player.getName() + ": " + exception.getMessage());
         }
         player.sendMessage(Component.text("Bought " + entry.amount() + "x " + pretty(entry.material())
                 + " for " + entry.price() + " Coin.", NamedTextColor.GREEN));
@@ -226,6 +238,46 @@ public final class ShopService {
                 coinRemaining, Math.max(0, sellableAmount), Math.max(0, sellableAmount) * offer.pricePerItem());
     }
 
+    /** Previews the whole sell chest in its slot order, sharing the player's daily Coin cap between stacks. */
+    public SellCartPreview sellCartPreview(Player player, List<ItemStack> items) {
+        long coinRemaining = dailySellRemaining(player);
+        long payout = 0;
+        int sellableItems = 0;
+        int eligibleStacks = 0;
+        int rejectedStacks = 0;
+        Map<Material, Integer> plannedPerMaterial = new java.util.EnumMap<>(Material.class);
+        for (ItemStack item : items) {
+            if (item == null || item.getType().isAir()) continue;
+            if (item.hasItemMeta() || !SELLABLE_MINERALS.contains(item.getType())) {
+                rejectedStacks++;
+                continue;
+            }
+            SellOffer offer = sellOffer(item.getType());
+            if (offer == null) {
+                rejectedStacks++;
+                continue;
+            }
+            int alreadyPlanned = plannedPerMaterial.getOrDefault(item.getType(), 0);
+            int itemRemaining = Math.max(0, dailySellItemRemaining(player, item.getType()) - alreadyPlanned);
+            int quantity = (int) Math.min(item.getAmount(), Math.min(itemRemaining, coinRemaining / offer.pricePerItem()));
+            if (quantity <= 0) {
+                rejectedStacks++;
+                continue;
+            }
+            eligibleStacks++;
+            sellableItems += quantity;
+            long stackPayout = quantity * offer.pricePerItem();
+            payout += stackPayout;
+            coinRemaining -= stackPayout;
+            plannedPerMaterial.put(item.getType(), alreadyPlanned + quantity);
+        }
+        return new SellCartPreview(payout, sellableItems, eligibleStacks, rejectedStacks, coinRemaining);
+    }
+
+    public List<ShopTransaction> history(Player player, int limit) {
+        return database.shopHistory(player.getUniqueId(), limit);
+    }
+
     private long dailySellLimit() {
         return Math.max(0, plugin.getConfig().getLong("shop.max-sell-coin-per-day", 750));
     }
@@ -261,6 +313,10 @@ public final class ShopService {
         private static SellPreview unavailable(Material material, int requestedAmount) {
             return new SellPreview(material, requestedAmount, 0, 0, 0, 0, 0);
         }
+    }
+
+    public record SellCartPreview(long payout, int sellableItems, int eligibleStacks, int unavailableStacks,
+                                  long coinRemainingAfter) {
     }
 
     private void message(Player player, boolean announce, String text, NamedTextColor color) {
