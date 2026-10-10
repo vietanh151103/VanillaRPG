@@ -1,0 +1,10 @@
+VanillaRPG-Core 0.6.6 update
+
+1. Stop the server before replacing the plugin JAR.
+2. Replace the old VanillaRPG-Core JAR with VanillaRPG-Core-0.6.6.jar.
+3. Keep the existing VanillaRPG-Core/config.yml and rpg.db. No migration is needed.
+4. Start the server and run /shop.
+
+The sell-price panel was removed. Place a plain approved mineral stack in any
+of the 36 sell-chest slots and hover it to see its unit price, full-stack
+value, current payout, and remaining daily item/Coin limits.

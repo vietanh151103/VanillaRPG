@@ -214,6 +214,18 @@ public final class ShopService {
                 - database.shopSaleItemAmountToday(player.getUniqueId(), todayKey(), material.name()));
     }
 
+    /** Calculates what a plain stack would pay without changing its contents or the player's balance. */
+    public SellPreview sellPreview(Player player, Material material, int requestedAmount) {
+        SellOffer offer = sellOffer(material);
+        if (offer == null || requestedAmount <= 0) return SellPreview.unavailable(material, requestedAmount);
+        int itemRemaining = dailySellItemRemaining(player, material);
+        long coinRemaining = dailySellRemaining(player);
+        int sellableAmount = (int) Math.min(requestedAmount,
+                Math.min(itemRemaining, coinRemaining / offer.pricePerItem()));
+        return new SellPreview(material, requestedAmount, offer.pricePerItem(), itemRemaining,
+                coinRemaining, Math.max(0, sellableAmount), Math.max(0, sellableAmount) * offer.pricePerItem());
+    }
+
     private long dailySellLimit() {
         return Math.max(0, plugin.getConfig().getLong("shop.max-sell-coin-per-day", 750));
     }
@@ -242,6 +254,13 @@ public final class ShopService {
     }
 
     public record SellPrice(Material material, long pricePerItem, int maxPerDay) {
+    }
+
+    public record SellPreview(Material material, int requestedAmount, long pricePerItem, int itemRemaining,
+                              long coinRemaining, int sellableAmount, long payout) {
+        private static SellPreview unavailable(Material material, int requestedAmount) {
+            return new SellPreview(material, requestedAmount, 0, 0, 0, 0, 0);
+        }
     }
 
     private void message(Player player, boolean announce, String text, NamedTextColor color) {

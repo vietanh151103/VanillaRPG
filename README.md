@@ -1,6 +1,12 @@
-# VanillaRPG-Core 0.6.5
+# VanillaRPG-Core 0.6.6
 
 Target: Paper 26.2 / Java 25
+
+## New in 0.6.6 - Per-Stack Hover Sale Preview
+
+- The sell chest no longer has a separate sell-price panel.
+- Hover an eligible mineral stack placed in any of the 36 input slots to see its unit price, full-stack value, current payout, and remaining item/Coin limits.
+- The temporary hover lore is removed before the item is sold or returned, so it cannot turn a plain resource into a custom item.
 
 ## New in 0.6.5 - Clear Prices and Multi-Stack Sell Chest
 
@@ -107,7 +113,7 @@ Or from `plugin/`:
 gradle clean build
 ```
 
-Output: `plugin/build/libs/VanillaRPG-Core-0.6.5.jar`
+Output: `plugin/build/libs/VanillaRPG-Core-0.6.6.jar`
 
 0.4.0 keeps the 0.3 progression systems and adds the first playable dungeon loop. It deliberately uses vanilla Minecraft mobs with light RPG tuning instead of a custom mob engine.
 

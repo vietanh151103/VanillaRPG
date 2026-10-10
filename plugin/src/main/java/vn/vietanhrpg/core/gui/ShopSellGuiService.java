@@ -5,6 +5,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -16,35 +17,31 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.java.JavaPlugin;
 import vn.vietanhrpg.core.service.ShopService;
 
 import java.util.List;
 import java.util.Map;
 
-/** Chest-like escrow screen for selling several stacks of approved minerals at once. */
+/** Chest-like escrow screen. Each eligible input stack carries a temporary sale preview on hover. */
 public final class ShopSellGuiService implements Listener {
     private static final int INPUT_SLOTS = 36;
-    private static final int GUIDE_START = 36;
-    private static final int GUIDE_SIZE = 9;
-    private static final int PREVIOUS_SLOT = 45;
+    private static final int INFO_SLOT = 45;
     private static final int SELL_SLOT = 49;
-    private static final int CLOSE_SLOT = 51;
-    private static final int NEXT_SLOT = 53;
+    private static final int CLOSE_SLOT = 53;
+    private final JavaPlugin plugin;
     private final ShopService shop;
+    private final NamespacedKey previewKey;
 
-    public ShopSellGuiService(ShopService shop) {
+    public ShopSellGuiService(JavaPlugin plugin, ShopService shop) {
+        this.plugin = plugin;
         this.shop = shop;
+        this.previewKey = new NamespacedKey(plugin, "shop_sale_preview");
     }
 
     public void open(Player player) {
-        open(player, 0);
-    }
-
-    private void open(Player player, int requestedGuidePage) {
-        List<ShopService.SellPrice> prices = shop.sellPrices();
-        int maxGuidePage = Math.max(0, (prices.size() - 1) / GUIDE_SIZE);
-        int guidePage = Math.max(0, Math.min(requestedGuidePage, maxGuidePage));
-        SellHolder holder = new SellHolder(guidePage);
+        SellHolder holder = new SellHolder();
         Inventory inventory = Bukkit.createInventory(holder, 54,
                 Component.text("Sell Minerals - Chest", NamedTextColor.DARK_GREEN));
         holder.inventory = inventory;
@@ -62,34 +59,31 @@ public final class ShopSellGuiService implements Listener {
             if (event.isShiftClick()) event.setCancelled(true);
             return;
         }
-        if (isInputSlot(rawSlot) && allowsInputClick(event.getClick())) return;
+        if (isInputSlot(rawSlot) && allowsInputClick(event.getClick())) {
+            // Never let the temporary preview metadata leave this virtual chest.
+            event.setCurrentItem(undecorate(event.getCurrentItem()));
+            schedulePreviewRefresh(player, holder);
+            return;
+        }
 
         event.setCancelled(true);
         if (rawSlot == SELL_SLOT) {
             sellAll(player, holder);
         } else if (rawSlot == CLOSE_SLOT) {
             player.closeInventory();
-        } else if (rawSlot == PREVIOUS_SLOT && holder.guidePage > 0) {
-            holder.guidePage--;
-            drawControls(player, holder);
-        } else if (rawSlot == NEXT_SLOT) {
-            int maxGuidePage = Math.max(0, (shop.sellPrices().size() - 1) / GUIDE_SIZE);
-            if (holder.guidePage < maxGuidePage) {
-                holder.guidePage++;
-                drawControls(player, holder);
-            }
         }
     }
 
     @EventHandler
     public void onDrag(InventoryDragEvent event) {
-        if (!(event.getView().getTopInventory().getHolder() instanceof SellHolder)) return;
+        if (!(event.getView().getTopInventory().getHolder() instanceof SellHolder holder)) return;
         for (int rawSlot : event.getRawSlots()) {
             if (rawSlot < event.getView().getTopInventory().getSize() && !isInputSlot(rawSlot)) {
                 event.setCancelled(true);
                 return;
             }
         }
+        if (event.getWhoClicked() instanceof Player player) schedulePreviewRefresh(player, holder);
     }
 
     @EventHandler
@@ -100,64 +94,107 @@ public final class ShopSellGuiService implements Listener {
             ItemStack item = holder.inventory.getItem(slot);
             if (item == null || item.getType().isAir()) continue;
             holder.inventory.setItem(slot, new ItemStack(Material.AIR));
-            returnItem(player, item);
+            returnItem(player, undecorate(item));
         }
+    }
+
+    private void schedulePreviewRefresh(Player player, SellHolder holder) {
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (player.getOpenInventory().getTopInventory().getHolder() != holder) return;
+            decorateInputs(player, holder);
+            drawControls(player, holder);
+        });
+    }
+
+    private void decorateInputs(Player player, SellHolder holder) {
+        for (int slot = 0; slot < INPUT_SLOTS; slot++) {
+            ItemStack item = holder.inventory.getItem(slot);
+            if (item == null || item.getType().isAir()) continue;
+            holder.inventory.setItem(slot, decorate(player, item));
+        }
+    }
+
+    private ItemStack decorate(Player player, ItemStack item) {
+        if (hasPreview(item)) return decorate(player, undecorate(item));
+        // Only unmodified vanilla minerals receive a preview. Other items are left untouched and cannot be sold.
+        if (item.hasItemMeta()) return item;
+        ShopService.SellPreview preview = shop.sellPreview(player, item.getType(), item.getAmount());
+        if (preview.pricePerItem() <= 0) return item;
+
+        ItemStack display = item.clone();
+        ItemMeta meta = display.getItemMeta();
+        meta.getPersistentDataContainer().set(previewKey, PersistentDataType.BYTE, (byte) 1);
+        meta.lore(List.of(
+                line("SELL PRICE: " + preview.pricePerItem() + " Coin each", NamedTextColor.GOLD),
+                line("Stack total: " + (preview.requestedAmount() * preview.pricePerItem()) + " Coin", NamedTextColor.YELLOW),
+                line("Can sell now: " + preview.sellableAmount() + "/" + preview.requestedAmount(), NamedTextColor.GREEN),
+                line("Payout now: " + preview.payout() + " Coin", NamedTextColor.GOLD),
+                line("Item limit left today: " + preview.itemRemaining(), NamedTextColor.GRAY),
+                line("Coin limit left today: " + preview.coinRemaining(), NamedTextColor.GRAY)
+        ));
+        display.setItemMeta(meta);
+        return display;
+    }
+
+    private ItemStack undecorate(ItemStack item) {
+        if (item == null || item.getType().isAir() || !hasPreview(item)) return item;
+        return new ItemStack(item.getType(), item.getAmount());
+    }
+
+    private boolean hasPreview(ItemStack item) {
+        if (item == null || item.getType().isAir() || !item.hasItemMeta()) return false;
+        return item.getItemMeta().getPersistentDataContainer().has(previewKey, PersistentDataType.BYTE);
     }
 
     private void drawControls(Player player, SellHolder holder) {
         Inventory inventory = holder.inventory;
-        for (int slot = GUIDE_START; slot < GUIDE_START + GUIDE_SIZE; slot++) {
+        for (int slot = INPUT_SLOTS; slot < INFO_SLOT; slot++) {
             inventory.setItem(slot, new ItemStack(Material.AIR));
         }
-        List<ShopService.SellPrice> prices = shop.sellPrices();
-        int start = holder.guidePage * GUIDE_SIZE;
-        for (int offset = 0; offset < GUIDE_SIZE && start + offset < prices.size(); offset++) {
-            inventory.setItem(GUIDE_START + offset, guideItem(player, prices.get(start + offset)));
-        }
-        int maxGuidePage = Math.max(0, (prices.size() - 1) / GUIDE_SIZE);
-        inventory.setItem(PREVIOUS_SLOT, holder.guidePage > 0
-                ? button(Material.ARROW, "Previous prices", NamedTextColor.YELLOW) : new ItemStack(Material.AIR));
+        inventory.setItem(INFO_SLOT, info(player));
         inventory.setItem(SELL_SLOT, sellButton(player));
         inventory.setItem(CLOSE_SLOT, button(Material.BARRIER, "Close and return unsold items", NamedTextColor.RED));
-        inventory.setItem(NEXT_SLOT, holder.guidePage < maxGuidePage
-                ? button(Material.ARROW, "Next prices", NamedTextColor.YELLOW) : new ItemStack(Material.AIR));
     }
 
     private void sellAll(Player player, SellHolder holder) {
         int totalSold = 0;
         int stacksSold = 0;
+        long totalPayout = 0;
         for (int slot = 0; slot < INPUT_SLOTS; slot++) {
             ItemStack item = holder.inventory.getItem(slot);
             if (item == null || item.getType().isAir()) continue;
-            int sold = shop.sellEscrowSilently(player, item.clone());
+            ItemStack plainItem = undecorate(item);
+            ShopService.SellPreview preview = shop.sellPreview(player, plainItem.getType(), plainItem.getAmount());
+            int sold = shop.sellEscrowSilently(player, plainItem);
             if (sold <= 0) continue;
             totalSold += sold;
             stacksSold++;
-            if (sold >= item.getAmount()) {
+            totalPayout += sold * preview.pricePerItem();
+            if (sold >= plainItem.getAmount()) {
                 holder.inventory.setItem(slot, new ItemStack(Material.AIR));
             } else {
-                ItemStack leftover = item.clone();
-                leftover.setAmount(item.getAmount() - sold);
-                holder.inventory.setItem(slot, leftover);
+                ItemStack leftover = new ItemStack(plainItem.getType(), plainItem.getAmount() - sold);
+                holder.inventory.setItem(slot, decorate(player, leftover));
             }
         }
         if (stacksSold == 0) {
-            player.sendMessage(Component.text("No eligible mineral stack could be sold. Check the price list and daily limits.", NamedTextColor.RED));
+            player.sendMessage(Component.text("No eligible mineral stack could be sold. Check each item's hover preview and daily limits.", NamedTextColor.RED));
         } else {
-            player.sendMessage(Component.text("Sold from " + stacksSold + " stack(s): " + totalSold
-                    + " item(s). Unsold items remain in the chest.", NamedTextColor.GREEN));
+            player.sendMessage(Component.text("Sold " + totalSold + " item(s) from " + stacksSold + " stack(s) for "
+                    + totalPayout + " Coin. Unsold items remain in the chest.", NamedTextColor.GREEN));
         }
+        decorateInputs(player, holder);
         drawControls(player, holder);
     }
 
-    private ItemStack guideItem(Player player, ShopService.SellPrice price) {
-        ItemStack stack = new ItemStack(price.material());
+    private ItemStack info(Player player) {
+        ItemStack stack = button(Material.CHEST, "Hover your items for sale details", NamedTextColor.AQUA);
         ItemMeta meta = stack.getItemMeta();
-        meta.displayName(line(pretty(price.material()), NamedTextColor.AQUA).decorate(TextDecoration.BOLD));
         meta.lore(List.of(
-                line("SELL PRICE: " + price.pricePerItem() + " Coin each", NamedTextColor.GOLD),
-                line("Daily item limit: " + price.maxPerDay(), NamedTextColor.GRAY),
-                line("You can still sell: " + shop.dailySellItemRemaining(player, price.material()), NamedTextColor.GREEN)
+                line("Put plain minerals in any of the 36 chest slots.", NamedTextColor.GRAY),
+                line("Hover a stack to view its price and current limits.", NamedTextColor.YELLOW),
+                line("Daily Coin remaining: " + shop.dailySellRemaining(player), NamedTextColor.GOLD),
+                line("Rare/RPG and modified items stay unsold.", NamedTextColor.RED)
         ));
         stack.setItemMeta(meta);
         return stack;
@@ -195,15 +232,6 @@ public final class ShopSellGuiService implements Listener {
         return click == ClickType.LEFT || click == ClickType.RIGHT || click == ClickType.CREATIVE;
     }
 
-    private String pretty(Material material) {
-        StringBuilder result = new StringBuilder();
-        for (String part : material.name().toLowerCase().split("_")) {
-            if (!result.isEmpty()) result.append(' ');
-            result.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
-        }
-        return result.toString();
-    }
-
     private void returnItem(Player player, ItemStack item) {
         Map<Integer, ItemStack> leftovers = player.getInventory().addItem(item);
         leftovers.values().forEach(leftover -> player.getWorld().dropItemNaturally(player.getLocation(), leftover));
@@ -211,11 +239,6 @@ public final class ShopSellGuiService implements Listener {
 
     private static final class SellHolder implements InventoryHolder {
         private Inventory inventory;
-        private int guidePage;
-
-        private SellHolder(int guidePage) {
-            this.guidePage = guidePage;
-        }
 
         @Override
         public Inventory getInventory() {

@@ -128,7 +128,7 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         this.marketSellGuiService = new MarketSellGuiService(marketService);
         this.marketGuiService = new MarketGuiService(marketService, marketSellGuiService);
         this.shopService = new ShopService(this, economyService, database);
-        this.shopSellGuiService = new ShopSellGuiService(shopService);
+        this.shopSellGuiService = new ShopSellGuiService(this, shopService);
         this.shopGuiService = new ShopGuiService(shopService, shopSellGuiService);
 
         registerCommand("coin", new CoinCommand(economyService));
