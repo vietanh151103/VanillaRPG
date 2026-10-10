@@ -72,7 +72,9 @@ public final class ShopService {
             Material material = Material.matchMaterial(item.getString("material", ""));
             int amount = item.getInt("amount", 1);
             long price = item.getLong("price", 0);
-            if (material == null || !isAllowedShopMaterial(material) || amount < 1 || amount > material.getMaxStackSize() || price < 1) {
+            // Paper 26.2 reports unreliable Material stack sizes for several blocks.
+            // The approved shop list uses ordinary stackable supplies only.
+            if (material == null || !isAllowedShopMaterial(material) || amount < 1 || amount > 64 || price < 1) {
                 plugin.getLogger().warning("Ignoring invalid or non-approved shop item: " + id);
                 continue;
             }
@@ -118,18 +120,31 @@ public final class ShopService {
             return;
         }
         ItemStack hand = player.getInventory().getItemInMainHand();
-        if (hand.getType().isAir() || hand.getAmount() <= 0) {
-            player.sendMessage(Component.text("Hold a plain mineral stack to sell.", NamedTextColor.RED));
-            return;
+        int sold = sellEscrow(player, hand);
+        if (sold <= 0) return;
+        if (sold >= hand.getAmount()) {
+            player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+        } else {
+            ItemStack leftover = hand.clone();
+            leftover.setAmount(hand.getAmount() - sold);
+            player.getInventory().setItemInMainHand(leftover);
+        }
+    }
+
+    /** Sells an eligible unmodified stack without removing it. The caller removes the returned amount on success. */
+    public int sellEscrow(Player player, ItemStack hand) {
+        if (hand == null || hand.getType().isAir() || hand.getAmount() <= 0) {
+            player.sendMessage(Component.text("Place a plain mineral stack in the sell slot first.", NamedTextColor.RED));
+            return 0;
         }
         if (hand.hasItemMeta() || !SELLABLE_MINERALS.contains(hand.getType())) {
             player.sendMessage(Component.text("The shop only buys plain configured minerals, not rare or RPG items.", NamedTextColor.RED));
-            return;
+            return 0;
         }
         SellOffer offer = sellOffer(hand.getType());
         if (offer == null) {
             player.sendMessage(Component.text("The shop is not buying this mineral right now.", NamedTextColor.RED));
-            return;
+            return 0;
         }
 
         long remainingCoin = dailySellRemaining(player);
@@ -138,30 +153,20 @@ public final class ShopService {
         int quantity = (int) Math.min(hand.getAmount(), Math.min(remainingCoin / offer.pricePerItem(), remainingItems));
         if (quantity <= 0) {
             player.sendMessage(Component.text("You reached today's Coin or item sale limit. Try again tomorrow.", NamedTextColor.RED));
-            return;
+            return 0;
         }
         long payout = quantity * offer.pricePerItem();
-        ItemStack original = hand.clone();
-        if (quantity == hand.getAmount()) {
-            player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-        } else {
-            ItemStack leftover = hand.clone();
-            leftover.setAmount(hand.getAmount() - quantity);
-            player.getInventory().setItemInMainHand(leftover);
-        }
 
         try {
             if (!database.creditShopSale(player.getUniqueId(), todayKey(), hand.getType().name(), quantity, payout,
                     dailySellLimit(), offer.maxPerDay())) {
-                player.getInventory().setItemInMainHand(original);
-                player.sendMessage(Component.text("Sale limit changed; your minerals were returned.", NamedTextColor.RED));
-                return;
+                player.sendMessage(Component.text("Sale limit changed; your minerals were not sold.", NamedTextColor.RED));
+                return 0;
             }
         } catch (RuntimeException exception) {
-            player.getInventory().setItemInMainHand(original);
-            player.sendMessage(Component.text("Sale failed; your minerals were returned.", NamedTextColor.RED));
+            player.sendMessage(Component.text("Sale failed; your minerals were not sold.", NamedTextColor.RED));
             plugin.getLogger().severe("Shop sale failed for " + player.getName() + ": " + exception.getMessage());
-            return;
+            return 0;
         }
 
         long remainingAfter = dailySellRemaining(player);
@@ -169,6 +174,7 @@ public final class ShopService {
                 - database.shopSaleItemAmountToday(player.getUniqueId(), todayKey(), hand.getType().name()));
         player.sendMessage(Component.text("Sold " + quantity + "x " + pretty(hand.getType()) + " for " + payout
                 + " Coin. Remaining today: " + itemRemainingAfter + " item(s), " + remainingAfter + " Coin.", NamedTextColor.GREEN));
+        return quantity;
     }
 
     public long dailySellRemaining(Player player) {

@@ -24,9 +24,11 @@ import java.util.Map;
 
 public final class ShopGuiService implements Listener {
     private final ShopService shop;
+    private final ShopSellGuiService sellGui;
 
-    public ShopGuiService(ShopService shop) {
+    public ShopGuiService(ShopService shop, ShopSellGuiService sellGui) {
         this.shop = shop;
+        this.sellGui = sellGui;
     }
 
     public void open(Player player, int requestedPage) {
@@ -51,7 +53,7 @@ public final class ShopGuiService implements Listener {
         }
 
         if (page > 0) inventory.setItem(45, button(Material.ARROW, "Previous page", NamedTextColor.YELLOW));
-        inventory.setItem(47, button(Material.GOLD_INGOT, "Sell held minerals", NamedTextColor.GOLD));
+        inventory.setItem(47, button(Material.GOLD_INGOT, "Open mineral sell page", NamedTextColor.GOLD));
         inventory.setItem(49, info(player, entries.size(), page, maxPage));
         if (page < maxPage) inventory.setItem(53, button(Material.ARROW, "Next page", NamedTextColor.YELLOW));
         player.openInventory(inventory);
@@ -70,8 +72,7 @@ public final class ShopGuiService implements Listener {
             return;
         }
         if (slot == 47) {
-            shop.sellHeld(player);
-            open(player, holder.page);
+            sellGui.open(player);
             return;
         }
         if (slot == 49) {
@@ -114,7 +115,7 @@ public final class ShopGuiService implements Listener {
         ItemMeta meta = stack.getItemMeta();
         meta.lore(List.of(
                 line(total + " configured item(s)", NamedTextColor.GRAY),
-                line("Sell plain minerals from your main hand at the gold button.", NamedTextColor.YELLOW),
+                line("Use the gold button to open the mineral sell page.", NamedTextColor.YELLOW),
                 line("Daily mineral sale remaining: " + shop.dailySellRemaining(player) + " Coin", NamedTextColor.GOLD),
                 line("Rare gear and RPG materials are player-trade only.", NamedTextColor.YELLOW),
                 line("Page " + (page + 1) + "/" + (maxPage + 1), NamedTextColor.GRAY),

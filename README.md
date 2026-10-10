@@ -1,6 +1,12 @@
-# VanillaRPG-Core 0.6.3
+# VanillaRPG-Core 0.6.4
 
 Target: Paper 26.2 / Java 25
+
+## New in 0.6.4 - Separate Buy and Sell Pages
+
+- Fixed the Paper 26.2 stack-size check that incorrectly hid common building blocks from the buy page.
+- `/shop` is now the buy page. The gold button opens a separate chest-like mineral sell page.
+- Put a plain eligible mineral stack in the center sell slot and click **Sell stack**. Any unsold remainder returns when the page closes, or drops naturally if inventory is full.
 
 ## New in 0.6.3 - Per-Mineral Sale Limits
 
@@ -94,7 +100,7 @@ Or from `plugin/`:
 gradle clean build
 ```
 
-Output: `plugin/build/libs/VanillaRPG-Core-0.6.3.jar`
+Output: `plugin/build/libs/VanillaRPG-Core-0.6.4.jar`
 
 0.4.0 keeps the 0.3 progression systems and adds the first playable dungeon loop. It deliberately uses vanilla Minecraft mobs with light RPG tuning instead of a custom mob engine.
 

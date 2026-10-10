@@ -30,6 +30,7 @@ import vn.vietanhrpg.core.gui.MarketSellGuiService;
 import vn.vietanhrpg.core.gui.ParticleGuiService;
 import vn.vietanhrpg.core.gui.ProgressionGuiService;
 import vn.vietanhrpg.core.gui.ShopGuiService;
+import vn.vietanhrpg.core.gui.ShopSellGuiService;
 import vn.vietanhrpg.core.item.ItemService;
 import vn.vietanhrpg.core.listener.BlueprintListener;
 import vn.vietanhrpg.core.listener.CombatListener;
@@ -70,6 +71,7 @@ public final class VanillaRpgPlugin extends JavaPlugin {
     private MarketSellGuiService marketSellGuiService;
     private ShopService shopService;
     private ShopGuiService shopGuiService;
+    private ShopSellGuiService shopSellGuiService;
 
     @Override
     public void onEnable() {
@@ -126,7 +128,8 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         this.marketSellGuiService = new MarketSellGuiService(marketService);
         this.marketGuiService = new MarketGuiService(marketService, marketSellGuiService);
         this.shopService = new ShopService(this, economyService, database);
-        this.shopGuiService = new ShopGuiService(shopService);
+        this.shopSellGuiService = new ShopSellGuiService(shopService);
+        this.shopGuiService = new ShopGuiService(shopService, shopSellGuiService);
 
         registerCommand("coin", new CoinCommand(economyService));
         registerCommand("token", new TokenCommand(economyService));
@@ -157,6 +160,7 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(marketGuiService, this);
         getServer().getPluginManager().registerEvents(marketSellGuiService, this);
         getServer().getPluginManager().registerEvents(shopGuiService, this);
+        getServer().getPluginManager().registerEvents(shopSellGuiService, this);
 
         getServer().getOnlinePlayers().forEach(player -> {
             database.ensurePlayer(

@@ -1,0 +1,21 @@
+VanillaRPG-Core 0.6.4 - Shop pages and building block fix
+
+Fix
+- Common building supplies were incorrectly hidden by an unreliable Paper 26.2
+  Material stack-size result. Dirt, cobblestone, deepslate, stone, gravel,
+  sand, oak logs/planks, glass and bricks now appear on the buy page.
+
+Shop flow
+1. Use /shop to browse and buy supplies.
+2. Click Open mineral sell page (gold ingot).
+3. Put one plain eligible mineral stack in the center slot as if using a chest.
+4. Click Sell stack. Quotas may sell only part of the stack.
+5. Closing or cancelling returns every unsold item to inventory, or drops it at
+   the player if their inventory is full.
+
+Install
+1. Stop the server and replace only VanillaRPG-Core with 0.6.4.
+2. Start the server, use /shop, and verify blocks on the buy page.
+3. Test selling a small plain Iron stack from the new sell page.
+
+No database migration is required beyond the existing 0.6.3 quota tables.
