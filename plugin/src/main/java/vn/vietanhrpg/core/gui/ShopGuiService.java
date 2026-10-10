@@ -43,7 +43,7 @@ public final class ShopGuiService implements Listener {
 
         ShopHolder holder = new ShopHolder(page);
         Inventory inventory = Bukkit.createInventory(holder, 54,
-                Component.text("Supplies Shop - Page " + (page + 1), NamedTextColor.DARK_GREEN));
+                Component.text("Shop - Buy Supplies - Page " + (page + 1), NamedTextColor.DARK_GREEN));
         holder.inventory = inventory;
         int start = page * pageSize;
         for (int slot = 0; slot < pageSize && start + slot < entries.size(); slot++) {
@@ -53,7 +53,7 @@ public final class ShopGuiService implements Listener {
         }
 
         if (page > 0) inventory.setItem(45, button(Material.ARROW, "Previous page", NamedTextColor.YELLOW));
-        inventory.setItem(47, button(Material.GOLD_INGOT, "Open mineral sell page", NamedTextColor.GOLD));
+        inventory.setItem(47, button(Material.GOLD_INGOT, "Open sell chest and price list", NamedTextColor.GOLD));
         inventory.setItem(49, info(player, entries.size(), page, maxPage));
         if (page < maxPage) inventory.setItem(53, button(Material.ARROW, "Next page", NamedTextColor.YELLOW));
         player.openInventory(inventory);
@@ -102,7 +102,7 @@ public final class ShopGuiService implements Listener {
         List<Component> lore = meta.lore() == null ? new ArrayList<>() : new ArrayList<>(meta.lore());
         lore.add(Component.empty());
         lore.add(line("Bundle: " + entry.amount(), NamedTextColor.GRAY));
-        lore.add(line("Price: " + entry.price() + " Coin", NamedTextColor.GOLD));
+        lore.add(line("BUY PRICE: " + entry.price() + " Coin", NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
         lore.add(Component.empty());
         lore.add(line("Click to buy", NamedTextColor.GREEN));
         meta.lore(lore);
@@ -115,7 +115,7 @@ public final class ShopGuiService implements Listener {
         ItemMeta meta = stack.getItemMeta();
         meta.lore(List.of(
                 line(total + " configured item(s)", NamedTextColor.GRAY),
-                line("Use the gold button to open the mineral sell page.", NamedTextColor.YELLOW),
+                line("Gold button: sell chest with each mineral's sell price.", NamedTextColor.YELLOW),
                 line("Daily mineral sale remaining: " + shop.dailySellRemaining(player) + " Coin", NamedTextColor.GOLD),
                 line("Rare gear and RPG materials are player-trade only.", NamedTextColor.YELLOW),
                 line("Page " + (page + 1) + "/" + (maxPage + 1), NamedTextColor.GRAY),

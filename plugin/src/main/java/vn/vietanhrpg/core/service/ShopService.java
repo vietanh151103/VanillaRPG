@@ -133,17 +133,26 @@ public final class ShopService {
 
     /** Sells an eligible unmodified stack without removing it. The caller removes the returned amount on success. */
     public int sellEscrow(Player player, ItemStack hand) {
+        return sellEscrow(player, hand, true);
+    }
+
+    /** GUI batch sales show one summary after all stacks are processed. */
+    public int sellEscrowSilently(Player player, ItemStack hand) {
+        return sellEscrow(player, hand, false);
+    }
+
+    private int sellEscrow(Player player, ItemStack hand, boolean announce) {
         if (hand == null || hand.getType().isAir() || hand.getAmount() <= 0) {
-            player.sendMessage(Component.text("Place a plain mineral stack in the sell slot first.", NamedTextColor.RED));
+            message(player, announce, "Place a plain mineral stack in the sell slot first.", NamedTextColor.RED);
             return 0;
         }
         if (hand.hasItemMeta() || !SELLABLE_MINERALS.contains(hand.getType())) {
-            player.sendMessage(Component.text("The shop only buys plain configured minerals, not rare or RPG items.", NamedTextColor.RED));
+            message(player, announce, "The shop only buys plain configured minerals, not rare or RPG items.", NamedTextColor.RED);
             return 0;
         }
         SellOffer offer = sellOffer(hand.getType());
         if (offer == null) {
-            player.sendMessage(Component.text("The shop is not buying this mineral right now.", NamedTextColor.RED));
+            message(player, announce, "The shop is not buying this mineral right now.", NamedTextColor.RED);
             return 0;
         }
 
@@ -152,7 +161,7 @@ public final class ShopService {
                 - database.shopSaleItemAmountToday(player.getUniqueId(), todayKey(), hand.getType().name()));
         int quantity = (int) Math.min(hand.getAmount(), Math.min(remainingCoin / offer.pricePerItem(), remainingItems));
         if (quantity <= 0) {
-            player.sendMessage(Component.text("You reached today's Coin or item sale limit. Try again tomorrow.", NamedTextColor.RED));
+            message(player, announce, "You reached today's Coin or item sale limit. Try again tomorrow.", NamedTextColor.RED);
             return 0;
         }
         long payout = quantity * offer.pricePerItem();
@@ -160,11 +169,11 @@ public final class ShopService {
         try {
             if (!database.creditShopSale(player.getUniqueId(), todayKey(), hand.getType().name(), quantity, payout,
                     dailySellLimit(), offer.maxPerDay())) {
-                player.sendMessage(Component.text("Sale limit changed; your minerals were not sold.", NamedTextColor.RED));
+                message(player, announce, "Sale limit changed; your minerals were not sold.", NamedTextColor.RED);
                 return 0;
             }
         } catch (RuntimeException exception) {
-            player.sendMessage(Component.text("Sale failed; your minerals were not sold.", NamedTextColor.RED));
+            message(player, announce, "Sale failed; your minerals were not sold.", NamedTextColor.RED);
             plugin.getLogger().severe("Shop sale failed for " + player.getName() + ": " + exception.getMessage());
             return 0;
         }
@@ -172,13 +181,37 @@ public final class ShopService {
         long remainingAfter = dailySellRemaining(player);
         int itemRemainingAfter = Math.max(0, offer.maxPerDay()
                 - database.shopSaleItemAmountToday(player.getUniqueId(), todayKey(), hand.getType().name()));
-        player.sendMessage(Component.text("Sold " + quantity + "x " + pretty(hand.getType()) + " for " + payout
-                + " Coin. Remaining today: " + itemRemainingAfter + " item(s), " + remainingAfter + " Coin.", NamedTextColor.GREEN));
+        message(player, announce, "Sold " + quantity + "x " + pretty(hand.getType()) + " for " + payout
+                + " Coin. Remaining today: " + itemRemainingAfter + " item(s), " + remainingAfter + " Coin.", NamedTextColor.GREEN);
         return quantity;
     }
 
     public long dailySellRemaining(Player player) {
         return Math.max(0, dailySellLimit() - database.shopSaleCoinToday(player.getUniqueId(), todayKey()));
+    }
+
+    public List<SellPrice> sellPrices() {
+        List<SellPrice> prices = new ArrayList<>();
+        ConfigurationSection section = plugin.getConfig().getConfigurationSection("shop.sell-items");
+        if (section == null) return prices;
+        for (String id : section.getKeys(false)) {
+            ConfigurationSection item = section.getConfigurationSection(id);
+            if (item == null) continue;
+            Material material = Material.matchMaterial(item.getString("material", ""));
+            long price = Math.max(0, item.getLong("price-per-item", 0));
+            int max = Math.max(1, item.getInt("max-per-day", 64));
+            if (material != null && SELLABLE_MINERALS.contains(material) && price > 0) {
+                prices.add(new SellPrice(material, price, max));
+            }
+        }
+        return prices;
+    }
+
+    public int dailySellItemRemaining(Player player, Material material) {
+        SellOffer offer = sellOffer(material);
+        if (offer == null) return 0;
+        return Math.max(0, offer.maxPerDay()
+                - database.shopSaleItemAmountToday(player.getUniqueId(), todayKey(), material.name()));
     }
 
     private long dailySellLimit() {
@@ -206,6 +239,13 @@ public final class ShopService {
     }
 
     private record SellOffer(long pricePerItem, int maxPerDay) {
+    }
+
+    public record SellPrice(Material material, long pricePerItem, int maxPerDay) {
+    }
+
+    private void message(Player player, boolean announce, String text, NamedTextColor color) {
+        if (announce) player.sendMessage(Component.text(text, color));
     }
 
     private boolean isAllowedShopMaterial(Material material) {

@@ -1,0 +1,15 @@
+VanillaRPG-Core 0.6.5 update
+
+1. Stop the server before replacing the plugin JAR.
+2. Replace the old VanillaRPG-Core JAR in server-template/plugins/ with
+   VanillaRPG-Core-0.6.5.jar built from this source.
+3. Keep the existing VanillaRPG-Core/config.yml and rpg.db. No world or
+   economy data migration is required.
+4. Start the server, then run /shop.
+
+What changed
+- The buy page labels each bundle with BUY PRICE.
+- The sell page has 36 input slots. Put multiple plain approved mineral stacks
+  into it and click Sell all stacks.
+- Each sell-price item displays its coin price, daily item limit, and the
+  player's remaining allowance. Unsold items are returned on close.

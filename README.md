@@ -1,6 +1,13 @@
-# VanillaRPG-Core 0.6.4
+# VanillaRPG-Core 0.6.5
 
 Target: Paper 26.2 / Java 25
+
+## New in 0.6.5 - Clear Prices and Multi-Stack Sell Chest
+
+- `/shop` clearly labels each supplies bundle with its **BUY PRICE**.
+- The sell page is now a 54-slot chest: place items in any of its 36 input slots, then click **Sell all stacks**.
+- The price panel shows each approved mineral's **SELL PRICE**, per-item daily cap, and the player's remaining cap.
+- Invalid, customized, rare, or limit-excess items remain safely in the chest and are returned when it closes.
 
 ## New in 0.6.4 - Separate Buy and Sell Pages
 
@@ -100,7 +107,7 @@ Or from `plugin/`:
 gradle clean build
 ```
 
-Output: `plugin/build/libs/VanillaRPG-Core-0.6.4.jar`
+Output: `plugin/build/libs/VanillaRPG-Core-0.6.5.jar`
 
 0.4.0 keeps the 0.3 progression systems and adds the first playable dungeon loop. It deliberately uses vanilla Minecraft mobs with light RPG tuning instead of a custom mob engine.
 
