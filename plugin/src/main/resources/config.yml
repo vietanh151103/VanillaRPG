@@ -1,4 +1,4 @@
-# VanillaRPG-Core 0.5.1
+# VanillaRPG-Core 0.6.3
 # Paper 26.2 / Java 25
 # Missing keys are merged automatically when upgrading from 0.1.x.
 
@@ -14,6 +14,137 @@ market:
   gui-default-price: 100
   max-active-listings-per-player: 10
   page-size: 45
+
+# The server shop sells consumables and common building supplies. It buys only
+# plain basic minerals with a daily Coin limit. Rare/RPG items are rejected.
+shop:
+  enabled: true
+  page-size: 45
+  # This cap controls inflation from mining farms. It resets at local midnight.
+  max-sell-coin-per-day: 750
+  items:
+    bread_bundle:
+      material: BREAD
+      amount: 16
+      price: 30
+    baked_potato_bundle:
+      material: BAKED_POTATO
+      amount: 16
+      price: 30
+    cooked_beef_bundle:
+      material: COOKED_BEEF
+      amount: 8
+      price: 45
+    apple_bundle:
+      material: APPLE
+      amount: 16
+      price: 20
+    honey_bottle_bundle:
+      material: HONEY_BOTTLE
+      amount: 4
+      price: 35
+    dirt_bundle:
+      material: DIRT
+      amount: 64
+      price: 24
+    cobblestone_bundle:
+      material: COBBLESTONE
+      amount: 64
+      price: 32
+    deepslate_bundle:
+      material: DEEPSLATE
+      amount: 64
+      price: 44
+    stone_bundle:
+      material: STONE
+      amount: 64
+      price: 70
+    gravel_bundle:
+      material: GRAVEL
+      amount: 64
+      price: 50
+    sand_bundle:
+      material: SAND
+      amount: 64
+      price: 64
+    oak_log_bundle:
+      material: OAK_LOG
+      amount: 32
+      price: 80
+    oak_planks_bundle:
+      material: OAK_PLANKS
+      amount: 64
+      price: 64
+    glass_bundle:
+      material: GLASS
+      amount: 32
+      price: 110
+    bricks_bundle:
+      material: BRICKS
+      amount: 32
+      price: 160
+  # Price is per single item, not per stack. Only the listed basic minerals are accepted.
+  sell-items:
+    coal:
+      material: COAL
+      price-per-item: 2
+      max-per-day: 256
+    charcoal:
+      material: CHARCOAL
+      price-per-item: 2
+      max-per-day: 128
+    raw_copper:
+      material: RAW_COPPER
+      price-per-item: 2
+      max-per-day: 256
+    copper_ingot:
+      material: COPPER_INGOT
+      price-per-item: 2
+      max-per-day: 128
+    raw_iron:
+      material: RAW_IRON
+      price-per-item: 5
+      max-per-day: 128
+    iron_ingot:
+      material: IRON_INGOT
+      price-per-item: 5
+      max-per-day: 128
+    raw_gold:
+      material: RAW_GOLD
+      price-per-item: 8
+      max-per-day: 64
+    gold_ingot:
+      material: GOLD_INGOT
+      price-per-item: 8
+      max-per-day: 64
+    redstone:
+      material: REDSTONE
+      price-per-item: 1
+      max-per-day: 256
+    lapis:
+      material: LAPIS_LAZULI
+      price-per-item: 2
+      max-per-day: 128
+    quartz:
+      material: QUARTZ
+      price-per-item: 3
+      max-per-day: 128
+    amethyst:
+      material: AMETHYST_SHARD
+      price-per-item: 2
+      max-per-day: 128
+    flint:
+      material: FLINT
+      price-per-item: 1
+      max-per-day: 128
+    emerald:
+      material: EMERALD
+      price-per-item: 15
+      max-per-day: 32
+    diamond:
+      material: DIAMOND
+      price-per-item: 35
+      max-per-day: 16
 
 forge:
   reroll-cost:

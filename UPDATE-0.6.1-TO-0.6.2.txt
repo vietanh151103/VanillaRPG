@@ -1,0 +1,24 @@
+VanillaRPG-Core 0.6.2 - Building supplies and mineral buyback
+
+What changes
+- /shop sells basic building bundles: dirt, cobblestone, deepslate, stone,
+  gravel, sand, oak logs/planks, glass and bricks.
+- Hold a plain accepted mineral stack and click Sell held minerals in /shop.
+- The shop buys Coal, raw Copper/Iron/Gold, Redstone, Lapis, Quartz, Amethyst,
+  Emerald and Diamond only. It never buys ores blocks, ancient debris,
+  netherite, custom materials, blueprints, equipment or RPG items.
+
+Balance
+- A player may earn up to 750 Coin from shop mineral sales per local calendar day.
+- Sell prices are intentionally low (1-35 Coin per item), keeping mining useful
+  without replacing 300-1,200 Coin dungeon rewards or 500+ Coin gear upgrades.
+- Change shop.max-sell-coin-per-day and shop.sell-items prices if your server's
+  economy differs, but keep the daily cap to prevent farm inflation.
+
+Install
+1. Stop the server and back it up.
+2. Replace the VanillaRPG-Core JAR with VanillaRPG-Core-0.6.2.jar.
+3. Start the server. The small shop_sales_daily SQLite table is created automatically.
+4. Use /shop and test both buying a building bundle and selling a small mineral stack.
+
+Existing player data, market listings and worlds are preserved.

@@ -45,6 +45,9 @@ commands:
   market:
     description: Browse, sell, buy, cancel and claim player market items.
     usage: /market [browse|sell <price>|buy <id>|cancel <id>|claim|mine|history]
+  shop:
+    description: Buy configured everyday supplies with Coin.
+    usage: /shop
   rpg:
     description: VanillaRPG administration.
     usage: /rpg <reload|givecoin|givetoken|giveitem|givegear|giveblueprint|setrarity>
@@ -61,4 +64,7 @@ permissions:
     default: true
   vanillarpg.market.sell:
     description: Create and cancel player market listings.
+    default: true
+  vanillarpg.shop.use:
+    description: Open the everyday supplies shop.
     default: true

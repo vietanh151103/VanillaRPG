@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "vn.vietanhrpg"
-version = "0.5.1"
+version = "0.6.3"
 
 repositories {
     maven(url = "https://repo.papermc.io/repository/maven-public/") {

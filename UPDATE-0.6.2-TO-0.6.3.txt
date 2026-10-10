@@ -1,0 +1,29 @@
+VanillaRPG-Core 0.6.3 - Per-mineral daily sale limits
+
+What changes
+- Shop buyback now has a quantity limit for every mineral, as well as the
+  existing 750 Coin per-player daily cap.
+- Added Charcoal, Copper Ingot, Iron Ingot, Gold Ingot and Flint to the
+  accepted plain-material buyback list.
+
+Default examples
+- Raw Iron: 5 Coin each, max 128/day.
+- Iron Ingot: 5 Coin each, max 128/day.
+- Raw Gold: 8 Coin each, max 64/day.
+- Gold Ingot: 8 Coin each, max 64/day.
+- Diamond: 35 Coin each, max 16/day.
+
+Configuration
+Every shop.sell-items entry supports:
+
+  material: IRON_INGOT
+  price-per-item: 5
+  max-per-day: 128
+
+The plugin records the per-material counts in SQLite, so server restarts do not
+reset limits. Existing data is preserved; only a new shop_sales_items_daily
+table is created automatically.
+
+Install
+1. Stop the server and replace only the VanillaRPG-Core JAR with 0.6.3.
+2. Start the server and test /shop with an Iron or Gold stack.

@@ -1,0 +1,16 @@
+VanillaRPG-Core 0.6.1 - Shop food filter fix
+
+Fix
+- Paper 26.2 reported the default food materials as non-edible through its API.
+- 0.6.1 uses an explicit approved basic-consumables whitelist instead.
+- Bread, baked potatoes, cooked beef, apples and honey bottles now appear in /shop.
+
+Safety
+- The whitelist still rejects weapons, armor, custom materials, blueprints,
+  Golden Apples, Enchanted Golden Apples and every rare RPG item.
+- No database migration or configuration reset is required.
+
+Install
+1. Stop the server.
+2. Replace only the VanillaRPG-Core JAR with VanillaRPG-Core-0.6.1.jar.
+3. Start the server and use /shop.

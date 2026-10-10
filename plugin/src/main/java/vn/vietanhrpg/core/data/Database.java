@@ -182,6 +182,23 @@ public final class Database {
             statement.executeUpdate("CREATE INDEX IF NOT EXISTS market_deliveries_recipient_claimed ON market_deliveries(recipient_uuid, claimed_at)");
             statement.executeUpdate("CREATE INDEX IF NOT EXISTS market_transactions_buyer ON market_transactions(buyer_uuid, created_at DESC)");
             statement.executeUpdate("CREATE INDEX IF NOT EXISTS market_transactions_seller ON market_transactions(seller_uuid, created_at DESC)");
+            statement.executeUpdate("""
+                    CREATE TABLE IF NOT EXISTS shop_sales_daily (
+                        uuid TEXT NOT NULL,
+                        day_key TEXT NOT NULL,
+                        coin_earned INTEGER NOT NULL DEFAULT 0,
+                        PRIMARY KEY(uuid, day_key)
+                    )
+                    """);
+            statement.executeUpdate("""
+                    CREATE TABLE IF NOT EXISTS shop_sales_items_daily (
+                        uuid TEXT NOT NULL,
+                        day_key TEXT NOT NULL,
+                        material TEXT NOT NULL,
+                        amount INTEGER NOT NULL DEFAULT 0,
+                        PRIMARY KEY(uuid, day_key, material)
+                    )
+                    """);
         }
 
         // Migration from older VanillaRPG databases.
@@ -331,6 +348,112 @@ public final class Database {
                 connection.setAutoCommit(true);
             } catch (SQLException ignored) {
             }
+        }
+    }
+
+    public synchronized long shopSaleCoinToday(UUID uuid, String dayKey) {
+        requireConnection();
+        try (PreparedStatement statement = connection.prepareStatement("""
+                SELECT coin_earned FROM shop_sales_daily WHERE uuid = ? AND day_key = ?
+                """)) {
+            statement.setString(1, uuid.toString());
+            statement.setString(2, dayKey);
+            try (ResultSet rows = statement.executeQuery()) {
+                return rows.next() ? rows.getLong(1) : 0L;
+            }
+        } catch (SQLException exception) {
+            throw new IllegalStateException("Could not read daily shop sales", exception);
+        }
+    }
+
+    public synchronized int shopSaleItemAmountToday(UUID uuid, String dayKey, String material) {
+        requireConnection();
+        try (PreparedStatement statement = connection.prepareStatement("""
+                SELECT amount FROM shop_sales_items_daily WHERE uuid = ? AND day_key = ? AND material = ?
+                """)) {
+            statement.setString(1, uuid.toString());
+            statement.setString(2, dayKey);
+            statement.setString(3, material);
+            try (ResultSet rows = statement.executeQuery()) {
+                return rows.next() ? rows.getInt(1) : 0;
+            }
+        } catch (SQLException exception) {
+            throw new IllegalStateException("Could not read daily shop item sales", exception);
+        }
+    }
+
+    /** Atomically credits a shop sale only when it fits its Coin and material daily limits. */
+    public synchronized boolean creditShopSale(UUID uuid, String dayKey, String material, int itemAmount,
+                                               long coinAmount, long dailyCoinLimit, int dailyItemLimit) {
+        requireConnection();
+        if (itemAmount <= 0 || coinAmount <= 0 || dailyCoinLimit < coinAmount || dailyItemLimit < itemAmount) return false;
+        try {
+            connection.setAutoCommit(false);
+            long earned = 0;
+            try (PreparedStatement statement = connection.prepareStatement("""
+                    SELECT coin_earned FROM shop_sales_daily WHERE uuid = ? AND day_key = ?
+                    """)) {
+                statement.setString(1, uuid.toString());
+                statement.setString(2, dayKey);
+                try (ResultSet rows = statement.executeQuery()) {
+                    if (rows.next()) earned = rows.getLong(1);
+                }
+            }
+            if (earned > dailyCoinLimit - coinAmount) {
+                connection.rollback();
+                return false;
+            }
+
+            int itemsSold = 0;
+            try (PreparedStatement statement = connection.prepareStatement("""
+                    SELECT amount FROM shop_sales_items_daily WHERE uuid = ? AND day_key = ? AND material = ?
+                    """)) {
+                statement.setString(1, uuid.toString());
+                statement.setString(2, dayKey);
+                statement.setString(3, material);
+                try (ResultSet rows = statement.executeQuery()) {
+                    if (rows.next()) itemsSold = rows.getInt(1);
+                }
+            }
+            if (itemsSold > dailyItemLimit - itemAmount) {
+                connection.rollback();
+                return false;
+            }
+
+            try (PreparedStatement sale = connection.prepareStatement("""
+                    INSERT INTO shop_sales_daily(uuid, day_key, coin_earned) VALUES(?, ?, ?)
+                    ON CONFLICT(uuid, day_key) DO UPDATE SET coin_earned = coin_earned + excluded.coin_earned
+                    """);
+                 PreparedStatement itemSale = connection.prepareStatement("""
+                    INSERT INTO shop_sales_items_daily(uuid, day_key, material, amount) VALUES(?, ?, ?, ?)
+                    ON CONFLICT(uuid, day_key, material) DO UPDATE SET amount = amount + excluded.amount
+                    """);
+                 PreparedStatement credit = connection.prepareStatement("""
+                    UPDATE players SET coin = coin + ?, updated_at = ? WHERE uuid = ?
+                    """)) {
+                sale.setString(1, uuid.toString());
+                sale.setString(2, dayKey);
+                sale.setLong(3, coinAmount);
+                sale.executeUpdate();
+
+                itemSale.setString(1, uuid.toString());
+                itemSale.setString(2, dayKey);
+                itemSale.setString(3, material);
+                itemSale.setInt(4, itemAmount);
+                itemSale.executeUpdate();
+
+                credit.setLong(1, coinAmount);
+                credit.setLong(2, System.currentTimeMillis());
+                credit.setString(3, uuid.toString());
+                if (credit.executeUpdate() != 1) throw new SQLException("Player row is missing");
+            }
+            connection.commit();
+            return true;
+        } catch (SQLException exception) {
+            try { connection.rollback(); } catch (SQLException ignored) {}
+            throw new IllegalStateException("Could not credit shop sale", exception);
+        } finally {
+            try { connection.setAutoCommit(true); } catch (SQLException ignored) {}
         }
     }
 

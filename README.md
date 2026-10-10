@@ -1,6 +1,43 @@
-# VanillaRPG-Core 0.5.1
+# VanillaRPG-Core 0.6.3
 
 Target: Paper 26.2 / Java 25
+
+## New in 0.6.3 - Per-Mineral Sale Limits
+
+- `/shop` now limits both total Coin earned from buyback and the number of each mineral sold per local calendar day.
+- Examples: Raw Iron and Iron Ingot are limited to 128/day each; Raw Gold and Gold Ingot are limited to 64/day each.
+- Added Charcoal, Copper Ingot, Iron Ingot, Gold Ingot and Flint to the sell whitelist.
+- Per-item limits and prices are configured under `shop.sell-items`; the global Coin cap remains `shop.max-sell-coin-per-day`.
+
+## New in 0.6.2 - Shop Supplies and Mineral Buyback
+
+- `/shop` now sells common building bundles: dirt, cobblestone, deepslate, stone, gravel, sand, oak logs/planks, glass and bricks.
+- `/shop` also has **Sell held minerals**. Hold an accepted plain mineral stack and click the gold button to sell it.
+- Shop buy prices are balanced against the existing economy: a low-tier dungeon pays 300–500 Coin, a standard dungeon pays 700–1,200 Coin, while daily objectives award about 150–400 Coin. A building bundle costs 24–160 Coin; food costs 20–45 Coin.
+- Shop buyback uses low per-item prices and a default 750 Coin/player/day cap, so mining helps players earn Coin without replacing dungeon rewards or gear-progression sinks.
+- The sell whitelist only includes Coal, raw Copper/Iron/Gold, Redstone, Lapis, Quartz, Amethyst, Emerald and Diamond. Ores blocks, ancient debris, netherite, equipment, custom materials, blueprints and all RPG rare items remain player-trade/gameplay goods.
+
+## New in 0.6.0 - Consumables Shop
+
+- `/shop` opens a Coin shop for server-configured consumable bundles.
+- The built-in config sells only basic food and honey bottles; it does not sell weapons, armor, custom materials, blueprints, or RPG rare items.
+- The loader rejects any shop entry that is not a consumable, even if it is manually added to `config.yml`. Rare items therefore remain available only through gameplay and player trade in `/market`.
+- Each click buys one bundle after verifying both Coin balance and inventory space.
+
+Example configuration:
+
+```yaml
+shop:
+  enabled: true
+  page-size: 45
+  items:
+    bread_bundle:
+      material: BREAD
+      amount: 16
+      price: 30
+```
+
+Use an approved basic consumable `Material` for `material`; invalid, equipment, custom-material, blueprint, and rare-RPG entries are ignored safely. The default food bundles are all approved.
 
 ## New in 0.5.1 - GUI Selling
 
@@ -57,7 +94,7 @@ Or from `plugin/`:
 gradle clean build
 ```
 
-Output: `plugin/build/libs/VanillaRPG-Core-0.5.1.jar`
+Output: `plugin/build/libs/VanillaRPG-Core-0.6.3.jar`
 
 0.4.0 keeps the 0.3 progression systems and adds the first playable dungeon loop. It deliberately uses vanilla Minecraft mobs with light RPG tuning instead of a custom mob engine.
 

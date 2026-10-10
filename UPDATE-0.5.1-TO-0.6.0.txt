@@ -1,0 +1,28 @@
+VanillaRPG-Core 0.6.0 - Consumables Shop
+
+What changes
+- /shop opens a GUI for purchasing configured consumable bundles with Coin.
+- The default shop sells basic food and honey bottles only.
+- The plugin rejects non-consumable entries. Weapons, armor, custom materials,
+  blueprints and rare RPG items cannot be put in this server shop.
+- Rare items remain a player-market/gameplay economy item.
+
+Configuration
+The default shop section is merged into config.yml on first start. Edit only
+shop.items to change bundles and prices. Each item needs:
+
+  material: BREAD
+  amount: 16
+  price: 30
+
+material must be a vanilla consumable Material name. Invalid entries are logged
+and hidden from the GUI instead of being sold.
+
+Install
+1. Stop the server completely and back it up.
+2. Build with build-plugin.bat (or gradle clean build in plugin/).
+3. Replace only the VanillaRPG-Core JAR in plugins/ with 0.6.0.
+4. Keep the existing rpg.db, worlds and configuration files.
+5. Start the server, then use /shop to test a food purchase.
+
+No database schema migration is required for 0.6.0.
