@@ -15,6 +15,13 @@ Update notes are in [`updates/`](updates/). `server-template/start.bat` installs
 - Existing rarity, unique items and custom materials remain untouched.
 - Administrators can add the supplemental BetterStructures RPG loot once to a selected existing container with `/rpg loot refresh <surface|underground|dungeon|nether|end|high-dungeon>`.
 
+## Historical 0.6.8 - World Generation and Biome Expansion
+
+- The optional test-world stack uses **TerraformGenerator 28.0.2** for varied Overworld terrain/biomes, plus **BetterStructures 2.7.7** with **WorldEdit 7.4.5** for generated structures and loot containers.
+- **Amplified Nether v1.2.15** and **Nullscape 26.2 v1.2.20** are installed as datapacks for the test world's Nether and End.
+- The tested Terra Bukkit build did not support Paper/Minecraft 26.2, so Terra and its community packs (Origen, ReimagEND, Substratum and Tartarus) are intentionally not enabled.
+- See [the full 0.6.8 update notes](updates/UPDATE-0.6.7-TO-0.6.8.txt) for setup and safety notes. Existing chunks are not regenerated.
+
 ## New in 0.6.7 - Shop Categories, Cart Total and History
 
 - `/shop` now opens **Food**, **Building**, and **Sell minerals** categories.
