@@ -1,0 +1,36 @@
+VanillaRPG-Core 0.6.8 update - World generation and biome expansion
+
+This historical update adds the optional Vanilla+ world-generation stack. It does not replace an existing world.
+Use it only for a newly generated test/worldgen world, or after making a full backup.
+
+Integrated components
+
+1. TerraformGenerator 28.0.2
+   - Bukkit world generator for a more varied Overworld: terrain, biomes, caves and vegetation.
+   - Configured for the isolated world name: vanillarpg_terraform_test.
+
+2. BetterStructures 2.7.7
+   - Adds generated structures, dungeons and loot containers.
+   - Requires WorldEdit 7.4.5 as its dependency.
+
+3. Amplified Nether v1.2.15 datapack
+   - Expands Nether terrain and makes Nether exploration less flat and more vertical.
+   - Installed into vanillarpg_terraform_test/datapacks.
+
+4. Nullscape 26.2 v1.2.20 datapack
+   - Reworks End terrain and islands for more varied End exploration.
+   - Installed into vanillarpg_terraform_test/datapacks.
+
+Not included
+
+- Terra community packs (Origen, ReimagEND, Substratum and Tartarus) are not enabled because the tested Terra Bukkit build did not support Paper/Minecraft 26.2.
+- Terra is therefore not required by this setup.
+
+Installation
+
+1. Keep the existing world folder unchanged.
+2. Install TerraformGenerator, BetterStructures and WorldEdit JARs into server-template/plugins.
+3. Ensure bukkit.yml maps vanillarpg_terraform_test to TerraformGenerator.
+4. Place Amplified_Nether_v1.2.15.zip and Nullscape_26.2_v1.2.20.zip in server-template/worldgen-datapacks.
+5. Run server-template/start.bat. It installs both datapacks into the test-world datapacks folder before Paper starts.
+6. Generate a new world; existing chunks and dimensions do not retroactively receive new terrain.
