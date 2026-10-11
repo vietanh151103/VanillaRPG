@@ -26,6 +26,16 @@ Not included
 - Terra community packs (Origen, ReimagEND, Substratum and Tartarus) are not enabled because the tested Terra Bukkit build did not support Paper/Minecraft 26.2.
 - Terra is therefore not required by this setup.
 
+Source links
+
+- TerraformGenerator: https://www.spigotmc.org/resources/terraformgenerator-1-21-10-26-2.75132/
+- BetterStructures: https://www.spigotmc.org/resources/betterstructures-yearly-sale.103241/
+- WorldEdit: https://enginehub.org/worldedit
+- Amplified Nether: https://modrinth.com/datapack/amplified-nether/versions
+- Nullscape: https://modrinth.com/datapack/nullscape/versions
+- Terra (not enabled): https://www.spigotmc.org/resources/terra.85151/
+- Terra community packs reference: https://terra.polydev.org/config/community-packs.html
+
 Installation
 
 1. Keep the existing world folder unchanged.

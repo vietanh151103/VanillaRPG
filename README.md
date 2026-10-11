@@ -22,6 +22,16 @@ Update notes are in [`updates/`](updates/). `server-template/start.bat` installs
 - The tested Terra Bukkit build did not support Paper/Minecraft 26.2, so Terra and its community packs (Origen, ReimagEND, Substratum and Tartarus) are intentionally not enabled.
 - See [the full 0.6.8 update notes](updates/UPDATE-0.6.7-TO-0.6.8.txt) for setup and safety notes. Existing chunks are not regenerated.
 
+### Worldgen source links
+
+- [TerraformGenerator 28.0.2 (Spigot)](https://www.spigotmc.org/resources/terraformgenerator-1-21-10-26-2.75132/)
+- [BetterStructures 2.7.7 (Spigot)](https://www.spigotmc.org/resources/betterstructures-yearly-sale.103241/)
+- [WorldEdit (EngineHub)](https://enginehub.org/worldedit)
+- [Amplified Nether v1.2.15 (Modrinth)](https://modrinth.com/datapack/amplified-nether/versions)
+- [Nullscape v1.2.20 (Modrinth)](https://modrinth.com/datapack/nullscape/versions)
+- [Terra (Spigot, tested but not enabled on 26.2)](https://www.spigotmc.org/resources/terra.85151/)
+- [Terra community packs reference](https://terra.polydev.org/config/community-packs.html)
+
 ## New in 0.6.7 - Shop Categories, Cart Total and History
 
 - `/shop` now opens **Food**, **Building**, and **Sell minerals** categories.
