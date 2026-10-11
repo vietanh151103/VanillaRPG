@@ -2,6 +2,7 @@ name: VanillaRPG-Core
 version: '${version}'
 main: vn.vietanhrpg.core.VanillaRpgPlugin
 api-version: '26.2'
+softdepend: [BetterStructures]
 author: VietAnh
 description: Portable Vanilla+ RPG core for a small Paper server.
 
@@ -50,7 +51,7 @@ commands:
     usage: /shop [history]
   rpg:
     description: VanillaRPG administration.
-    usage: /rpg <reload|givecoin|givetoken|giveitem|givegear|giveblueprint|setrarity>
+    usage: /rpg <reload|givecoin|givetoken|giveitem|givegear|giveblueprint|setrarity|loot refresh <tier>>
 
 permissions:
   vanillarpg.admin:

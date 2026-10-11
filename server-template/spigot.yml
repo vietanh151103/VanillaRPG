@@ -161,6 +161,8 @@ world-settings:
     zombie-aggressive-towards-villager: true
     enable-zombie-pigmen-portal-spawns: true
     verbose: false
+  worldeditregentempworld:
+    verbose: false
 players:
   disable-saving: false
 config-version: 13

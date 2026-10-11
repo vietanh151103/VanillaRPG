@@ -1,8 +1,6 @@
 .gradle/
 build/
 releases/
-VanillaRPG-0.4.3-Paper-26.2/
-VanillaRPG-0.5.0/
 .idea/
 *.iml
 javac.*.args
@@ -15,5 +13,20 @@ server-template/backups/*.zip
 server-template/paper.jar
 server-template/runtime/
 server-template/plugins/*.jar
+server-template - Copy/
+server-template/vanillarpg_terraform_test/
+server-template/.paper/
+server-template/plugins/BetterStructures/
+server-template/plugins/EliteMobs/
+server-template/plugins/MagmaCore/
+server-template/plugins/Terra/
+server-template/plugins/TerraformGenerator/
+server-template/plugins/WorldEdit/
+server-template/plugins/VanillaRPG-Core/rpg.db
+server-template/plugins/VanillaRPG-Core/rpg.db-shm
+server-template/plugins/VanillaRPG-Core/rpg.db-wal
+server-template/ops.json
+server-template/usercache.json
+server-template/wepif.yml
 *.db-wal
 *.db-shm

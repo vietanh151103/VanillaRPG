@@ -41,3 +41,9 @@ ticks-per:
   ambient-spawns: 1
   autosave: 6000
 aliases: now-in-commands.yml
+
+# Isolated worldgen trial. Keep the existing `world` untouched; create this
+# world only when testing TerraformGenerator.
+worlds:
+  vanillarpg_terraform_test:
+    generator: TerraformGenerator

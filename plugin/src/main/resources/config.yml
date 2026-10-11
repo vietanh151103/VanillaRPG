@@ -1,4 +1,4 @@
-# VanillaRPG-Core 0.6.7
+# VanillaRPG-Core 0.7.1
 # Paper 26.2 / Java 25
 # Missing keys are merged automatically when upgrading from 0.1.x.
 
@@ -258,3 +258,74 @@ affixes:
   lifesteal:
     min: 1.0
     max: 5.0
+
+# Extra rewards injected only into containers filled by BetterStructures.
+# Chances are per generated container, from 0.0 to 1.0. Custom materials carry
+# VanillaRPG metadata, so they remain valid forging items rather than lookalikes.
+betterstructures-loot:
+  enabled: true
+  # Allows administrators to add the supplemental RPG loot once to a targeted existing container.
+  manual-refresh-enabled: true
+  surface:
+    common-gear-chance: 0.14
+    uncommon-gear-chance: 0.04
+    rare-gear-chance: 0.005
+    epic-shard-chance: 0.02
+    epic-shard-min: 1
+    epic-shard-max: 1
+  underground:
+    common-gear-chance: 0.18
+    uncommon-gear-chance: 0.08
+    rare-gear-chance: 0.025
+    epic-shard-chance: 0.08
+    epic-shard-min: 1
+    epic-shard-max: 1
+    echo-shard-chance: 0.10
+    echo-shard-min: 1
+    echo-shard-max: 2
+  dungeon:
+    common-gear-chance: 0.18
+    uncommon-gear-chance: 0.12
+    rare-gear-chance: 0.05
+    epic-shard-chance: 0.12
+    epic-shard-min: 1
+    epic-shard-max: 1
+    echo-shard-chance: 0.12
+    echo-shard-min: 1
+    echo-shard-max: 2
+  nether:
+    common-gear-chance: 0.12
+    uncommon-gear-chance: 0.15
+    rare-gear-chance: 0.08
+    epic-gear-chance: 0.01
+    epic-shard-chance: 0.16
+    epic-shard-min: 1
+    epic-shard-max: 2
+    legendary-shard-chance: 0.025
+    legendary-shard-min: 1
+    legendary-shard-max: 1
+    netherite-template-chance: 0.03
+  end:
+    uncommon-gear-chance: 0.15
+    rare-gear-chance: 0.15
+    epic-gear-chance: 0.02
+    epic-shard-chance: 0.22
+    epic-shard-min: 1
+    epic-shard-max: 2
+    legendary-shard-chance: 0.07
+    legendary-shard-min: 1
+    legendary-shard-max: 1
+    heavy-core-chance: 0.05
+  high-dungeon:
+    uncommon-gear-chance: 0.20
+    rare-gear-chance: 0.25
+    epic-gear-chance: 0.05
+    epic-shard-chance: 0.28
+    epic-shard-min: 1
+    epic-shard-max: 2
+    legendary-shard-chance: 0.10
+    legendary-shard-min: 1
+    legendary-shard-max: 1
+    mythic-core-chance: 0.015
+    heavy-core-chance: 0.08
+    netherite-template-chance: 0.06

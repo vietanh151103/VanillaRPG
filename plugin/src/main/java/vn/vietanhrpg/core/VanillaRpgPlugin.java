@@ -39,6 +39,7 @@ import vn.vietanhrpg.core.listener.PlayerListener;
 import vn.vietanhrpg.core.listener.ProgressionListener;
 import vn.vietanhrpg.core.listener.WeaponEffectListener;
 import vn.vietanhrpg.core.service.BlueprintService;
+import vn.vietanhrpg.core.service.BetterStructuresLootBridge;
 import vn.vietanhrpg.core.service.EconomyService;
 import vn.vietanhrpg.core.service.ForgeService;
 import vn.vietanhrpg.core.service.MarketService;
@@ -46,6 +47,7 @@ import vn.vietanhrpg.core.service.ParticleService;
 import vn.vietanhrpg.core.service.ShopService;
 import vn.vietanhrpg.core.progression.ProgressionContentService;
 import vn.vietanhrpg.core.progression.ProgressionService;
+import vn.vietanhrpg.core.world.MysticForestService;
 
 import java.io.File;
 import java.io.IOException;
@@ -144,7 +146,9 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         registerCommand("particles", new ParticleCommand(particleGuiService));
         registerCommand("market", new MarketCommand(marketService, marketGuiService));
         registerCommand("shop", new ShopCommand(shopGuiService, shopService));
-        registerCommand("rpg", new RpgCommand(this, database, economyService, itemService, contentService));
+        BetterStructuresLootBridge betterStructuresLoot = new BetterStructuresLootBridge(this, itemService, contentService);
+        registerCommand("rpg", new RpgCommand(this, database, economyService, itemService, contentService,
+                new MysticForestService(this), betterStructuresLoot));
 
         getServer().getPluginManager().registerEvents(new PlayerListener(this, database, itemService, contentService, progressionService), this);
         getServer().getPluginManager().registerEvents(new ProgressionListener(progressionService), this);
@@ -161,6 +165,7 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(marketSellGuiService, this);
         getServer().getPluginManager().registerEvents(shopGuiService, this);
         getServer().getPluginManager().registerEvents(shopSellGuiService, this);
+        betterStructuresLoot.registerIfAvailable();
 
         getServer().getOnlinePlayers().forEach(player -> {
             database.ensurePlayer(

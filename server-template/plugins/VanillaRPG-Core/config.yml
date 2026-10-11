@@ -1,6 +1,154 @@
-# VanillaRPG-Core 0.1.0
+# VanillaRPG-Core 0.7.1
 # All values are intentionally conservative for a ~10 player survival server.
 
+shop:
+  max-sell-coin-per-day: 750
+  sell-items:
+    coal:
+      material: COAL
+      price-per-item: 2
+      max-per-day: 256
+    charcoal:
+      material: CHARCOAL
+      price-per-item: 2
+      max-per-day: 128
+    raw_copper:
+      material: RAW_COPPER
+      price-per-item: 2
+      max-per-day: 256
+    copper_ingot:
+      material: COPPER_INGOT
+      price-per-item: 2
+      max-per-day: 128
+    raw_iron:
+      material: RAW_IRON
+      price-per-item: 5
+      max-per-day: 128
+    iron_ingot:
+      material: IRON_INGOT
+      price-per-item: 5
+      max-per-day: 128
+    raw_gold:
+      material: RAW_GOLD
+      price-per-item: 8
+      max-per-day: 64
+    gold_ingot:
+      material: GOLD_INGOT
+      price-per-item: 8
+      max-per-day: 64
+    redstone:
+      material: REDSTONE
+      price-per-item: 1
+      max-per-day: 256
+    lapis:
+      material: LAPIS_LAZULI
+      price-per-item: 2
+      max-per-day: 128
+    quartz:
+      material: QUARTZ
+      price-per-item: 3
+      max-per-day: 128
+    amethyst:
+      material: AMETHYST_SHARD
+      price-per-item: 2
+      max-per-day: 128
+    flint:
+      material: FLINT
+      price-per-item: 1
+      max-per-day: 128
+    emerald:
+      material: EMERALD
+      price-per-item: 15
+      max-per-day: 32
+    diamond:
+      material: DIAMOND
+      price-per-item: 35
+      max-per-day: 16
+  enabled: true
+  page-size: 45
+  items:
+    dirt_bundle:
+      category: BUILDING
+      material: DIRT
+      amount: 64
+      price: 24
+    cobblestone_bundle:
+      category: BUILDING
+      material: COBBLESTONE
+      amount: 64
+      price: 32
+    deepslate_bundle:
+      category: BUILDING
+      material: DEEPSLATE
+      amount: 64
+      price: 44
+    stone_bundle:
+      category: BUILDING
+      material: STONE
+      amount: 64
+      price: 70
+    gravel_bundle:
+      category: BUILDING
+      material: GRAVEL
+      amount: 64
+      price: 50
+    sand_bundle:
+      category: BUILDING
+      material: SAND
+      amount: 64
+      price: 64
+    oak_log_bundle:
+      category: BUILDING
+      material: OAK_LOG
+      amount: 32
+      price: 80
+    oak_planks_bundle:
+      category: BUILDING
+      material: OAK_PLANKS
+      amount: 64
+      price: 64
+    glass_bundle:
+      category: BUILDING
+      material: GLASS
+      amount: 32
+      price: 110
+    bricks_bundle:
+      category: BUILDING
+      material: BRICKS
+      amount: 32
+      price: 160
+    bread_bundle:
+      category: FOOD
+      material: BREAD
+      amount: 16
+      price: 30
+    baked_potato_bundle:
+      category: FOOD
+      material: BAKED_POTATO
+      amount: 16
+      price: 30
+    cooked_beef_bundle:
+      category: FOOD
+      material: COOKED_BEEF
+      amount: 8
+      price: 45
+    apple_bundle:
+      category: FOOD
+      material: APPLE
+      amount: 16
+      price: 20
+    honey_bottle_bundle:
+      category: FOOD
+      material: HONEY_BOTTLE
+      amount: 4
+      price: 35
+market:
+  gui-default-price: 100
+  enabled: true
+  min-price: 1
+  max-price: 1000000000
+  max-active-listings-per-player: 10
+  page-size: 45
 particles:
   weapon-effects-enabled: false
   swing-cooldown-ms: 180
@@ -100,3 +248,73 @@ affixes:
   lifesteal:
     min: 1.0
     max: 5.0
+
+# Extra rewards injected only into containers filled by BetterStructures.
+# These are per-container chances; 1.0 means 100%.
+betterstructures-loot:
+  enabled: true
+  # Allows administrators to add the supplemental RPG loot once to a targeted existing container.
+  manual-refresh-enabled: true
+  surface:
+    common-gear-chance: 0.14
+    uncommon-gear-chance: 0.04
+    rare-gear-chance: 0.005
+    epic-shard-chance: 0.02
+    epic-shard-min: 1
+    epic-shard-max: 1
+  underground:
+    common-gear-chance: 0.18
+    uncommon-gear-chance: 0.08
+    rare-gear-chance: 0.025
+    epic-shard-chance: 0.08
+    epic-shard-min: 1
+    epic-shard-max: 1
+    echo-shard-chance: 0.1
+    echo-shard-min: 1
+    echo-shard-max: 2
+  dungeon:
+    common-gear-chance: 0.18
+    uncommon-gear-chance: 0.12
+    rare-gear-chance: 0.05
+    epic-shard-chance: 0.12
+    epic-shard-min: 1
+    epic-shard-max: 1
+    echo-shard-chance: 0.12
+    echo-shard-min: 1
+    echo-shard-max: 2
+  nether:
+    common-gear-chance: 0.12
+    uncommon-gear-chance: 0.15
+    rare-gear-chance: 0.08
+    epic-gear-chance: 0.01
+    epic-shard-chance: 0.16
+    epic-shard-min: 1
+    epic-shard-max: 2
+    legendary-shard-chance: 0.025
+    legendary-shard-min: 1
+    legendary-shard-max: 1
+    netherite-template-chance: 0.03
+  end:
+    uncommon-gear-chance: 0.15
+    rare-gear-chance: 0.15
+    epic-gear-chance: 0.02
+    epic-shard-chance: 0.22
+    epic-shard-min: 1
+    epic-shard-max: 2
+    legendary-shard-chance: 0.07
+    legendary-shard-min: 1
+    legendary-shard-max: 1
+    heavy-core-chance: 0.05
+  high-dungeon:
+    uncommon-gear-chance: 0.2
+    rare-gear-chance: 0.25
+    epic-gear-chance: 0.05
+    epic-shard-chance: 0.28
+    epic-shard-min: 1
+    epic-shard-max: 2
+    legendary-shard-chance: 0.1
+    legendary-shard-min: 1
+    legendary-shard-max: 1
+    mythic-core-chance: 0.015
+    heavy-core-chance: 0.08
+    netherite-template-chance: 0.06

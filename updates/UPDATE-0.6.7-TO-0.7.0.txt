@@ -1,0 +1,12 @@
+VanillaRPG-Core 0.7.0 update
+
+1. Stop the server normally.
+2. Replace VanillaRPG-Core-0.6.7.jar with VanillaRPG-Core-0.7.0.jar in server-template/plugins.
+3. Keep plugins/VanillaRPG-Core/ and its rpg.db files; player data and configuration are preserved.
+4. Start the server, then have players rejoin to apply the COMMON presentation to ordinary equipment already in their inventories.
+
+New administrator command:
+/rpg loot refresh <surface|underground|dungeon|nether|end|high-dungeon>
+
+Look directly at the intended existing BetterStructures chest or barrel before running the command.
+It preserves its current contents and can only be used once per container.

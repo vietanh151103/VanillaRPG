@@ -1,0 +1,8 @@
+VanillaRPG-Core 0.7.1 update
+
+1. Stop the server normally.
+2. Replace VanillaRPG-Core-0.7.0.jar with VanillaRPG-Core-0.7.1.jar in server-template/plugins.
+3. Keep plugins/VanillaRPG-Core/ and its rpg.db files. No player data or configuration migration is needed.
+4. Start the server normally.
+
+0.7.1 makes the COMMON presentation visible directly in generated loot chests and crafting/smithing result slots.

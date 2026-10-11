@@ -1,6 +1,19 @@
-# VanillaRPG-Core 0.6.7
+# VanillaRPG-Core 0.7.1
 
 Target: Paper 26.2 / Java 25
+
+Update notes are in [`updates/`](updates/). `server-template/start.bat` installs the bundled Amplified Nether and Nullscape datapacks into the Terraform test-world folder before it starts Paper.
+
+## New in 0.7.1 - Loot and Craft COMMON Presentation
+
+- `COMMON` is now added while vanilla and BetterStructures loot is generated, as well as in crafting and smithing result slots before the player takes the item.
+
+## New in 0.7.0 - Common Gear and BetterStructures Loot Tools
+
+- Ordinary vanilla swords, axes, tridents, maces, bows, crossbows, armour and elytra now receive the gray `COMMON` rarity presentation when players obtain or carry them.
+- The presentation is also applied while vanilla or BetterStructures loot is generated and in crafting/smithing result slots, before players take the item.
+- Existing rarity, unique items and custom materials remain untouched.
+- Administrators can add the supplemental BetterStructures RPG loot once to a selected existing container with `/rpg loot refresh <surface|underground|dungeon|nether|end|high-dungeon>`.
 
 ## New in 0.6.7 - Shop Categories, Cart Total and History
 
@@ -119,7 +132,7 @@ Or from `plugin/`:
 gradle clean build
 ```
 
-Output: `plugin/build/libs/VanillaRPG-Core-0.6.7.jar`
+Output: `plugin/build/libs/VanillaRPG-Core-0.7.1.jar`
 
 0.4.0 keeps the 0.3 progression systems and adds the first playable dungeon loop. It deliberately uses vanilla Minecraft mobs with light RPG tuning instead of a custom mob engine.
 

@@ -51,6 +51,38 @@ public final class ItemService {
                 || name.equals("MACE");
     }
 
+    /**
+     * Equipment which should receive the RPG rarity presentation. Weapons keep
+     * their existing combat support; armour, bows and crossbows are included so
+     * ordinary Vanilla equipment can consistently be shown as COMMON too.
+     */
+    public boolean isSupportedGear(ItemStack item) {
+        if (isSupportedWeapon(item)) {
+            return true;
+        }
+        if (item == null || item.getType().isAir()) {
+            return false;
+        }
+        String name = item.getType().name();
+        return name.equals("BOW")
+                || name.equals("CROSSBOW")
+                || name.equals("TURTLE_HELMET")
+                || name.equals("ELYTRA")
+                || name.endsWith("_HELMET")
+                || name.endsWith("_CHESTPLATE")
+                || name.endsWith("_LEGGINGS")
+                || name.endsWith("_BOOTS");
+    }
+
+    /** Adds the COMMON presentation only to ordinary, unclassified equipment. */
+    public boolean applyCommonRarityIfNeeded(ItemStack item) {
+        if (!isSupportedGear(item) || hasStoredRarity(item)) {
+            return false;
+        }
+        applyRarity(item, Rarity.COMMON);
+        return true;
+    }
+
     public Rarity rarity(ItemStack item) {
         if (item == null || item.getType().isAir() || !item.hasItemMeta()) {
             return Rarity.COMMON;
@@ -64,6 +96,11 @@ public final class ItemService {
         } catch (IllegalArgumentException ignored) {
             return Rarity.COMMON;
         }
+    }
+
+    private boolean hasStoredRarity(ItemStack item) {
+        return item != null && !item.getType().isAir() && item.hasItemMeta()
+                && item.getItemMeta().getPersistentDataContainer().has(rarityKey, PersistentDataType.STRING);
     }
 
     public String itemId(ItemStack item) {
@@ -84,8 +121,8 @@ public final class ItemService {
     }
 
     public void applyRarity(ItemStack item, Rarity rarity) {
-        if (!isSupportedWeapon(item)) {
-            throw new IllegalArgumentException("Only swords, axes, tridents and maces are supported in 0.2");
+        if (!isSupportedGear(item)) {
+            throw new IllegalArgumentException("Only weapons, bows, crossbows and armour are supported");
         }
 
         ItemMeta meta = item.getItemMeta();

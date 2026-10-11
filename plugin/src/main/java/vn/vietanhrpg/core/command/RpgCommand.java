@@ -19,6 +19,8 @@ import vn.vietanhrpg.core.data.Database;
 import vn.vietanhrpg.core.item.ItemService;
 import vn.vietanhrpg.core.item.Rarity;
 import vn.vietanhrpg.core.service.EconomyService;
+import vn.vietanhrpg.core.service.BetterStructuresLootBridge;
+import vn.vietanhrpg.core.world.MysticForestService;
 
 import java.util.Locale;
 
@@ -28,14 +30,19 @@ public final class RpgCommand implements CommandExecutor {
     private final EconomyService economy;
     private final ItemService items;
     private final ContentService content;
+    private final MysticForestService mysticForest;
+    private final BetterStructuresLootBridge betterStructuresLoot;
 
     public RpgCommand(VanillaRpgPlugin plugin, Database database, EconomyService economy,
-                      ItemService items, ContentService content) {
+                      ItemService items, ContentService content, MysticForestService mysticForest,
+                      BetterStructuresLootBridge betterStructuresLoot) {
         this.plugin = plugin;
         this.database = database;
         this.economy = economy;
         this.items = items;
         this.content = content;
+        this.mysticForest = mysticForest;
+        this.betterStructuresLoot = betterStructuresLoot;
     }
 
     @Override
@@ -51,6 +58,14 @@ public final class RpgCommand implements CommandExecutor {
         }
 
         switch (args[0].toLowerCase(Locale.ROOT)) {
+            case "mysticforest" -> {
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage(Component.text("This test world is player-only.", NamedTextColor.RED));
+                    return true;
+                }
+                mysticForest.open(player);
+                return true;
+            }
             case "reload" -> {
                 if (plugin.reloadAll()) {
                     sender.sendMessage(Component.text("VanillaRPG " + plugin.getPluginMeta().getVersion()
@@ -177,6 +192,25 @@ public final class RpgCommand implements CommandExecutor {
                 }
                 return true;
             }
+            case "loot" -> {
+                if (!(sender instanceof Player player) || args.length != 3 || !args[1].equalsIgnoreCase("refresh")) {
+                    lootRefreshUsage(sender);
+                    return true;
+                }
+                BetterStructuresLootBridge.RefreshResult result = betterStructuresLoot.refreshTarget(player, args[2]);
+                switch (result) {
+                    case SUCCESS -> player.sendMessage(Component.text(
+                            "Added RPG loot to the targeted container. Existing contents were kept.", NamedTextColor.GREEN));
+                    case DISABLED -> player.sendMessage(Component.text(
+                            "BetterStructures loot refresh is disabled in config.yml.", NamedTextColor.RED));
+                    case INVALID_TIER -> lootRefreshUsage(player);
+                    case NOT_A_CONTAINER -> player.sendMessage(Component.text(
+                            "Look directly at a chest, barrel, or other container within 6 blocks.", NamedTextColor.RED));
+                    case ALREADY_REFRESHED -> player.sendMessage(Component.text(
+                            "This container already has VanillaRPG loot and cannot be refreshed again.", NamedTextColor.YELLOW));
+                }
+                return true;
+            }
             default -> {
                 usage(sender);
                 return true;
@@ -257,6 +291,11 @@ public final class RpgCommand implements CommandExecutor {
         sender.sendMessage(Component.text("Alternative: /rpg givegear <player> <rarity> <material>", NamedTextColor.YELLOW));
     }
 
+    private void lootRefreshUsage(CommandSender sender) {
+        sender.sendMessage(Component.text("Look at an existing BetterStructures chest/barrel, then use:", NamedTextColor.YELLOW));
+        sender.sendMessage(Component.text("/rpg loot refresh <surface|underground|dungeon|nether|end|high-dungeon>", NamedTextColor.YELLOW));
+    }
+
     private void usage(CommandSender sender) {
         sender.sendMessage(Component.text("/rpg reload", NamedTextColor.YELLOW));
         sender.sendMessage(Component.text("/rpg givecoin <player> <amount>", NamedTextColor.YELLOW));
@@ -265,5 +304,7 @@ public final class RpgCommand implements CommandExecutor {
         sender.sendMessage(Component.text("/rpg givegear <player> <gear-id>", NamedTextColor.YELLOW));
         sender.sendMessage(Component.text("/rpg giveblueprint <player> <blueprint-id>", NamedTextColor.YELLOW));
         sender.sendMessage(Component.text("/rpg setrarity <rarity>", NamedTextColor.YELLOW));
+        sender.sendMessage(Component.text("/rpg loot refresh <tier>", NamedTextColor.YELLOW));
+        sender.sendMessage(Component.text("/rpg mysticforest", NamedTextColor.YELLOW));
     }
 }

@@ -1,8 +1,15 @@
 package vn.vietanhrpg.core.listener;
 
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.event.inventory.PrepareSmithingEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.world.LootGenerateEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.inventory.ItemStack;
 import vn.vietanhrpg.core.content.ContentService;
@@ -41,13 +48,64 @@ public final class PlayerListener implements Listener {
         // custom_name immediately matches Blades of Majestica on first join.
         for (ItemStack stack : event.getPlayer().getInventory().getContents()) {
             String itemId = items.itemId(stack);
-            if (itemId == null) {
-                continue;
+            if (itemId != null) {
+                UniqueItemDefinition definition = content.uniqueItem(itemId);
+                if (definition != null) {
+                    items.refreshUniquePresentation(stack, definition);
+                }
             }
-            UniqueItemDefinition definition = content.uniqueItem(itemId);
-            if (definition != null) {
-                items.refreshUniquePresentation(stack, definition);
+            items.applyCommonRarityIfNeeded(stack);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPickup(EntityPickupItemEvent event) {
+        if (event.getEntity() instanceof org.bukkit.entity.Player) {
+            items.applyCommonRarityIfNeeded(event.getItem().getItemStack());
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onHeldItemChange(PlayerItemHeldEvent event) {
+        items.applyCommonRarityIfNeeded(event.getPlayer().getInventory().getItem(event.getNewSlot()));
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof org.bukkit.entity.Player player)) {
+            return;
+        }
+        // The clicked item may be placed into the player inventory after this
+        // event. Scan one tick later, so chest transfers and shift-click work.
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            for (ItemStack stack : player.getInventory().getContents()) {
+                items.applyCommonRarityIfNeeded(stack);
             }
+        });
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onLootGenerate(LootGenerateEvent event) {
+        // This fires while a vanilla loot table fills a container, before a
+        // player can hover the generated weapon or armour.
+        for (ItemStack stack : event.getLoot()) {
+            items.applyCommonRarityIfNeeded(stack);
+        }
+    }
+
+    @EventHandler
+    public void onPrepareCraft(PrepareItemCraftEvent event) {
+        ItemStack result = event.getInventory().getResult();
+        if (items.applyCommonRarityIfNeeded(result)) {
+            event.getInventory().setResult(result);
+        }
+    }
+
+    @EventHandler
+    public void onPrepareSmithing(PrepareSmithingEvent event) {
+        ItemStack result = event.getResult();
+        if (items.applyCommonRarityIfNeeded(result)) {
+            event.setResult(result);
         }
     }
 }
