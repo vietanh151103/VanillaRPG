@@ -1,6 +1,13 @@
-# VanillaRPG-Core 0.7.2
+# VanillaRPG-Core 0.7.3
 
 Target: Paper 26.2 / Java 25
+
+## New in 0.7.3 - EliteMobs Integration
+
+- Includes EliteMobs 10.9.8 for elite mobs, regional bosses, dungeons and custom RPG content.
+- BetterStructures content can use EliteMobs bosses and regional protection.
+- EliteMobs data is kept under `server-template/plugins/EliteMobs/`; player and plugin databases are not included.
+- WorldGuard remains recommended for full EliteMobs/BetterStructures region protection.
 
 Update notes are in [`updates/`](updates/). `server-template/start.bat` installs the bundled Amplified Nether and Nullscape datapacks into the Terraform test-world folder before it starts Paper.
 
@@ -8,7 +15,6 @@ Update notes are in [`updates/`](updates/). `server-template/start.bat` installs
 
 - Every loaded hostile mob and dungeon mob displays current and maximum HP above its name, for example `Zombie ❤ 20/20 HP`.
 - Passive animals are excluded. When a player attacks a displayed mob, the damage appears as a temporary floating number above the target.
-- Damage dealt by a player also appears as a temporary red floating number above the hostile mob.
 - Values update after damage, healing and normal health changes; the interval is configurable with `mob-health-display.update-interval-ticks`.
 - The feature is enabled by default and can be disabled with `mob-health-display.enabled: false`.
 

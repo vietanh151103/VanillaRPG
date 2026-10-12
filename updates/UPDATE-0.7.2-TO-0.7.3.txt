@@ -1,0 +1,9 @@
+VanillaRPG-Core 0.7.3 update
+
+This release adds the EliteMobs integration package to the server template.
+
+- EliteMobs 10.9.8 is included at `server-template/plugins/EliteMobs.jar`.
+- EliteMobs content, bosses and configuration are stored under `server-template/plugins/EliteMobs/`.
+- BetterStructures can use EliteMobs regional bosses and dungeon content.
+- Keep the existing EliteMobs data and databases when updating an existing server.
+- WorldGuard is recommended for full region protection support.
