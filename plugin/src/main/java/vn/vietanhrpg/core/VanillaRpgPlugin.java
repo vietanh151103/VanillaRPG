@@ -43,6 +43,7 @@ import vn.vietanhrpg.core.service.BetterStructuresLootBridge;
 import vn.vietanhrpg.core.service.EconomyService;
 import vn.vietanhrpg.core.service.ForgeService;
 import vn.vietanhrpg.core.service.MarketService;
+import vn.vietanhrpg.core.service.MobHealthDisplayService;
 import vn.vietanhrpg.core.service.ParticleService;
 import vn.vietanhrpg.core.service.ShopService;
 import vn.vietanhrpg.core.progression.ProgressionContentService;
@@ -74,6 +75,7 @@ public final class VanillaRpgPlugin extends JavaPlugin {
     private ShopService shopService;
     private ShopGuiService shopGuiService;
     private ShopSellGuiService shopSellGuiService;
+    private MobHealthDisplayService mobHealthDisplayService;
 
     @Override
     public void onEnable() {
@@ -132,6 +134,7 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         this.shopService = new ShopService(this, economyService, database);
         this.shopSellGuiService = new ShopSellGuiService(this, shopService);
         this.shopGuiService = new ShopGuiService(shopService, shopSellGuiService);
+        this.mobHealthDisplayService = new MobHealthDisplayService(this);
 
         registerCommand("coin", new CoinCommand(economyService));
         registerCommand("token", new TokenCommand(economyService));
@@ -153,7 +156,8 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerListener(this, database, itemService, contentService, progressionService), this);
         getServer().getPluginManager().registerEvents(new ProgressionListener(progressionService), this);
         getServer().getPluginManager().registerEvents(new DungeonListener(dungeonService), this);
-        getServer().getPluginManager().registerEvents(new CombatListener(this, itemService, contentService, particleService), this);
+        getServer().getPluginManager().registerEvents(new CombatListener(this, itemService, contentService,
+                particleService, mobHealthDisplayService), this);
         getServer().getPluginManager().registerEvents(new BlueprintListener(blueprintService, itemService), this);
         getServer().getPluginManager().registerEvents(new WeaponEffectListener(particleService), this);
         getServer().getPluginManager().registerEvents(new MarketListener(marketService), this);
@@ -165,6 +169,7 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(marketSellGuiService, this);
         getServer().getPluginManager().registerEvents(shopGuiService, this);
         getServer().getPluginManager().registerEvents(shopSellGuiService, this);
+        getServer().getPluginManager().registerEvents(mobHealthDisplayService, this);
         betterStructuresLoot.registerIfAvailable();
 
         getServer().getOnlinePlayers().forEach(player -> {
@@ -180,6 +185,7 @@ public final class VanillaRpgPlugin extends JavaPlugin {
 
         particleService.start();
         dungeonService.start();
+        mobHealthDisplayService.start();
         getLogger().info("VanillaRPG-Core " + getPluginMeta().getVersion()
                 + " enabled. Data: " + new File(getDataFolder(), "rpg.db").getPath());
     }
@@ -191,6 +197,9 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         }
         if (dungeonService != null) {
             dungeonService.stop();
+        }
+        if (mobHealthDisplayService != null) {
+            mobHealthDisplayService.stop();
         }
         if (database != null) {
             database.close();

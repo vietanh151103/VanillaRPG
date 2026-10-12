@@ -2,7 +2,7 @@
 setlocal
 cd /d "%~dp0plugin"
 
-echo Building VanillaRPG-Core 0.7.1 for Paper 26.2 / Java 25...
+echo Building VanillaRPG-Core 0.7.2 for Paper 26.2 / Java 25...
 gradle clean build
 if errorlevel 1 (
   echo.
@@ -13,5 +13,5 @@ if errorlevel 1 (
 
 echo.
 echo Build complete:
-echo %CD%\build\libs\VanillaRPG-Core-0.7.1.jar
+echo %CD%\build\libs\VanillaRPG-Core-0.7.2.jar
 pause

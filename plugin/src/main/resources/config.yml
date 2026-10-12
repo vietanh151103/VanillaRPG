@@ -1,6 +1,13 @@
-# VanillaRPG-Core 0.7.1
+# VanillaRPG-Core 0.7.2
 # Paper 26.2 / Java 25
 # Missing keys are merged automatically when upgrading from 0.1.x.
+
+mob-health-display:
+  enabled: true
+  update-interval-ticks: 10
+  floating-damage:
+    enabled: true
+    duration-ticks: 20
 
 starting-balance:
   coin: 250

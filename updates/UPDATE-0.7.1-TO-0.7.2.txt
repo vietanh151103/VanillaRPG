@@ -1,0 +1,19 @@
+VanillaRPG-Core 0.7.2 update
+
+1. Stop the server normally.
+2. Replace VanillaRPG-Core-0.7.1.jar with VanillaRPG-Core-0.7.2.jar in server-template/plugins.
+3. Keep plugins/VanillaRPG-Core/ and its rpg.db files; no player-data migration is required.
+4. Start the server normally.
+
+Every loaded hostile mob and dungeon mob now shows current/max HP above its name. Passive animals are excluded. Damage dealt by a player appears as a temporary floating number above the target. Configure it in config.yml:
+
+mob-health-display:
+  enabled: true
+  update-interval-ticks: 10
+
+The floating damage lasts 20 ticks by default:
+
+mob-health-display:
+  floating-damage:
+    enabled: true
+    duration-ticks: 20

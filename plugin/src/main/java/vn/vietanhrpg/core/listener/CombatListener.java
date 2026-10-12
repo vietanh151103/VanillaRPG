@@ -17,6 +17,7 @@ import vn.vietanhrpg.core.item.Affix;
 import vn.vietanhrpg.core.item.ItemService;
 import vn.vietanhrpg.core.item.Rarity;
 import vn.vietanhrpg.core.service.ParticleService;
+import vn.vietanhrpg.core.service.MobHealthDisplayService;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -25,12 +26,15 @@ public final class CombatListener implements Listener {
     private final ItemService items;
     private final ContentService content;
     private final ParticleService particles;
+    private final MobHealthDisplayService mobHealthDisplay;
 
-    public CombatListener(JavaPlugin plugin, ItemService items, ContentService content, ParticleService particles) {
+    public CombatListener(JavaPlugin plugin, ItemService items, ContentService content, ParticleService particles,
+                          MobHealthDisplayService mobHealthDisplay) {
         this.plugin = plugin;
         this.items = items;
         this.content = content;
         this.particles = particles;
+        this.mobHealthDisplay = mobHealthDisplay;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -73,6 +77,11 @@ public final class CombatListener implements Listener {
         }
 
         event.setDamage(Math.max(0.0, damage));
+        if (event.getEntity() instanceof LivingEntity target) {
+            double dealt = event.getFinalDamage();
+            plugin.getServer().getScheduler().runTask(plugin,
+                    () -> mobHealthDisplay.showDamage(target, dealt));
+        }
 
         double lifesteal = items.affix(weapon, Affix.LIFESTEAL);
         if (lifesteal > 0.0 && player.getHealth() > 0.0) {

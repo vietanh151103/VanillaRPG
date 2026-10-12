@@ -1,8 +1,16 @@
-# VanillaRPG-Core 0.7.1
+# VanillaRPG-Core 0.7.2
 
 Target: Paper 26.2 / Java 25
 
 Update notes are in [`updates/`](updates/). `server-template/start.bat` installs the bundled Amplified Nether and Nullscape datapacks into the Terraform test-world folder before it starts Paper.
+
+## New in 0.7.2 - Mob Health Display
+
+- Every loaded hostile mob and dungeon mob displays current and maximum HP above its name, for example `Zombie ❤ 20/20 HP`.
+- Passive animals are excluded. When a player attacks a displayed mob, the damage appears as a temporary floating number above the target.
+- Damage dealt by a player also appears as a temporary red floating number above the hostile mob.
+- Values update after damage, healing and normal health changes; the interval is configurable with `mob-health-display.update-interval-ticks`.
+- The feature is enabled by default and can be disabled with `mob-health-display.enabled: false`.
 
 ## New in 0.7.1 - Loot and Craft COMMON Presentation
 
@@ -149,7 +157,7 @@ Or from `plugin/`:
 gradle clean build
 ```
 
-Output: `plugin/build/libs/VanillaRPG-Core-0.7.1.jar`
+Output: `plugin/build/libs/VanillaRPG-Core-0.7.2.jar`
 
 0.4.0 keeps the 0.3 progression systems and adds the first playable dungeon loop. It deliberately uses vanilla Minecraft mobs with light RPG tuning instead of a custom mob engine.
 

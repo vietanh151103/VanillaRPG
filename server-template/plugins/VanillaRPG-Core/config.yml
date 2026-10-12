@@ -1,5 +1,12 @@
-# VanillaRPG-Core 0.7.1
+# VanillaRPG-Core 0.7.2
 # All values are intentionally conservative for a ~10 player survival server.
+
+mob-health-display:
+  enabled: true
+  update-interval-ticks: 10
+  floating-damage:
+    enabled: true
+    duration-ticks: 20
 
 shop:
   max-sell-coin-per-day: 750
