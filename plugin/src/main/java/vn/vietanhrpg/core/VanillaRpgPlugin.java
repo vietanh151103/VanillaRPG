@@ -7,6 +7,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import vn.vietanhrpg.core.command.AchievementCommand;
 import vn.vietanhrpg.core.command.DungeonCommand;
 import vn.vietanhrpg.core.command.DungeonsCommand;
+import vn.vietanhrpg.core.command.GachaCommand;
 import vn.vietanhrpg.core.command.MarketCommand;
 import vn.vietanhrpg.core.command.ParticleCommand;
 import vn.vietanhrpg.core.command.PokerCommand;
@@ -39,6 +40,7 @@ import vn.vietanhrpg.core.service.BlueprintService;
 import vn.vietanhrpg.core.service.BetterStructuresLootBridge;
 import vn.vietanhrpg.core.service.EconomyService;
 import vn.vietanhrpg.core.service.ForgeService;
+import vn.vietanhrpg.core.service.GachaService;
 import vn.vietanhrpg.core.service.MarketService;
 import vn.vietanhrpg.core.service.MobHealthDisplayService;
 import vn.vietanhrpg.core.service.ParticleService;
@@ -76,6 +78,7 @@ public final class VanillaRpgPlugin extends JavaPlugin {
     private ShopSellGuiService shopSellGuiService;
     private MobHealthDisplayService mobHealthDisplayService;
     private PokerTableService pokerTableService;
+    private GachaService gachaService;
 
     @Override
     public void onEnable() {
@@ -138,7 +141,8 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         this.marketGuiService = new MarketGuiService(marketService, marketSellGuiService);
         this.shopService = new ShopService(this, economyService, database);
         this.shopSellGuiService = new ShopSellGuiService(this, shopService);
-        this.shopGuiService = new ShopGuiService(shopService, shopSellGuiService);
+        this.gachaService = new GachaService(this, database, economyService, itemService, contentService);
+        this.shopGuiService = new ShopGuiService(shopService, shopSellGuiService, gachaService);
         this.mobHealthDisplayService = new MobHealthDisplayService(this);
         this.pokerTableService = new PokerTableService(this);
 
@@ -153,6 +157,7 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         registerCommand("market", new MarketCommand(marketService, marketGuiService));
         registerCommand("shop", new ShopCommand(shopGuiService, shopService));
         registerCommand("poker", new PokerCommand(pokerTableService));
+        registerCommand("gacha", new GachaCommand(gachaService));
         BetterStructuresLootBridge betterStructuresLoot = new BetterStructuresLootBridge(this, itemService, contentService);
         VanillaLootBridge vanillaLoot = new VanillaLootBridge(this, itemService, contentService);
         registerCommand("rpg", new RpgCommand(this, database, economyService, itemService, contentService,
@@ -174,6 +179,7 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(shopSellGuiService, this);
         getServer().getPluginManager().registerEvents(mobHealthDisplayService, this);
         getServer().getPluginManager().registerEvents(pokerTableService, this);
+        getServer().getPluginManager().registerEvents(gachaService, this);
         getServer().getPluginManager().registerEvents(vanillaLoot, this);
         betterStructuresLoot.registerIfAvailable();
 
@@ -230,6 +236,9 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         }
         if (dungeonContentService != null) {
             dungeonContentService.reload();
+        }
+        if (gachaService != null) {
+            gachaService.reload();
         }
         if (particleService != null) {
             particleService.start();

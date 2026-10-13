@@ -1,2 +1,26 @@
-# Reserved for V3: Adventure/Cosmetic crates.
-# Best-in-slot Legendary items should not be obtainable directly from gacha.
+# The Elite shop is represented by this ticket-based gacha. There is no pity:
+# every pull uses the configured weights independently.
+single-coin-cost: 250
+five-coin-cost: 1125
+ticket:
+  material: PAPER
+  name: "Elite Gacha Ticket"
+  lore:
+    - "Tradeable on the player market."
+    - "Use it in /gacha to make one pull."
+
+milestones:
+  10:
+    type: TICKET
+    amount: 1
+  25:
+    type: ELITE_ITEM
+    id: unbind_scroll
+    amount: 1
+  50:
+    type: TICKET
+    amount: 2
+  100:
+    type: ELITE_ITEM
+    id: elite_lucky_ticket
+    amount: 1

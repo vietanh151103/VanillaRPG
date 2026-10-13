@@ -26,10 +26,13 @@ import java.util.Map;
 public final class ShopGuiService implements Listener {
     private final ShopService shop;
     private final ShopSellGuiService sellGui;
+    private final vn.vietanhrpg.core.service.GachaService gacha;
 
-    public ShopGuiService(ShopService shop, ShopSellGuiService sellGui) {
+    public ShopGuiService(ShopService shop, ShopSellGuiService sellGui,
+                          vn.vietanhrpg.core.service.GachaService gacha) {
         this.shop = shop;
         this.sellGui = sellGui;
+        this.gacha = gacha;
     }
 
     public void open(Player player) {
@@ -44,6 +47,7 @@ public final class ShopGuiService implements Listener {
         inventory.setItem(11, categoryItem(ShopCategory.FOOD, shop.entries(ShopCategory.FOOD).size()));
         inventory.setItem(13, sellItem(player));
         inventory.setItem(15, categoryItem(ShopCategory.BUILDING, shop.entries(ShopCategory.BUILDING).size()));
+        inventory.setItem(17, gachaItem());
         inventory.setItem(22, historyItem());
         player.openInventory(inventory);
     }
@@ -84,6 +88,7 @@ public final class ShopGuiService implements Listener {
             if (slot == 11) openBuy(player, ShopCategory.FOOD, 0);
             else if (slot == 13) sellGui.open(player);
             else if (slot == 15) openBuy(player, ShopCategory.BUILDING, 0);
+            else if (slot == 17) gacha.open(player);
             else if (slot == 22) player.performCommand("shop history");
             return;
         }
@@ -144,6 +149,18 @@ public final class ShopGuiService implements Listener {
         ItemStack stack = button(Material.BOOK, "Recent shop history", NamedTextColor.AQUA);
         ItemMeta meta = stack.getItemMeta();
         meta.lore(List.of(line("Click or use /shop history", NamedTextColor.YELLOW)));
+        stack.setItemMeta(meta);
+        return stack;
+    }
+
+    private ItemStack gachaItem() {
+        ItemStack stack = button(Material.NETHER_STAR, "Elite Gacha", NamedTextColor.LIGHT_PURPLE);
+        ItemMeta meta = stack.getItemMeta();
+        meta.lore(List.of(
+                line("The former Elite shop", NamedTextColor.GRAY),
+                line("Use tickets or Elite Coins", NamedTextColor.YELLOW),
+                line("Click to open", NamedTextColor.GREEN)
+        ));
         stack.setItemMeta(meta);
         return stack;
     }

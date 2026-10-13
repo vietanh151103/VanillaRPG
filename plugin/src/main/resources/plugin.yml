@@ -40,6 +40,9 @@ commands:
   shop:
     description: Browse supplies, sell minerals or view shop history.
     usage: /shop [history]
+  gacha:
+    description: Open the Elite item gacha.
+    usage: /gacha
   poker:
     description: Enter and play the Texas Hold'em poker room.
     usage: /poker [start|hand|fold|check|call|raise <total>|status|leave]
