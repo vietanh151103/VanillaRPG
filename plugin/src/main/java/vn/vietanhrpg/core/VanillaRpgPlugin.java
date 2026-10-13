@@ -100,7 +100,6 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         upgradeLegacyQuestResource();
         ensureDungeonProgressionDefaults();
         upgradeLegacyDungeonResource();
-        ensureOneChunkDungeonDefault();
 
         try {
             this.database = new Database(this);
@@ -345,78 +344,6 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         }
     }
 
-
-    private void ensureOneChunkDungeonDefault() {
-        File target = new File(getDataFolder(), "dungeons.yml");
-        try {
-            org.bukkit.configuration.file.YamlConfiguration yaml =
-                    org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(target);
-            String base = "dungeons.one_chunk_dungeon";
-            if (yaml.contains(base)) return;
-
-            yaml.set(base + ".enabled", true);
-            yaml.set(base + ".name", "One Chunk Dungeon");
-            yaml.set(base + ".description", "A compact dungeon world used to test direct world teleporting.");
-            yaml.set(base + ".icon", "DEEPSLATE_BRICKS");
-            yaml.set(base + ".tier", 2);
-            yaml.set(base + ".recommended-rarity", "RARE");
-            yaml.set(base + ".required-rarity", "RARE");
-            yaml.set(base + ".cooldown-seconds", 600);
-            yaml.set(base + ".time-limit-seconds", 480);
-            yaml.set(base + ".use-world-spawn", true);
-            yaml.set(base + ".spawn.world", "dungeon_one_chunk");
-            yaml.set(base + ".spawn.x", 0.0);
-            yaml.set(base + ".spawn.y", 64.0);
-            yaml.set(base + ".spawn.z", 0.0);
-            yaml.set(base + ".spawn.yaw", 0.0);
-            yaml.set(base + ".spawn.pitch", 0.0);
-            yaml.set(base + ".mob-spawn-radius", 7.0);
-
-            java.util.List<java.util.Map<String, Object>> mobs = new java.util.ArrayList<>();
-            java.util.Map<String, Object> guard = new java.util.LinkedHashMap<>();
-            guard.put("type", "ZOMBIE");
-            guard.put("name", "Dungeon Guard");
-            guard.put("count", 5);
-            guard.put("health-multiplier", 1.45);
-            guard.put("damage-multiplier", 1.20);
-            guard.put("weapon", "IRON_SWORD");
-            guard.put("helmet", "CHAINMAIL_HELMET");
-            mobs.add(guard);
-            java.util.Map<String, Object> archer = new java.util.LinkedHashMap<>();
-            archer.put("type", "SKELETON");
-            archer.put("name", "Bone Archer");
-            archer.put("count", 4);
-            archer.put("health-multiplier", 1.25);
-            archer.put("damage-multiplier", 1.15);
-            archer.put("helmet", "CHAINMAIL_HELMET");
-            mobs.add(archer);
-            java.util.Map<String, Object> brute = new java.util.LinkedHashMap<>();
-            brute.put("type", "HUSK");
-            brute.put("name", "Dungeon Brute");
-            brute.put("count", 2);
-            brute.put("health-multiplier", 1.75);
-            brute.put("damage-multiplier", 1.30);
-            brute.put("weapon", "IRON_AXE");
-            brute.put("chestplate", "CHAINMAIL_CHESTPLATE");
-            mobs.add(brute);
-            yaml.set(base + ".mobs", mobs);
-
-            yaml.set(base + ".rewards.coin.min", 700);
-            yaml.set(base + ".rewards.coin.max", 1200);
-            yaml.set(base + ".rewards.token.min", 1);
-            yaml.set(base + ".rewards.token.max", 2);
-            yaml.set(base + ".rewards.custom-items.epic_shard.chance", 0.55);
-            yaml.set(base + ".rewards.custom-items.epic_shard.min", 1);
-            yaml.set(base + ".rewards.custom-items.epic_shard.max", 2);
-            yaml.set(base + ".rewards.custom-items.legendary_shard.chance", 0.05);
-            yaml.set(base + ".rewards.custom-items.legendary_shard.min", 1);
-            yaml.set(base + ".rewards.custom-items.legendary_shard.max", 1);
-            yaml.save(target);
-            getLogger().info("Added One Chunk Dungeon world preset to dungeons.yml.");
-        } catch (Exception exception) {
-            getLogger().warning("Could not add One Chunk Dungeon preset: " + exception.getMessage());
-        }
-    }
 
     private void saveResourceIfMissing(String name) {
         File target = new File(getDataFolder(), name);

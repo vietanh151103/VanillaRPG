@@ -9,7 +9,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import vn.vietanhrpg.core.item.Rarity;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -30,7 +29,6 @@ public final class DungeonContentService {
     public void reload() {
         dungeons.clear();
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
-        migrateOneChunk041(yaml);
         ConfigurationSection root = yaml.getConfigurationSection("dungeons");
         if (root == null) return;
 
@@ -47,26 +45,6 @@ public final class DungeonContentService {
         plugin.getLogger().info("Loaded " + dungeons.size() + " dungeon definitions.");
     }
 
-
-    private void migrateOneChunk041(YamlConfiguration yaml) {
-        String base = "dungeons.one_chunk_dungeon";
-        String world = yaml.getString(base + ".spawn.world");
-        boolean oldWorldSpawn = yaml.getBoolean(base + ".use-world-spawn", false);
-        if (!"dungeon_one_chunk".equalsIgnoreCase(world) || !oldWorldSpawn) return;
-
-        yaml.set(base + ".use-world-spawn", false);
-        yaml.set(base + ".spawn.x", 0.5);
-        yaml.set(base + ".spawn.y", 65.0);
-        yaml.set(base + ".spawn.z", 0.5);
-        yaml.set(base + ".spawn.yaw", 0.0);
-        yaml.set(base + ".spawn.pitch", 0.0);
-        try {
-            yaml.save(file);
-            plugin.getLogger().info("Migrated One Chunk Dungeon spawn for Paper 26.2 keyed world loading.");
-        } catch (IOException exception) {
-            plugin.getLogger().warning("Could not migrate One Chunk Dungeon config: " + exception.getMessage());
-        }
-    }
 
     public DungeonDefinition dungeon(String id) {
         if (id == null) return null;

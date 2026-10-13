@@ -1,6 +1,19 @@
-# VanillaRPG-Core 0.7.4
+# VanillaRPG-Core 0.7.5
 
 Target: Paper 26.2 / Java 25
+
+## New in 0.7.5 - EliteMobs Gacha
+
+- The former EliteMobs special-shop flow is available as `/gacha`.
+- Players can use Elite Coins or tradeable Elite Gacha Tickets for single or five-pull rolls.
+- Rewards come from eligible EliteMobs custom items; milestone rewards are configurable in `gacha.yml`.
+- The five-pull animation and ticket economy are server-side and do not alter existing player data.
+
+## 0.7.4 - Texas Hold'em Poker
+
+- Added the dedicated `/poker` room with Texas Hold'em phases: blinds, pre-flop, flop, turn and river.
+- The table supports up to six players, private hole cards, action items, raises and a realtime boss-bar status display.
+- Poker uses Elite Coins and displays cards with the optional PokerPack resource pack.
 
 ## New in 0.7.4 - Vanilla Structure Loot Integration
 
@@ -347,29 +360,3 @@ There is no party/instance system yet. Only one player can actively run a specif
 
 Continue using the working `Blades-of-Majestica-VanillaRPG-26.2.zip`. 0.4.0 does not change Hero Sword or Demonic Blade model mapping.
 
-## 0.4.1 dungeon world test
-
-0.4.1 adds direct loading/teleporting for separate dungeon worlds.
-The included preset expects a world folder named `dungeon_one_chunk` beside the normal server `world` folder.
-It is designed to be used with the user's original One Chunk Dungeon map archive; the map itself is not bundled with VanillaRPG.
-
-Flow:
-`/dungeons` -> click `One Chunk Dungeon` -> world auto-load -> teleport to map spawn -> VanillaRPG custom vanilla mobs -> clear -> rewards -> teleport back.
-
-If the map's default spawn is not the desired entrance, enter that world once, stand at the desired entrance and run:
-`/dungeon setspawn one_chunk_dungeon`
-This stores the exact location and disables `use-world-spawn` for that dungeon.
-
-## 0.4.2 Paper 26.2 dungeon world loader
-
-0.4.2 no longer opens downloaded dungeon maps using the legacy
-`WorldCreator(String)` path. It imports the map's overworld chunk data into a
-VanillaRPG namespaced dimension in Paper 26.2 storage and loads that dimension
-with `WorldCreator.ofKey(...)`. This avoids `LegacyCraftBukkitWorldMigration`
-collisions and also repairs a partially migrated first attempt by copying the
-original source chunks over the incomplete target before the first successful
-load.
-
-For One Chunk Dungeon, keep the extracted source folder named
-`dungeon_one_chunk` beside the main world. The configured entrance is
-`0.5, 65, 0.5`.
