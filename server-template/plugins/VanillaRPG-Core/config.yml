@@ -1,4 +1,4 @@
-# VanillaRPG-Core 0.7.3
+# VanillaRPG-Core 0.7.4
 # All values are intentionally conservative for a ~10 player survival server.
 
 mob-health-display:
@@ -7,6 +7,18 @@ mob-health-display:
   floating-damage:
     enabled: true
     duration-ticks: 20
+
+# Disabled: EliteMobs owns item names, rarity, lore and gear presentation.
+item-presentation:
+  enabled: false
+
+# Coin source is EliteMobs. The legacy VanillaRPG coin column is no longer used.
+economy:
+  source: elitemobs
+
+poker:
+  # Enable after PokerPack is merged into the resource pack sent by server.properties.
+  item-models-enabled: true
 
 shop:
   max-sell-coin-per-day: 750
@@ -150,8 +162,9 @@ shop:
       amount: 4
       price: 35
 market:
+  # Disabled while the market transaction layer is being migrated to Elite Coins.
+  enabled: false
   gui-default-price: 100
-  enabled: true
   min-price: 1
   max-price: 1000000000
   max-active-listings-per-player: 10
@@ -256,10 +269,10 @@ affixes:
     min: 1.0
     max: 5.0
 
-# Extra rewards injected only into containers filled by BetterStructures.
+# Extra rewards injected into BetterStructures and vanilla/TerraformGenerator loot tables.
 # These are per-container chances; 1.0 means 100%.
 betterstructures-loot:
-  enabled: true
+  enabled: false
   # Allows administrators to add the supplemental RPG loot once to a targeted existing container.
   manual-refresh-enabled: true
   surface:
@@ -325,3 +338,9 @@ betterstructures-loot:
     mythic-core-chance: 0.015
     heavy-core-chance: 0.08
     netherite-template-chance: 0.06
+
+# Vanilla/TerraformGenerator loot integration. The tier chances above are reused
+# so vanilla structures and BetterStructures remain on the same economy curve.
+vanilla-loot:
+  enabled: false
+  max-extra-items: 2

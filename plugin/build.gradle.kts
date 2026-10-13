@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "vn.vietanhrpg"
-version = "0.7.3"
+version = "0.7.4"
 
 repositories {
     maven(url = "https://repo.papermc.io/repository/maven-public/") {
@@ -13,6 +13,8 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:26.2.build.132-stable")
+    // EliteMobs owns the server currency. The jar is shipped in the server template.
+    compileOnly(files("../server-template/plugins/EliteMobs.jar"))
 }
 
 java {

@@ -1,4 +1,4 @@
-# VanillaRPG-Core 0.7.3
+# VanillaRPG-Core 0.7.4
 # Paper 26.2 / Java 25
 # Missing keys are merged automatically when upgrading from 0.1.x.
 
@@ -13,8 +13,22 @@ starting-balance:
   coin: 250
   token: 0
 
+# Coin source is EliteMobs. The legacy VanillaRPG coin column is no longer used.
+economy:
+  source: elitemobs
+
+poker:
+  # Enable after PokerPack is merged into the resource pack sent by server.properties.
+  item-models-enabled: true
+
+# Disabled by default: EliteMobs owns item names, rarity, lore and gear
+# presentation. Enable only if VanillaRPG should modify item presentation.
+item-presentation:
+  enabled: false
+
 market:
-  enabled: true
+  # Disabled while the market transaction layer is being migrated to Elite Coins.
+  enabled: false
   min-price: 1
   max-price: 1000000000
   # Initial price shown in the GUI sell screen. It is clamped to min/max-price.
@@ -266,11 +280,11 @@ affixes:
     min: 1.0
     max: 5.0
 
-# Extra rewards injected only into containers filled by BetterStructures.
+# Extra rewards injected into BetterStructures and vanilla/TerraformGenerator loot tables.
 # Chances are per generated container, from 0.0 to 1.0. Custom materials carry
 # VanillaRPG metadata, so they remain valid forging items rather than lookalikes.
 betterstructures-loot:
-  enabled: true
+  enabled: false
   # Allows administrators to add the supplemental RPG loot once to a targeted existing container.
   manual-refresh-enabled: true
   surface:
@@ -336,3 +350,9 @@ betterstructures-loot:
     mythic-core-chance: 0.015
     heavy-core-chance: 0.08
     netherite-template-chance: 0.06
+
+# Vanilla/TerraformGenerator loot integration. The tier chances above are reused
+# so vanilla structures and BetterStructures remain on the same economy curve.
+vanilla-loot:
+  enabled: false
+  max-extra-items: 2

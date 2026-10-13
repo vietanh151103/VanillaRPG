@@ -276,7 +276,7 @@ public final class DungeonService {
     public String rewardSummary(DungeonDefinition definition) {
         DungeonRewardDefinition reward = definition.rewards();
         List<String> parts = new ArrayList<>();
-        if (reward.coinMax() > 0) parts.add(range(reward.coinMin(), reward.coinMax()) + " Coin");
+        if (reward.coinMax() > 0) parts.add(range(reward.coinMin(), reward.coinMax()) + " Elite Coins");
         if (reward.tokenMax() > 0) parts.add(range(reward.tokenMin(), reward.tokenMax()) + " Token");
         for (DungeonCustomReward custom : reward.customRewards()) {
             MaterialDefinition material = content.material(custom.itemId());
@@ -322,7 +322,7 @@ public final class DungeonService {
         long token = randomLong(random, reward.tokenMin(), reward.tokenMax());
         if (coin > 0) {
             economy.addCoin(player.getUniqueId(), coin);
-            granted.add(coin + " Coin");
+            granted.add(coin + " Elite Coins");
         }
         if (token > 0) {
             economy.addToken(player.getUniqueId(), token);

@@ -61,7 +61,7 @@ public final class ProgressionGuiService implements Listener {
         head.setItemMeta(skull);
         inventory.setItem(4, head);
 
-        inventory.setItem(10, item(Material.GOLD_INGOT, "Coin", NamedTextColor.GOLD,
+        inventory.setItem(10, item(Material.GOLD_INGOT, "Elite Coins", NamedTextColor.GOLD,
                 List.of(gray(String.valueOf(economy.coin(player.getUniqueId()))))));
         inventory.setItem(11, item(Material.AMETHYST_SHARD, "Token", NamedTextColor.AQUA,
                 List.of(gray(String.valueOf(economy.token(player.getUniqueId()))))));

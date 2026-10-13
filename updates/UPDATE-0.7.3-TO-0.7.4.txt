@@ -1,0 +1,16 @@
+VanillaRPG-Core 0.7.4 update
+
+VanillaRPG rewards are now injected into newly generated vanilla and TerraformGenerator loot containers.
+
+- Ancient City, End City, Bastion, stronghold, mineshaft and surface structure loot can receive RPG materials and rarity gear.
+- The existing `betterstructures-loot` tier chances are reused for consistent economy balancing.
+- `vanilla-loot.max-extra-items` limits supplemental reward stacks per container.
+- Existing or already-opened chests are not reset and will not be filled retroactively.
+
+Configuration:
+
+```yaml
+vanilla-loot:
+  enabled: true
+  max-extra-items: 2
+```

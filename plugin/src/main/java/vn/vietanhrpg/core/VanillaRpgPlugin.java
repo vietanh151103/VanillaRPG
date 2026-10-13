@@ -5,13 +5,11 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import vn.vietanhrpg.core.command.AchievementCommand;
-import vn.vietanhrpg.core.command.BlueprintCommand;
-import vn.vietanhrpg.core.command.CoinCommand;
 import vn.vietanhrpg.core.command.DungeonCommand;
 import vn.vietanhrpg.core.command.DungeonsCommand;
-import vn.vietanhrpg.core.command.ForgeCommand;
 import vn.vietanhrpg.core.command.MarketCommand;
 import vn.vietanhrpg.core.command.ParticleCommand;
+import vn.vietanhrpg.core.command.PokerCommand;
 import vn.vietanhrpg.core.command.ProfileCommand;
 import vn.vietanhrpg.core.command.QuestCommand;
 import vn.vietanhrpg.core.command.RpgCommand;
@@ -32,7 +30,6 @@ import vn.vietanhrpg.core.gui.ProgressionGuiService;
 import vn.vietanhrpg.core.gui.ShopGuiService;
 import vn.vietanhrpg.core.gui.ShopSellGuiService;
 import vn.vietanhrpg.core.item.ItemService;
-import vn.vietanhrpg.core.listener.BlueprintListener;
 import vn.vietanhrpg.core.listener.CombatListener;
 import vn.vietanhrpg.core.listener.MarketListener;
 import vn.vietanhrpg.core.listener.PlayerListener;
@@ -45,7 +42,9 @@ import vn.vietanhrpg.core.service.ForgeService;
 import vn.vietanhrpg.core.service.MarketService;
 import vn.vietanhrpg.core.service.MobHealthDisplayService;
 import vn.vietanhrpg.core.service.ParticleService;
+import vn.vietanhrpg.core.service.PokerTableService;
 import vn.vietanhrpg.core.service.ShopService;
+import vn.vietanhrpg.core.service.VanillaLootBridge;
 import vn.vietanhrpg.core.progression.ProgressionContentService;
 import vn.vietanhrpg.core.progression.ProgressionService;
 import vn.vietanhrpg.core.world.MysticForestService;
@@ -76,6 +75,7 @@ public final class VanillaRpgPlugin extends JavaPlugin {
     private ShopGuiService shopGuiService;
     private ShopSellGuiService shopSellGuiService;
     private MobHealthDisplayService mobHealthDisplayService;
+    private PokerTableService pokerTableService;
 
     @Override
     public void onEnable() {
@@ -109,6 +109,11 @@ public final class VanillaRpgPlugin extends JavaPlugin {
             return;
         }
 
+        if (getServer().getPluginManager().getPlugin("EliteMobs") == null) {
+            getLogger().severe("EliteMobs is required because VanillaRPG-Core now uses Elite Coins.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
         this.economyService = new EconomyService(this, database);
         this.itemService = new ItemService(this);
         this.contentService = new ContentService(this);
@@ -135,8 +140,8 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         this.shopSellGuiService = new ShopSellGuiService(this, shopService);
         this.shopGuiService = new ShopGuiService(shopService, shopSellGuiService);
         this.mobHealthDisplayService = new MobHealthDisplayService(this);
+        this.pokerTableService = new PokerTableService(this);
 
-        registerCommand("coin", new CoinCommand(economyService));
         registerCommand("token", new TokenCommand(economyService));
         registerCommand("profile", new ProfileCommand(progressionGuiService));
         registerCommand("quests", new QuestCommand(progressionGuiService));
@@ -144,12 +149,12 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         registerCommand("titles", new TitleCommand(progressionGuiService));
         registerCommand("dungeons", new DungeonsCommand(dungeonGuiService));
         registerCommand("dungeon", new DungeonCommand(dungeonContentService, dungeonService, dungeonGuiService));
-        registerCommand("forge", new ForgeCommand(forgeService, itemService, forgeGuiService));
-        registerCommand("blueprints", new BlueprintCommand(forgeGuiService));
         registerCommand("particles", new ParticleCommand(particleGuiService));
         registerCommand("market", new MarketCommand(marketService, marketGuiService));
         registerCommand("shop", new ShopCommand(shopGuiService, shopService));
+        registerCommand("poker", new PokerCommand(pokerTableService));
         BetterStructuresLootBridge betterStructuresLoot = new BetterStructuresLootBridge(this, itemService, contentService);
+        VanillaLootBridge vanillaLoot = new VanillaLootBridge(this, itemService, contentService);
         registerCommand("rpg", new RpgCommand(this, database, economyService, itemService, contentService,
                 new MysticForestService(this), betterStructuresLoot));
 
@@ -158,10 +163,8 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new DungeonListener(dungeonService), this);
         getServer().getPluginManager().registerEvents(new CombatListener(this, itemService, contentService,
                 particleService, mobHealthDisplayService), this);
-        getServer().getPluginManager().registerEvents(new BlueprintListener(blueprintService, itemService), this);
         getServer().getPluginManager().registerEvents(new WeaponEffectListener(particleService), this);
         getServer().getPluginManager().registerEvents(new MarketListener(marketService), this);
-        getServer().getPluginManager().registerEvents(forgeGuiService, this);
         getServer().getPluginManager().registerEvents(particleGuiService, this);
         getServer().getPluginManager().registerEvents(progressionGuiService, this);
         getServer().getPluginManager().registerEvents(dungeonGuiService, this);
@@ -170,6 +173,8 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(shopGuiService, this);
         getServer().getPluginManager().registerEvents(shopSellGuiService, this);
         getServer().getPluginManager().registerEvents(mobHealthDisplayService, this);
+        getServer().getPluginManager().registerEvents(pokerTableService, this);
+        getServer().getPluginManager().registerEvents(vanillaLoot, this);
         betterStructuresLoot.registerIfAvailable();
 
         getServer().getOnlinePlayers().forEach(player -> {
@@ -200,6 +205,9 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         }
         if (mobHealthDisplayService != null) {
             mobHealthDisplayService.stop();
+        }
+        if (pokerTableService != null) {
+            pokerTableService.shutdown();
         }
         if (database != null) {
             database.close();

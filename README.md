@@ -1,6 +1,11 @@
-# VanillaRPG-Core 0.7.3
+# VanillaRPG-Core 0.7.4
 
 Target: Paper 26.2 / Java 25
+
+## New in 0.7.4 - Vanilla Structure Loot Integration
+
+- VanillaRPG loot injection into vanilla/TerraformGenerator and BetterStructures chests is disabled by default; EliteMobs manages its own gear and rewards.
+- The integration can be re-enabled with `betterstructures-loot.enabled: true` and `vanilla-loot.enabled: true` if needed later.
 
 ## New in 0.7.3 - EliteMobs Integration
 
@@ -163,7 +168,7 @@ Or from `plugin/`:
 gradle clean build
 ```
 
-Output: `plugin/build/libs/VanillaRPG-Core-0.7.2.jar`
+Output: `plugin/build/libs/VanillaRPG-Core-0.7.4.jar`
 
 0.4.0 keeps the 0.3 progression systems and adds the first playable dungeon loop. It deliberately uses vanilla Minecraft mobs with light RPG tuning instead of a custom mob engine.
 

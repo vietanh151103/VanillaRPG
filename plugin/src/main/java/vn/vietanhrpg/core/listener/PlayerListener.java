@@ -44,6 +44,12 @@ public final class PlayerListener implements Listener {
         progression.ensure(event.getPlayer());
         progression.applyTitleDisplay(event.getPlayer());
 
+        // EliteMobs owns item names, rarity and lore. VanillaRPG item
+        // presentation is opt-in so it cannot overwrite EliteMobs gear.
+        if (!itemPresentationEnabled()) {
+            return;
+        }
+
         // Refresh old 0.2.x named weapons in the player's inventory so their
         // custom_name immediately matches Blades of Majestica on first join.
         for (ItemStack stack : event.getPlayer().getInventory().getContents()) {
@@ -60,6 +66,9 @@ public final class PlayerListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onPickup(EntityPickupItemEvent event) {
+        if (!itemPresentationEnabled()) {
+            return;
+        }
         if (event.getEntity() instanceof org.bukkit.entity.Player) {
             items.applyCommonRarityIfNeeded(event.getItem().getItemStack());
         }
@@ -67,11 +76,17 @@ public final class PlayerListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onHeldItemChange(PlayerItemHeldEvent event) {
+        if (!itemPresentationEnabled()) {
+            return;
+        }
         items.applyCommonRarityIfNeeded(event.getPlayer().getInventory().getItem(event.getNewSlot()));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
+        if (!itemPresentationEnabled()) {
+            return;
+        }
         if (!(event.getWhoClicked() instanceof org.bukkit.entity.Player player)) {
             return;
         }
@@ -86,6 +101,9 @@ public final class PlayerListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onLootGenerate(LootGenerateEvent event) {
+        if (!itemPresentationEnabled()) {
+            return;
+        }
         // This fires while a vanilla loot table fills a container, before a
         // player can hover the generated weapon or armour.
         for (ItemStack stack : event.getLoot()) {
@@ -95,6 +113,9 @@ public final class PlayerListener implements Listener {
 
     @EventHandler
     public void onPrepareCraft(PrepareItemCraftEvent event) {
+        if (!itemPresentationEnabled()) {
+            return;
+        }
         ItemStack result = event.getInventory().getResult();
         if (items.applyCommonRarityIfNeeded(result)) {
             event.getInventory().setResult(result);
@@ -103,9 +124,16 @@ public final class PlayerListener implements Listener {
 
     @EventHandler
     public void onPrepareSmithing(PrepareSmithingEvent event) {
+        if (!itemPresentationEnabled()) {
+            return;
+        }
         ItemStack result = event.getResult();
         if (items.applyCommonRarityIfNeeded(result)) {
             event.setResult(result);
         }
+    }
+
+    private boolean itemPresentationEnabled() {
+        return plugin.getConfig().getBoolean("item-presentation.enabled", false);
     }
 }

@@ -2,7 +2,7 @@ name: VanillaRPG-Core
 version: '${version}'
 main: vn.vietanhrpg.core.VanillaRpgPlugin
 api-version: '26.2'
-softdepend: [BetterStructures]
+softdepend: [BetterStructures, EliteMobs]
 author: VietAnh
 description: Portable Vanilla+ RPG core for a small Paper server.
 
@@ -10,9 +10,6 @@ libraries:
   - org.xerial:sqlite-jdbc:3.50.3.0
 
 commands:
-  coin:
-    description: View or transfer Coin.
-    usage: /coin [pay <player> <amount>]
   token:
     description: View Token balance.
     usage: /token
@@ -34,12 +31,6 @@ commands:
   dungeon:
     description: Join, leave or configure VanillaRPG dungeons.
     usage: /dungeon [join <id>|leave|status|setspawn <id>|resetcooldown <id>|reload]
-  forge:
-    description: Open the RPG Forge or use a forge action.
-    usage: /forge [upgrade|reroll|inspect|recipes]
-  blueprints:
-    description: View learned and locked blueprint recipes.
-    usage: /blueprints
   particles:
     description: Configure Legendary/Mythic particle effects.
     usage: /particles [all|legendary|mythic|combat|craft|materials|others] [on|off]
@@ -49,6 +40,9 @@ commands:
   shop:
     description: Browse supplies, sell minerals or view shop history.
     usage: /shop [history]
+  poker:
+    description: Enter and play the Texas Hold'em poker room.
+    usage: /poker [start|hand|fold|check|call|raise <total>|status|leave]
   rpg:
     description: VanillaRPG administration.
     usage: /rpg <reload|givecoin|givetoken|giveitem|givegear|giveblueprint|setrarity|loot refresh <tier>>

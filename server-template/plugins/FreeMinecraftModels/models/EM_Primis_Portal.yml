@@ -1,0 +1,4 @@
+isEnabled: true
+scripts:
+- invulnerable.lua
+- pickupable.lua

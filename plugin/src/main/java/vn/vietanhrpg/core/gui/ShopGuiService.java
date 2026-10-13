@@ -133,7 +133,7 @@ public final class ShopGuiService implements Listener {
         ItemMeta meta = stack.getItemMeta();
         meta.lore(List.of(
                 line("Open the 36-slot sell chest", NamedTextColor.GRAY),
-                line("Daily Coin remaining: " + shop.dailySellRemaining(player), NamedTextColor.GOLD),
+                line("Daily Elite Coins remaining: " + shop.dailySellRemaining(player), NamedTextColor.GOLD),
                 line("Click to sell", NamedTextColor.YELLOW)
         ));
         stack.setItemMeta(meta);
@@ -154,7 +154,7 @@ public final class ShopGuiService implements Listener {
         List<Component> lore = meta.lore() == null ? new ArrayList<>() : new ArrayList<>(meta.lore());
         lore.add(Component.empty());
         lore.add(line("Bundle: " + entry.amount(), NamedTextColor.GRAY));
-        lore.add(line("BUY PRICE: " + entry.price() + " Coin", NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
+        lore.add(line("BUY PRICE: " + entry.price() + " Elite Coins", NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
         lore.add(Component.empty());
         lore.add(line("Click to buy", NamedTextColor.GREEN));
         meta.lore(lore);

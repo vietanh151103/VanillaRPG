@@ -172,7 +172,7 @@ public final class ProgressionService {
 
     public String rewardSummary(RewardDefinition reward) {
         List<String> parts = new ArrayList<>();
-        if (reward.coin() > 0) parts.add(reward.coin() + " Coin");
+        if (reward.coin() > 0) parts.add(reward.coin() + " Elite Coins");
         if (reward.token() > 0) parts.add(reward.token() + " Token");
         for (Map.Entry<String, Integer> e : reward.customMaterials().entrySet()) {
             MaterialDefinition material = content.material(e.getKey());

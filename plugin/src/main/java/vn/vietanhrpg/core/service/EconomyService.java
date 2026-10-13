@@ -2,6 +2,7 @@ package vn.vietanhrpg.core.service;
 
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.magmaguy.elitemobs.economy.EconomyHandler;
 import vn.vietanhrpg.core.data.Database;
 
 import java.util.UUID;
@@ -25,7 +26,10 @@ public final class EconomyService {
     }
 
     public long coin(UUID uuid) {
-        return database.getCoin(uuid);
+        if (!EconomyHandler.isReady(uuid)) {
+            return 0L;
+        }
+        return Math.max(0L, Math.round(EconomyHandler.checkCurrency(uuid)));
     }
 
     public long token(UUID uuid) {
@@ -33,15 +37,10 @@ public final class EconomyService {
     }
 
     public boolean takeCoin(UUID uuid, long amount) {
-        if (amount < 0) {
+        if (amount < 0 || !EconomyHandler.isReady(uuid)) {
             return false;
         }
-        long current = coin(uuid);
-        if (current < amount) {
-            return false;
-        }
-        database.setCoin(uuid, current - amount);
-        return true;
+        return EconomyHandler.tryWithdraw(uuid, amount);
     }
 
     public boolean takeToken(UUID uuid, long amount) {
@@ -57,7 +56,9 @@ public final class EconomyService {
     }
 
     public void addCoin(UUID uuid, long amount) {
-        database.setCoin(uuid, Math.max(0, coin(uuid) + amount));
+        if (amount > 0 && EconomyHandler.isReady(uuid)) {
+            EconomyHandler.addCurrency(uuid, amount);
+        }
     }
 
     public void addToken(UUID uuid, long amount) {
@@ -65,6 +66,13 @@ public final class EconomyService {
     }
 
     public boolean transferCoin(UUID from, UUID to, long amount) {
-        return database.transferCoin(from, to, amount);
+        if (amount < 0 || !EconomyHandler.isReady(from) || !EconomyHandler.isReady(to)) {
+            return false;
+        }
+        if (!EconomyHandler.tryWithdraw(from, amount)) {
+            return false;
+        }
+        EconomyHandler.addCurrency(to, amount);
+        return true;
     }
 }
