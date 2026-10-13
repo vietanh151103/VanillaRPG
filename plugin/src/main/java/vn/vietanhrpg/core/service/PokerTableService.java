@@ -3,6 +3,7 @@ package vn.vietanhrpg.core.service;
 import com.magmaguy.elitemobs.economy.EconomyHandler;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
@@ -23,6 +24,7 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -39,6 +41,7 @@ import org.joml.Vector3f;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -52,11 +55,15 @@ public final class PokerTableService implements Listener {
     private static final int MAX_PLAYERS = 6;
     private static final long SMALL_BLIND = 10;
     private static final long BIG_BLIND = 20;
+    private static final long TURN_TIME_SECONDS = 60;
     private static final NamespacedKey ACTION_KEY = new NamespacedKey("vanillarpg", "poker_action");
     private final JavaPlugin plugin;
     private final Map<UUID, Seat> seats = new HashMap<>();
     private final Map<UUID, BossBar> bossBars = new HashMap<>();
     private final Map<UUID, InventorySnapshot> savedInventories = new HashMap<>();
+    private final Map<UUID, Location> returnLocations = new HashMap<>();
+    private final Map<UUID, BukkitTask> pendingTeleports = new HashMap<>();
+    private final Map<UUID, Integer> pendingSeats = new HashMap<>();
     private final Set<UUID> awaitingCustomRaise = new HashSet<>();
     private final List<Entity> cardDisplays = new ArrayList<>();
     private World world;
@@ -71,6 +78,7 @@ public final class PokerTableService implements Listener {
     private long pot;
     private long currentBet;
     private UUID turn;
+    private long turnStartedAt;
     private int dealerIndex;
 
     public PokerTableService(JavaPlugin plugin) {
@@ -90,18 +98,59 @@ public final class PokerTableService implements Listener {
             player.teleport(target.getSpawnLocation());
             return;
         }
-        if (seats.size() >= MAX_PLAYERS) {
+        if (seats.size() + pendingSeats.size() >= MAX_PLAYERS) {
             player.sendMessage(Component.text("The poker table is full (6 players).", NamedTextColor.RED));
             player.teleport(target.getSpawnLocation());
             return;
         }
         int seat = firstFreeSeat();
+        startTeleportCountdown(player, seat);
+    }
+
+    private void startTeleportCountdown(Player player, int seat) {
+        cancelPendingTeleport(player, false);
+        pendingSeats.put(player.getUniqueId(), seat);
+        File combatTag = new File(plugin.getDataFolder().getParentFile(), "EliteMobs/CombatTag.yml");
+        org.bukkit.configuration.file.YamlConfiguration yaml = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(combatTag);
+        if (!yaml.getBoolean("enableAdventurersGuildTeleportTimer", true)) { joinNow(player, seat); return; }
+        final int[] remaining = {5};
+        final BukkitTask[] task = new BukkitTask[1];
+        task[0] = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            if (!player.isOnline()) { cancelPendingTeleport(player, false); return; }
+            if (remaining[0] <= 0) {
+                pendingTeleports.remove(player.getUniqueId());
+                pendingSeats.remove(player.getUniqueId());
+                task[0].cancel();
+                joinNow(player, seat);
+                return;
+            }
+            String message = yaml.getString("teleportTimeLeft", "&7[EM] Teleporting in &a$time &7seconds...")
+                    .replace("$time", String.valueOf(remaining[0])).replace('&', '§');
+            player.sendActionBar(LegacyComponentSerializer.legacySection().deserialize(message));
+            remaining[0]--;
+        }, 0L, 20L);
+        pendingTeleports.put(player.getUniqueId(), task[0]);
+    }
+
+    private void joinNow(Player player, int seat) {
+        if (!player.isOnline() || seats.containsKey(player.getUniqueId())) return;
+        pendingSeats.remove(player.getUniqueId());
+        returnLocations.put(player.getUniqueId(), player.getLocation().clone());
         seats.put(player.getUniqueId(), new Seat(player.getUniqueId(), seat));
         createBossBar(player);
         saveAndPrepareInventory(player);
         player.teleport(spawnFor(seat));
         player.sendMessage(Component.text("You joined seat " + (seat + 1) + ". Use /poker start when everyone is ready.", NamedTextColor.GREEN));
         broadcast(player.getName() + " joined the poker table (" + seats.size() + "/" + MAX_PLAYERS + ").");
+    }
+
+    private void cancelPendingTeleport(Player player, boolean notify) {
+        BukkitTask task = pendingTeleports.remove(player.getUniqueId());
+        if (task != null) {
+            task.cancel();
+            pendingSeats.remove(player.getUniqueId());
+            if (notify) player.sendActionBar(Component.text("[EM] Teleport interrupted!", NamedTextColor.RED));
+        }
     }
 
     public boolean command(Player player, String[] args) {
@@ -155,7 +204,7 @@ public final class PokerTableService implements Listener {
     }
 
     private void resetHand() {
-        phase = Phase.WAITING; deck = newDeck(); board.clear(); committed.clear(); acted.clear(); pot = 0; currentBet = 0; turn = null;
+        phase = Phase.WAITING; deck = newDeck(); board.clear(); committed.clear(); acted.clear(); pot = 0; currentBet = 0; turn = null; turnStartedAt = 0L;
         for (Seat seat : seats.values()) { seat.hole.clear(); seat.folded = false; }
         clearCards();
     }
@@ -244,7 +293,14 @@ public final class PokerTableService implements Listener {
         List<Integer> tie = new ArrayList<>(); if (category == 8 || category == 4) tie.add(straightHigh); else for (int r : groups) for (int i = 0; i < counts[r]; i++) tie.add(r);
         long score = category; for (int r : tie) score = score * 15 + r; return score;
     }
-    private void notifyTurns() { if (turn != null && Bukkit.getPlayer(turn) != null) { Player player = Bukkit.getPlayer(turn); showHand(player); player.sendMessage(Component.text("Your turn: /poker check, call, raise <total>, or fold.", NamedTextColor.YELLOW)); } }
+    private void notifyTurns() {
+        turnStartedAt = System.currentTimeMillis();
+        if (turn != null && Bukkit.getPlayer(turn) != null) {
+            Player player = Bukkit.getPlayer(turn);
+            showHand(player);
+            player.sendMessage(Component.text("Your turn: /poker check, call, raise <total>, or fold.", NamedTextColor.YELLOW));
+        }
+    }
     private void showHand(Player player) {
         Seat seat = seats.get(player.getUniqueId());
         if (seat == null || seat.hole.size() < 2) return;
@@ -314,6 +370,16 @@ public final class PokerTableService implements Listener {
         }
     }
 
+    @EventHandler
+    public void onPokerMove(PlayerMoveEvent event) {
+        if (pendingTeleports.containsKey(event.getPlayer().getUniqueId())
+                && (event.getFrom().getX() != event.getTo().getX()
+                || event.getFrom().getY() != event.getTo().getY()
+                || event.getFrom().getZ() != event.getTo().getZ())) {
+            cancelPendingTeleport(event.getPlayer(), true);
+        }
+    }
+
     private void openRaiseMenu(Player player) {
         Inventory inventory = plugin.getServer().createInventory(new RaiseHolder(player.getUniqueId()), 9, Component.text("Choose raise", NamedTextColor.GOLD));
         long min = currentBet + BIG_BLIND;
@@ -364,11 +430,30 @@ public final class PokerTableService implements Listener {
     private void status(Player p) { p.sendMessage(Component.text("Phase: " + phase + " | Pot: " + pot + " | Bet: " + currentBet + " | Board: " + boardLabels(), NamedTextColor.AQUA)); }
     private String boardLabels() { return board.stream().map(Card::label).reduce((a, b) -> a + ", " + b).orElse("none"); }
 
-    public void leave(Player player) { Seat seat = seats.remove(player.getUniqueId()); if (seat == null) return; awaitingCustomRaise.remove(player.getUniqueId()); removeBossBar(player.getUniqueId()); if (phase != Phase.WAITING && !seat.folded) { seat.folded = true; if (player.getUniqueId().equals(turn)) advanceTurn(); } restoreInventory(player); player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation()); broadcast(player.getName() + " left the poker room."); }
-    @EventHandler public void onQuit(PlayerQuitEvent event) { if (seats.containsKey(event.getPlayer().getUniqueId())) leave(event.getPlayer()); }
+    public void leave(Player player) {
+        Seat seat = seats.remove(player.getUniqueId());
+        if (seat == null) return;
+        awaitingCustomRaise.remove(player.getUniqueId());
+        removeBossBar(player.getUniqueId());
+        if (phase != Phase.WAITING && !seat.folded) {
+            seat.folded = true;
+            if (player.getUniqueId().equals(turn)) advanceTurn();
+        }
+        restoreInventory(player);
+        Location returnLocation = returnLocations.remove(player.getUniqueId());
+        if (returnLocation != null && returnLocation.getWorld() != null) player.teleport(returnLocation);
+        broadcast(player.getName() + " left the poker room.");
+    }
+    @EventHandler public void onQuit(PlayerQuitEvent event) {
+        cancelPendingTeleport(event.getPlayer(), false);
+        if (seats.containsKey(event.getPlayer().getUniqueId())) leave(event.getPlayer());
+    }
 
     public void shutdown() {
         if (bossBarTask != null) bossBarTask.cancel();
+        pendingTeleports.values().forEach(BukkitTask::cancel);
+        pendingTeleports.clear();
+        pendingSeats.clear();
         bossBars.values().forEach(BossBar::removeAll);
         bossBars.clear();
     }
@@ -393,7 +478,8 @@ public final class PokerTableService implements Listener {
         long call = Math.max(0L, currentBet - committed.getOrDefault(player.getUniqueId(), 0L));
         String actor = turn == null ? "-" : nameOf(turn);
         String hand = seat.hole.size() >= 2 ? seat.hole.get(0).label() + " / " + seat.hole.get(1).label() : "dealing";
-        bar.setTitle(phase + " | Pot: " + pot + " | To act: " + actor + " | Call: " + call + " | Hand: " + hand + " | Board: " + boardText);
+        long remaining = turnStartedAt <= 0L ? TURN_TIME_SECONDS : Math.max(0L, TURN_TIME_SECONDS - (System.currentTimeMillis() - turnStartedAt) / 1000L);
+        bar.setTitle(phase + " | Pot: " + pot + " | To act: " + actor + " | Time: " + remaining + "s | Call: " + call + " | Hand: " + hand + " | Board: " + boardText);
         bar.setColor(player.getUniqueId().equals(turn) ? BarColor.GREEN : BarColor.BLUE); bar.setProgress(1.0);
     }
 
@@ -423,7 +509,7 @@ public final class PokerTableService implements Listener {
         int z = row * 6;
         return new Location(ensureWorld(), x, 65, z, row > 0 ? 180.0f : 0.0f, 0.0f);
     }
-    private int firstFreeSeat() { Set<Integer> used = new HashSet<>(); seats.values().forEach(s -> used.add(s.seat)); for (int i = 0; i < MAX_PLAYERS; i++) if (!used.contains(i)) return i; return 0; }
+    private int firstFreeSeat() { Set<Integer> used = new HashSet<>(); seats.values().forEach(s -> used.add(s.seat)); used.addAll(pendingSeats.values()); for (int i = 0; i < MAX_PLAYERS; i++) if (!used.contains(i)) return i; return 0; }
     private List<Seat> activeSeats() { return seats.values().stream().filter(s -> !s.folded).sorted(java.util.Comparator.comparingInt(s -> s.seat)).toList(); }
     private int indexOf(UUID id, List<Seat> list) { for (int i = 0; i < list.size(); i++) if (list.get(i).uuid.equals(id)) return i; return 0; }
     private String nameOf(UUID id) { Player p = Bukkit.getPlayer(id); return p == null ? "Player" : p.getName(); }
