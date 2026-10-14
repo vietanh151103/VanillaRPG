@@ -1,6 +1,13 @@
-# VanillaRPG-Core 0.7.5
+# VanillaRPG-Core 0.7.6
 
 Target: Paper 26.2 / Java 25
+
+## New in 0.7.6 - Balanced Special Blacksmith Gacha
+
+- The Gacha pool now uses the 23 eligible `CUSTOM` items from the installed EliteMobs Special Blacksmith selection, plus low-value utility rewards.
+- Dungeon charm tiers are weighted by progression: Normal 2.5%, Hard 1.2%, and Mythic 0.6% per item; regular Special Blacksmith items remain about 3.9–4.0% each.
+- `/gacha odds` displays each live reward with its exact percentage, and spin milestones are shown in the Gacha menu.
+- A single pull costs 150 Elite Coins; five pulls cost 750, with no bundle discount.
 
 ## New in 0.7.5 - EliteMobs Gacha
 

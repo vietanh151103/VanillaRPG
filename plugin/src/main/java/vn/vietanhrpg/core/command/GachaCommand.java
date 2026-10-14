@@ -14,6 +14,10 @@ public final class GachaCommand implements CommandExecutor {
     @Override public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
                                        @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player player)) { sender.sendMessage("Players only."); return true; }
+        if (args.length >= 1 && (args[0].equalsIgnoreCase("odds") || args[0].equalsIgnoreCase("pool"))) {
+            gacha.openOdds(player);
+            return true;
+        }
         if (args.length >= 1 && args[0].equalsIgnoreCase("ticket")) {
             if (!player.hasPermission("vanillarpg.admin")) {
                 player.sendMessage("No permission.");

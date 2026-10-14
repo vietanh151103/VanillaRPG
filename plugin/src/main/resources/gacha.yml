@@ -1,31 +1,54 @@
 # The Elite shop is represented by this ticket-based gacha. There is no pity:
 # every pull uses the configured weights independently.
-single-coin-cost: 1000
-five-coin-cost: 4500
+# Blacksmith items share the fixed percentage below; the remaining chance is
+# distributed across bonus rewards. /gacha -> Pool odds shows exact live rates.
+single-coin-cost: 150
+# Five pulls retain a modest 10% bundle discount.
+five-coin-cost: 750
 
-# Explicit high-tier pool. Weights total 100, so each weight is also its
-# percentage chance per independent pull. There is intentionally no pity.
+# Exact Special Blacksmith eligibility from this EliteMobs install: every
+# itemType CUSTOM item. UNIQUE and CLASS_LOOT items are intentionally excluded.
+# These 23 weights total 750 (75% of the complete pool).
 elite-item-pool:
-  - id: majestica_abominable_blade.yml
-    weight: 16
-  - id: majestica_cybernetic_katana.yml
-    weight: 16
-  - id: majestica_oceans_rage.yml
-    weight: 15
-  - id: majestica_frost_scythe.yml
-    weight: 13
-  - id: majestica_storm_bringer.yml
-    weight: 10
-  - id: majestica_mjolnir.yml
-    weight: 10
-  - id: majestica_divine_reaper.yml
-    weight: 8
-  - id: majestica_demon_lords_great_axe.yml
-    weight: 5
-  - id: majestica_requiem_ninth_abyss.yml
-    weight: 4
-  - id: majestica_true_excalibur.yml
-    weight: 3
+  # Standard Special Blacksmith items: 3.90% each of the total pool.
+  - { id: berserker_charm.yml, weight: 39 }
+  - { id: chameleon_charm.yml, weight: 39 }
+  - { id: cheetah_charm.yml, weight: 39 }
+  - { id: elephant_charm.yml, weight: 39 }
+  - { id: firefly_charm.yml, weight: 39 }
+  - { id: fishy_charm.yml, weight: 39 }
+  - { id: grappling_arrow.yml, weight: 39 }
+  - { id: lucky_charms.yml, weight: 40 }
+  - { id: magmaguys_toothpick.yml, weight: 39 }
+  - { id: owl_charm.yml, weight: 39 }
+  - { id: rabbit_charm.yml, weight: 39 }
+  - { id: salamander_charm.yml, weight: 39 }
+  - { id: scorpion_charm.yml, weight: 39 }
+  - { id: shulker_charm.yml, weight: 39 }
+  - { id: slowpoke_charm.yml, weight: 39 }
+  - { id: summon_merchant_scroll.yml, weight: 39 }
+  - { id: vampiric_charm.yml, weight: 39 }
+  # Dungeon variants: higher tiers are intentionally much rarer.
+  # Normal 2.50%, Hard 1.20%, Mythic 0.60% each of the total pool.
+  - { id: the_steamworks_boss_charm_normal.yml, weight: 25 }
+  - { id: the_steamworks_boss_charm_hard.yml, weight: 12 }
+  - { id: the_steamworks_boss_charm_mythic.yml, weight: 6 }
+  - { id: em_id_the_deep_mines_nether_charm_normal.yml, weight: 25 }
+  - { id: em_id_the_deep_mines_nether_charm_hard.yml, weight: 12 }
+  - { id: em_id_the_deep_mines_nether_charm_mythical.yml, weight: 6 }
+# Used only if elite-item-pool is deliberately emptied in a future update.
+blacksmith-pool-weight: 750
+# The other 25% contains low-value utility/cashback rewards.
+bonus-pool:
+  - type: SOULBIND_REMOVER
+    amount: 1
+    weight: 120
+  - type: TICKET
+    amount: 1
+    weight: 70
+  - type: COINS
+    amount: 20
+    weight: 60
 ticket:
   material: PAPER
   name: "Elite Gacha Ticket"
@@ -35,16 +58,17 @@ ticket:
 
 milestones:
   10:
+    type: SOULBIND_REMOVER
+    amount: 1
+  30:
     type: TICKET
     amount: 1
-  25:
-    type: ELITE_ITEM
-    id: unbind_scroll
-    amount: 1
-  50:
-    type: TICKET
+  60:
+    type: SOULBIND_REMOVER
     amount: 2
   100:
-    type: ELITE_ITEM
-    id: elite_lucky_ticket
-    amount: 1
+    type: TICKET
+    amount: 3
+  200:
+    type: SOULBIND_REMOVER
+    amount: 3

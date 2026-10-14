@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Locale;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Comparator;
 import java.util.concurrent.ThreadLocalRandom;
 
 /** Ticket/Elite-Coin gacha for the former Elite item shop. Pulls never alter future odds. */
@@ -73,32 +74,67 @@ public final class GachaService implements Listener {
             Object rawId = configured.get("id");
             if (rawId == null || rawId.toString().isBlank()) continue;
             int weight = positiveInt(configured.get("weight"), 1);
-            eliteItemPool.add(new PoolEntry(rawId.toString().trim(), weight));
-            eliteItemPoolWeight += weight;
+            addPoolEntry("ELITE_ITEM", rawId.toString().trim(), 1, weight);
         }
-        if (!eliteItemPool.isEmpty()) {
-            plugin.getLogger().info("Loaded " + eliteItemPool.size() + " configured Elite gacha rewards with total weight " + eliteItemPoolWeight + ".");
-            return;
-        }
-        try {
-            CustomItem.getCustomItems().forEach((id, item) -> {
-                if (item.getItemType().name().equalsIgnoreCase("CUSTOM")) addPoolEntry(id, 1);
-            });
-            // Some EliteMobs builds populate the item registry after plugin enable.
-            // Keep the direct shop cache as a second source when it is available.
-            if (eliteItemPool.isEmpty()) {
+        if (eliteItemPool.isEmpty()) {
+            List<ItemStack> specialBlacksmithItems = new ArrayList<>();
+            List<String> fallbackItems = new ArrayList<>();
+            try {
+                // This is the exact dynamic source used by EliteMobs' Special Blacksmith.
+                // It returns ItemStacks, not file IDs: retain them directly so no item is
+                // discarded merely because its displayed name is not a configuration ID.
                 CustomItem.getCustomItemStackShopList().forEach(stack -> {
-                    String id = stack.getItemMeta() == null ? null : stack.getItemMeta().getDisplayName();
-                    if (id != null && !id.isBlank()) addPoolEntry(id, 1);
+                    if (stack != null && !stack.getType().isAir()) specialBlacksmithItems.add(stack.clone());
                 });
+                if (specialBlacksmithItems.isEmpty()) {
+                    CustomItem.getCustomItems().forEach((id, item) -> {
+                        if (item.getItemType().name().equalsIgnoreCase("CUSTOM")) fallbackItems.add(id);
+                    });
+                }
+            } catch (Exception exception) {
+                plugin.getLogger().warning("Could not read EliteMobs custom shop pool: " + exception.getMessage());
             }
-        } catch (Exception exception) {
-            plugin.getLogger().warning("Could not read EliteMobs custom shop pool: " + exception.getMessage());
+            int groupWeight = positiveInt(config.get("blacksmith-pool-weight"), 750);
+            if (!specialBlacksmithItems.isEmpty()) addWeightedShopStacks(specialBlacksmithItems, groupWeight);
+            else addWeightedBlacksmithItems(fallbackItems, groupWeight);
+        }
+        for (Map<?, ?> configured : config.getMapList("bonus-pool")) {
+            Object rawType = configured.get("type");
+            String type = rawType == null ? "" : rawType.toString().trim().toUpperCase(Locale.ROOT);
+            if (type.isBlank()) continue;
+            Object rawBonusId = configured.get("id");
+            String id = rawBonusId == null ? "" : rawBonusId.toString().trim();
+            addPoolEntry(type, id, positiveInt(configured.get("amount"), 1), positiveInt(configured.get("weight"), 1));
+        }
+        plugin.getLogger().info("Loaded " + eliteItemPool.size() + " Elite gacha rewards with total weight " + eliteItemPoolWeight + ".");
+    }
+
+    private void addWeightedBlacksmithItems(List<String> rawIds, int groupWeight) {
+        List<String> ids = rawIds.stream().filter(id -> id != null && !id.isBlank()).distinct().toList();
+        if (ids.isEmpty()) return;
+        int base = groupWeight / ids.size();
+        int remainder = groupWeight % ids.size();
+        for (int index = 0; index < ids.size(); index++) {
+            addPoolEntry("ELITE_ITEM", ids.get(index), 1, base + (index < remainder ? 1 : 0));
         }
     }
 
-    private void addPoolEntry(String id, int weight) {
-        eliteItemPool.add(new PoolEntry(id, weight));
+    private void addWeightedShopStacks(List<ItemStack> rawStacks, int groupWeight) {
+        if (rawStacks.isEmpty()) return;
+        int base = groupWeight / rawStacks.size();
+        int remainder = groupWeight % rawStacks.size();
+        for (int index = 0; index < rawStacks.size(); index++) {
+            ItemStack stack = rawStacks.get(index).clone();
+            addPoolEntry("EM_STACK", stackName(stack), 1, base + (index < remainder ? 1 : 0), stack);
+        }
+    }
+
+    private void addPoolEntry(String type, String id, int amount, int weight) {
+        addPoolEntry(type, id, amount, weight, null);
+    }
+
+    private void addPoolEntry(String type, String id, int amount, int weight, ItemStack directStack) {
+        eliteItemPool.add(new PoolEntry(type, id, amount, weight, directStack));
         eliteItemPoolWeight += weight;
     }
 
@@ -121,9 +157,11 @@ public final class GachaService implements Listener {
         inventory.setItem(16, button(Material.ENDER_CHEST, "5 pulls", NamedTextColor.RED,
                 "Cost: " + fiveCost() + " Elite Coins"));
         long spins = spins(player);
-        ItemStack progress = button(Material.NETHER_STAR, "Spin rewards", NamedTextColor.GREEN,
-                "Total pulls: " + spins, "Milestones give bonus rewards; no pity.");
+        ItemStack progress = progressItem(spins);
         inventory.setItem(22, progress);
+        inventory.setItem(24, button(Material.BOOK, "Pool odds", NamedTextColor.AQUA,
+                "View every current reward and its exact chance.",
+                "Blacksmith items: " + blacksmithChance() + "% of the pool."));
         player.openInventory(inventory);
     }
 
@@ -181,11 +219,12 @@ public final class GachaService implements Listener {
 
     private void removeUnavailableRewards() {
         List<String> unavailable = eliteItemPool.stream()
+                .filter(entry -> entry.type().equals("ELITE_ITEM"))
                 .map(PoolEntry::id)
                 .filter(id -> findCustomItem(id) == null)
                 .toList();
         if (unavailable.isEmpty()) return;
-        eliteItemPool.removeIf(entry -> unavailable.contains(entry.id()));
+        eliteItemPool.removeIf(entry -> entry.type().equals("ELITE_ITEM") && unavailable.contains(entry.id()));
         eliteItemPoolWeight = eliteItemPool.stream().mapToInt(PoolEntry::weight).sum();
         plugin.getLogger().warning("Removed unavailable Elite gacha rewards: " + String.join(", ", unavailable));
     }
@@ -210,14 +249,14 @@ public final class GachaService implements Listener {
         return true;
     }
 
-    private String roll() {
+    private PoolEntry roll() {
         if (eliteItemPool.isEmpty() || eliteItemPoolWeight <= 0) return null;
         int target = ThreadLocalRandom.current().nextInt(eliteItemPoolWeight);
         for (PoolEntry entry : eliteItemPool) {
             target -= entry.weight();
-            if (target < 0) return entry.id();
+            if (target < 0) return entry;
         }
-        return eliteItemPool.get(eliteItemPool.size() - 1).id();
+        return eliteItemPool.get(eliteItemPool.size() - 1);
     }
 
     private void animate(Player player, int count) {
@@ -230,7 +269,7 @@ public final class GachaService implements Listener {
             player.sendMessage(Component.text("EliteMobs has no Custom Shop items loaded. Check EliteMobs startup/reload.", NamedTextColor.RED));
             return;
         }
-        List<String> rewards = new ArrayList<>();
+        List<PoolEntry> rewards = new ArrayList<>();
         for (int i = 0; i < count; i++) rewards.add(roll());
         AnimationHolder holder = new AnimationHolder();
         int inventorySize = count == 5 ? 54 : 27;
@@ -248,7 +287,7 @@ public final class GachaService implements Listener {
                 holder.task.cancel();
                 int[] slots = selectedSlots(count);
                 for (int i = 0; i < rewards.size(); i++) inventory.setItem(slots[i], preview(player, rewards.get(i)));
-                for (String id : rewards) giveEliteItem(player, id);
+                for (PoolEntry reward : rewards) giveReward(player, reward);
                 long total = database.addCounter(player.getUniqueId(), "gacha_spins", count);
                 grantMilestones(player, total - count, total);
                 rolling.remove(player.getUniqueId());
@@ -290,7 +329,11 @@ public final class GachaService implements Listener {
         }
     }
 
-    private ItemStack preview(Player player, String id) {
+    private ItemStack preview(Player player, PoolEntry reward) {
+        if (reward == null) return button(Material.BARRIER, "Unavailable reward", NamedTextColor.RED);
+        if (reward.type().equals("EM_STACK") && reward.directStack() != null) return reward.directStack().clone();
+        if (!reward.type().equals("ELITE_ITEM")) return specialRewardIcon(reward);
+        String id = reward.id();
         try {
             CustomItem custom = findCustomItem(id);
             if (custom != null) {
@@ -315,35 +358,50 @@ public final class GachaService implements Listener {
         return CustomItem.getCustomItem(id + ".yml");
     }
 
-    private void giveEliteItem(Player player, String id) {
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "em loot give " + player.getName() + " " + id);
-        player.sendMessage(Component.text("Gacha reward: " + prettyId(id), NamedTextColor.LIGHT_PURPLE));
-    }
-
     private String prettyId(String id) {
         if (id == null) return "Unknown";
         return id.replace('_', ' ');
     }
 
-    private void giveReward(Player player, Reward reward) {
+    private void giveReward(Player player, PoolEntry reward) {
         ItemStack stack = switch (reward.type().toUpperCase()) {
+            case "EM_STACK" -> reward.directStack() == null ? null : reward.directStack().clone();
             case "ELITE_ITEM" -> {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "em loot give " + player.getName() + " " + reward.id());
-                player.sendMessage(Component.text("Gacha milestone reward: EliteMobs item " + reward.id(), NamedTextColor.LIGHT_PURPLE));
+                player.sendMessage(Component.text("Gacha reward: " + prettyId(reward.id()), NamedTextColor.LIGHT_PURPLE));
                 yield null;
             }
             case "UNIQUE" -> content.uniqueItem(reward.id()) == null ? null : items.createUniqueItem(content.uniqueItem(reward.id()));
             case "MATERIAL" -> content.material(reward.id()) == null ? null : items.createCustomMaterial(content.material(reward.id()), reward.amount());
             case "TICKET" -> ticket(reward.amount());
             case "SOULBIND_REMOVER" -> specialSoulbindRemover(reward.amount());
+            case "COINS" -> {
+                economy.addCoin(player.getUniqueId(), reward.amount());
+                player.sendMessage(Component.text("Gacha reward: " + reward.amount() + " Elite Coins", NamedTextColor.GOLD));
+                yield null;
+            }
             default -> null;
         };
-        if (reward.type().equalsIgnoreCase("ELITE_ITEM")) return;
+        if (reward.type().equalsIgnoreCase("ELITE_ITEM") || reward.type().equalsIgnoreCase("COINS")) return;
         if (stack == null) {
             player.sendMessage(Component.text("A configured gacha reward is invalid; contact an admin.", NamedTextColor.RED));
             return;
         }
         deliver(player, stack);
+    }
+
+    private void giveReward(Player player, Reward reward) {
+        giveReward(player, new PoolEntry(reward.type(), reward.id(), reward.amount(), 1, null));
+    }
+
+    private ItemStack specialRewardIcon(PoolEntry reward) {
+        return switch (reward.type()) {
+            case "SOULBIND_REMOVER" -> specialSoulbindRemover(reward.amount());
+            case "TICKET" -> ticket(reward.amount());
+            case "COINS" -> button(Material.GOLD_NUGGET, reward.amount() + " Elite Coins", NamedTextColor.GOLD,
+                    "Instantly added to your EliteMobs balance.");
+            default -> button(Material.CHEST, prettyId(reward.type()), NamedTextColor.GOLD);
+        };
     }
 
     private void deliver(Player player, ItemStack stack) {
@@ -360,6 +418,14 @@ public final class GachaService implements Listener {
         meta.getPersistentDataContainer().set(new NamespacedKey(plugin, "soulbind_remover"), PersistentDataType.BYTE, (byte) 1);
         stack.setItemMeta(meta);
         return stack;
+    }
+
+    private String stackName(ItemStack stack) {
+        if (stack.hasItemMeta() && stack.getItemMeta().hasDisplayName()) {
+            return net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
+                    .serialize(stack.getItemMeta().displayName());
+        }
+        return stack.getType().translationKey();
     }
 
     @EventHandler
@@ -406,6 +472,74 @@ public final class GachaService implements Listener {
         }
     }
 
+    private ItemStack progressItem(long spins) {
+        List<String> lore = new ArrayList<>();
+        lore.add("Total pulls: " + spins);
+        ConfigurationSection milestones = config.getConfigurationSection("milestones");
+        if (milestones == null) return button(Material.NETHER_STAR, "Spin rewards", NamedTextColor.GREEN, lore.toArray(String[]::new));
+        milestones.getKeys(false).stream()
+                .map(Long::parseLong).sorted().forEach(milestone -> {
+                    ConfigurationSection reward = config.getConfigurationSection("milestones." + milestone);
+                    if (reward == null) return;
+                    String state = spins >= milestone ? "Reached" : (milestone - spins) + " pulls left";
+                    lore.add(milestone + " pulls: " + rewardLabel(reward) + " (" + state + ")");
+                });
+        lore.add("Milestones are fixed bonuses, not pity.");
+        return button(Material.NETHER_STAR, "Spin rewards", NamedTextColor.GREEN, lore.toArray(String[]::new));
+    }
+
+    private String rewardLabel(ConfigurationSection reward) {
+        String type = reward.getString("type", "TICKET").toUpperCase(Locale.ROOT);
+        int amount = Math.max(1, reward.getInt("amount", 1));
+        return switch (type) {
+            case "SOULBIND_REMOVER" -> "Soulbind Remover x" + amount;
+            case "TICKET" -> "Gacha Ticket x" + amount;
+            case "COINS" -> amount + " Elite Coins";
+            default -> prettyId(reward.getString("id", type));
+        };
+    }
+
+    private String blacksmithChance() {
+        if (eliteItemPoolWeight <= 0) return "0.00";
+        int blacksmithWeight = eliteItemPool.stream().filter(entry -> entry.type().equals("ELITE_ITEM"))
+                .mapToInt(PoolEntry::weight).sum();
+        return String.format(Locale.ROOT, "%.2f", blacksmithWeight * 100.0 / eliteItemPoolWeight);
+    }
+
+    public void openOdds(Player player) { openOdds(player, 0); }
+
+    private void openOdds(Player player, int page) {
+        removeUnavailableRewards();
+        int perPage = 45;
+        int pages = Math.max(1, (int) Math.ceil(eliteItemPool.size() / (double) perPage));
+        int normalizedPage = Math.max(0, Math.min(page, pages - 1));
+        OddsHolder holder = new OddsHolder(normalizedPage);
+        Inventory inventory = Bukkit.createInventory(holder, 54,
+                Component.text("Elite Gacha Odds " + (normalizedPage + 1) + "/" + pages, NamedTextColor.DARK_AQUA));
+        holder.inventory = inventory;
+        int start = normalizedPage * perPage;
+        for (int index = start; index < Math.min(start + perPage, eliteItemPool.size()); index++) {
+            PoolEntry entry = eliteItemPool.get(index);
+            ItemStack icon = preview(player, entry);
+            ItemMeta meta = icon.getItemMeta();
+            List<Component> lore = new ArrayList<>();
+            if (meta.hasLore() && meta.lore() != null) lore.addAll(meta.lore());
+            lore.add(Component.text(String.format(Locale.ROOT, "Chance: %.3f%%", entry.weight() * 100.0 / eliteItemPoolWeight), NamedTextColor.AQUA)
+                    .decoration(TextDecoration.ITALIC, false));
+            lore.add(Component.text("Weight: " + entry.weight() + " / " + eliteItemPoolWeight, NamedTextColor.DARK_GRAY)
+                    .decoration(TextDecoration.ITALIC, false));
+            meta.lore(lore);
+            icon.setItemMeta(meta);
+            inventory.setItem(index - start, icon);
+        }
+        if (normalizedPage > 0) inventory.setItem(45, button(Material.ARROW, "Previous page", NamedTextColor.YELLOW));
+        inventory.setItem(49, button(Material.NETHER_STAR, "Pool summary", NamedTextColor.GREEN,
+                "Blacksmith items: " + blacksmithChance() + "%", "Bonus rewards: "
+                        + String.format(Locale.ROOT, "%.2f", 100.0 - Double.parseDouble(blacksmithChance())) + "%"));
+        if (normalizedPage + 1 < pages) inventory.setItem(53, button(Material.ARROW, "Next page", NamedTextColor.YELLOW));
+        player.openInventory(inventory);
+    }
+
     private ItemStack button(Material material, String title, NamedTextColor color, String... loreLines) {
         ItemStack stack = new ItemStack(material);
         ItemMeta meta = stack.getItemMeta();
@@ -421,14 +555,21 @@ public final class GachaService implements Listener {
     public void onClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
         if (!(event.getView().getTopInventory().getHolder() instanceof GachaHolder)
-                && !(event.getView().getTopInventory().getHolder() instanceof AnimationHolder)) return;
+                && !(event.getView().getTopInventory().getHolder() instanceof AnimationHolder)
+                && !(event.getView().getTopInventory().getHolder() instanceof OddsHolder)) return;
         event.setCancelled(true);
         if (event.getRawSlot() < 0 || event.getRawSlot() >= event.getView().getTopInventory().getSize()) return;
+        if (event.getView().getTopInventory().getHolder() instanceof OddsHolder odds) {
+            if (event.getRawSlot() == 45) openOdds(player, odds.page - 1);
+            if (event.getRawSlot() == 53) openOdds(player, odds.page + 1);
+            return;
+        }
         switch (event.getRawSlot()) {
             case 10 -> pull(player, 1, true);
             case 12 -> pull(player, 1, false);
             case 14 -> pull(player, 5, true);
             case 16 -> pull(player, 5, false);
+            case 24 -> openOdds(player);
             default -> { }
         }
     }
@@ -436,11 +577,12 @@ public final class GachaService implements Listener {
     @EventHandler
     public void onDrag(InventoryDragEvent event) {
         if (event.getView().getTopInventory().getHolder() instanceof GachaHolder
-                || event.getView().getTopInventory().getHolder() instanceof AnimationHolder) event.setCancelled(true);
+                || event.getView().getTopInventory().getHolder() instanceof AnimationHolder
+                || event.getView().getTopInventory().getHolder() instanceof OddsHolder) event.setCancelled(true);
     }
 
     private record Reward(String type, String id, int amount) { }
-    private record PoolEntry(String id, int weight) { }
+    private record PoolEntry(String type, String id, int amount, int weight, ItemStack directStack) { }
 
     private static final class GachaHolder implements InventoryHolder {
         private Inventory inventory;
@@ -450,6 +592,13 @@ public final class GachaService implements Listener {
     private static final class AnimationHolder implements InventoryHolder {
         private Inventory inventory;
         private org.bukkit.scheduler.BukkitTask task;
+        @Override public Inventory getInventory() { return inventory; }
+    }
+
+    private static final class OddsHolder implements InventoryHolder {
+        private final int page;
+        private Inventory inventory;
+        private OddsHolder(int page) { this.page = page; }
         @Override public Inventory getInventory() { return inventory; }
     }
 }

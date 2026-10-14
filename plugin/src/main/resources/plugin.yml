@@ -42,7 +42,7 @@ commands:
     usage: /shop [history]
   gacha:
     description: Open the Elite item gacha.
-    usage: /gacha
+    usage: /gacha [odds|ticket <amount>]
   poker:
     description: Enter and play the Texas Hold'em poker room.
     usage: /poker [start|hand|fold|check|call|raise <total>|status|leave]
