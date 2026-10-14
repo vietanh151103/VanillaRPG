@@ -1,0 +1,20 @@
+isEnabled: true
+material: NETHERITE_SWORD
+customModelV2: minecraft:legendary_sword
+name: '<italic:false>Legendary Sword'
+level: 100
+lore:
+- '&6A battle-tested blade carried by champions of a lost age.'
+- '&eIts edge rewards disciplined strikes and relentless pursuit.'
+enchantments:
+- DAMAGE_ALL,9
+- SWEEPING_EDGE,4
+- DURABILITY,5
+- elitemobs:critical_strikes,3
+- elitemobs:hunter,2
+- elitemobs:loud_strikes,2
+potionEffects:
+- SPEED,0,self,continuous
+scalability: scalable
+itemType: unique
+soulbound: true

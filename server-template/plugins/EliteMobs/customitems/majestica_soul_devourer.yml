@@ -1,0 +1,21 @@
+isEnabled: true
+material: NETHERITE_SWORD
+customModelV2: minecraft:soul_devourer
+name: '<italic:false>Soul Devourer'
+level: 100
+lore:
+- '&4A blade that feeds on the final breath of its victims.'
+- '&8Each execution strengthens its bearer for the next hunt.'
+enchantments:
+- DAMAGE_ALL,9
+- SWEEPING_EDGE,4
+- KNOCKBACK,2
+- elitemobs:critical_strikes,3
+- elitemobs:hunter,3
+- elitemobs:lightning,1
+potionEffects:
+- WITHER,1,target,onHit
+- REGENERATION,0,self,onHit
+scalability: scalable
+itemType: unique
+soulbound: true

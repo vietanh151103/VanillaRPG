@@ -1,0 +1,19 @@
+isEnabled: true
+material: NETHERITE_SWORD
+customModelV2: minecraft:mjolnir
+name: 'Mjolnir'
+level: 100
+lore:
+- '&eA thunder hammer disguised as a blade by ancient magic.'
+- '&7Each blow lands with the force of a falling storm.'
+enchantments:
+- DAMAGE_ALL,9
+- KNOCKBACK,3
+- elitemobs:lightning,3
+- elitemobs:earthquake,2
+- elitemobs:loud_strikes,2
+potionEffects:
+- INCREASE_DAMAGE,1,self,onHit
+scalability: scalable
+itemType: unique
+soulbound: true

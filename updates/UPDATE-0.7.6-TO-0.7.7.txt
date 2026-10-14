@@ -1,0 +1,12 @@
+VanillaRPG-Core 0.7.7 - Majestica Ultra-Rare Gacha Gear
+
+- Adds ten soulbound, level-100 Majestica weapons to the Elite Gacha pool.
+- Each premium weapon has an approximately 0.01% roll chance.
+- Adds Soul Devourer and Legendary Sword custom EliteMobs weapons.
+- Includes BladesOfMajestica-PokerPack v1.3 for direct custom item models.
+
+Install notes
+
+1. Replace the server resource pack with BladesOfMajestica-PokerPack-v1.3.zip.
+2. Set resource-pack-sha1=E319EDC017A45C2AD13512DA1E0F0124CE433191.
+3. Restart the server, then run /em reload and /rpg reload after confirming the pack loads.

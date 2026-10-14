@@ -1,6 +1,12 @@
-# VanillaRPG-Core 0.7.6
+# VanillaRPG-Core 0.7.7
 
 Target: Paper 26.2 / Java 25
+
+## New in 0.7.7 - Majestica Ultra-Rare Gacha Gear
+
+- Added ten level-100, soulbound Majestica weapons to the Elite Gacha pool; each has an approximately 0.01% chance, or approximately 0.1% combined.
+- Added Soul Devourer and Legendary Sword as endgame custom weapons with dedicated EliteMobs configurations.
+- Added BladesOfMajestica-PokerPack v1.3 with direct item definitions for the new weapon models.
 
 ## New in 0.7.6 - Balanced Special Blacksmith Gacha
 

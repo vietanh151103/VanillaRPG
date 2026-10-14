@@ -1,0 +1,19 @@
+isEnabled: true
+material: NETHERITE_HOE
+customModelV2: minecraft:divine_reaper
+name: 'Divine Reaper'
+level: 100
+lore:
+- '&6A sacred scythe that judges those who challenge its bearer.'
+- '&7Elite prey falls beneath a thunderous final harvest.'
+enchantments:
+- DAMAGE_ALL,9
+- SWEEPING_EDGE,4
+- elitemobs:hunter,3
+- elitemobs:critical_strikes,2
+- elitemobs:lightning,2
+potionEffects:
+- REGENERATION,0,self,onHit
+scalability: scalable
+itemType: unique
+soulbound: true

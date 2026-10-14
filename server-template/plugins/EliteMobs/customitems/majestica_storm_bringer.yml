@@ -1,0 +1,20 @@
+isEnabled: true
+material: NETHERITE_SWORD
+customModelV2: minecraft:storm_bringer
+name: 'Storm Bringer'
+level: 100
+lore:
+- '&bA weapon that carries thunder in every swing.'
+- '&7Strikes call down a controlled flash of lightning.'
+enchantments:
+- DAMAGE_ALL,9
+- SWEEPING_EDGE,4
+- FIRE_ASPECT,2
+- elitemobs:lightning,3
+- elitemobs:critical_strikes,2
+- elitemobs:loud_strikes,2
+potionEffects:
+- SPEED,0,self,continuous
+scalability: scalable
+itemType: unique
+soulbound: true

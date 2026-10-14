@@ -1,0 +1,19 @@
+isEnabled: true
+material: NETHERITE_AXE
+customModelV2: minecraft:demon_lords_great_axe
+name: 'Demon Lord''s Great Axe'
+level: 100
+lore:
+- '&4The weapon of a tyrant who ruled by fear and impact.'
+- '&7Every heavy blow shakes the ground around its victim.'
+enchantments:
+- DAMAGE_ALL,10
+- KNOCKBACK,3
+- FIRE_ASPECT,2
+- elitemobs:earthquake,2
+- elitemobs:loud_strikes,3
+potionEffects:
+- INCREASE_DAMAGE,1,self,onHit
+scalability: scalable
+itemType: unique
+soulbound: true
