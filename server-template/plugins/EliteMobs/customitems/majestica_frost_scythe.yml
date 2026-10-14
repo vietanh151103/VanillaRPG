@@ -1,0 +1,20 @@
+isEnabled: true
+material: NETHERITE_SWORD
+name: '<italic:false><aqua>Frost Scythe'
+customModelV2: minecraft:frost_scythe
+level: 80
+lore:
+- '&bA crescent blade that steals warmth from the battlefield.'
+- '&7Hits slow the target and fracture frozen defenses.'
+enchantments:
+- DAMAGE_ALL,6
+- SWEEPING_EDGE,3
+- KNOCKBACK,1
+- elitemobs:ice_breaker,2
+- elitemobs:critical_strikes,1
+- elitemobs:hunter,1
+potionEffects:
+- SLOW,1,target,onHit
+- FIRE_RESISTANCE,0,self,continuous
+scalability: scalable
+itemType: custom

@@ -1,7 +1,31 @@
 # The Elite shop is represented by this ticket-based gacha. There is no pity:
 # every pull uses the configured weights independently.
-single-coin-cost: 250
-five-coin-cost: 1125
+single-coin-cost: 1000
+five-coin-cost: 4500
+
+# Explicit high-tier pool. Weights total 100, so each weight is also its
+# percentage chance per independent pull. There is intentionally no pity.
+elite-item-pool:
+  - id: majestica_abominable_blade.yml
+    weight: 16
+  - id: majestica_cybernetic_katana.yml
+    weight: 16
+  - id: majestica_oceans_rage.yml
+    weight: 15
+  - id: majestica_frost_scythe.yml
+    weight: 13
+  - id: majestica_storm_bringer.yml
+    weight: 10
+  - id: majestica_mjolnir.yml
+    weight: 10
+  - id: majestica_divine_reaper.yml
+    weight: 8
+  - id: majestica_demon_lords_great_axe.yml
+    weight: 5
+  - id: majestica_requiem_ninth_abyss.yml
+    weight: 4
+  - id: majestica_true_excalibur.yml
+    weight: 3
 ticket:
   material: PAPER
   name: "Elite Gacha Ticket"

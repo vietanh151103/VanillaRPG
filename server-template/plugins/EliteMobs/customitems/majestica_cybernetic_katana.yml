@@ -1,0 +1,18 @@
+isEnabled: true
+material: NETHERITE_SWORD
+name: '<italic:false><aqua>Cybernetic Katana'
+customModelV2: minecraft:cybernetic_katana
+level: 75
+lore:
+- '&bA precision blade tuned for rapid, lethal openings.'
+- '&7Fast movement and critical hits define its combat style.'
+enchantments:
+- DAMAGE_ALL,6
+- SWEEPING_EDGE,2
+- DURABILITY,4
+- elitemobs:critical_strikes,2
+- elitemobs:lightning,1
+potionEffects:
+- SPEED,0,self,continuous
+scalability: scalable
+itemType: custom

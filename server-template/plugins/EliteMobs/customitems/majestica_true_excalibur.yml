@@ -1,0 +1,19 @@
+isEnabled: true
+material: NETHERITE_SWORD
+name: '<italic:false><aqua>True Excalibur'
+customModelV2: minecraft:true_excalibur
+level: 100
+lore:
+- '&eThe sword of a rightful champion.'
+- '&7Its light grows stronger against elite enemies.'
+enchantments:
+- DAMAGE_ALL,8
+- SWEEPING_EDGE,4
+- DURABILITY,5
+- elitemobs:critical_strikes,2
+- elitemobs:hunter,2
+- elitemobs:loud_strikes,1
+potionEffects:
+- REGENERATION,0,self,onHit
+scalability: scalable
+itemType: custom

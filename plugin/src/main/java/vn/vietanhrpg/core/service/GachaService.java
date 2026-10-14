@@ -44,7 +44,8 @@ public final class GachaService implements Listener {
     private final ItemService items;
     private final ContentService content;
     private final NamespacedKey ticketKey;
-    private final List<String> eliteItemPool = new ArrayList<>();
+    private final List<PoolEntry> eliteItemPool = new ArrayList<>();
+    private int eliteItemPoolWeight;
     private final Set<java.util.UUID> rolling = new HashSet<>();
     private YamlConfiguration config;
 
@@ -67,21 +68,44 @@ public final class GachaService implements Listener {
     /** Uses the exact item list that EliteMobs exposes to its Custom Shop. */
     private void loadEliteItemPool() {
         eliteItemPool.clear();
+        eliteItemPoolWeight = 0;
+        for (Map<?, ?> configured : config.getMapList("elite-item-pool")) {
+            Object rawId = configured.get("id");
+            if (rawId == null || rawId.toString().isBlank()) continue;
+            int weight = positiveInt(configured.get("weight"), 1);
+            eliteItemPool.add(new PoolEntry(rawId.toString().trim(), weight));
+            eliteItemPoolWeight += weight;
+        }
+        if (!eliteItemPool.isEmpty()) {
+            plugin.getLogger().info("Loaded " + eliteItemPool.size() + " configured Elite gacha rewards with total weight " + eliteItemPoolWeight + ".");
+            return;
+        }
         try {
             CustomItem.getCustomItems().forEach((id, item) -> {
-                if (item.getItemType().name().equalsIgnoreCase("CUSTOM")) eliteItemPool.add(id);
+                if (item.getItemType().name().equalsIgnoreCase("CUSTOM")) addPoolEntry(id, 1);
             });
             // Some EliteMobs builds populate the item registry after plugin enable.
             // Keep the direct shop cache as a second source when it is available.
             if (eliteItemPool.isEmpty()) {
                 CustomItem.getCustomItemStackShopList().forEach(stack -> {
                     String id = stack.getItemMeta() == null ? null : stack.getItemMeta().getDisplayName();
-                    if (id != null && !id.isBlank()) eliteItemPool.add(id);
+                    if (id != null && !id.isBlank()) addPoolEntry(id, 1);
                 });
             }
         } catch (Exception exception) {
             plugin.getLogger().warning("Could not read EliteMobs custom shop pool: " + exception.getMessage());
         }
+    }
+
+    private void addPoolEntry(String id, int weight) {
+        eliteItemPool.add(new PoolEntry(id, weight));
+        eliteItemPoolWeight += weight;
+    }
+
+    private static int positiveInt(Object raw, int fallback) {
+        if (raw instanceof Number number) return Math.max(1, number.intValue());
+        try { return Math.max(1, Integer.parseInt(String.valueOf(raw))); }
+        catch (NumberFormatException ignored) { return fallback; }
     }
 
     public void open(Player player) {
@@ -133,6 +157,13 @@ public final class GachaService implements Listener {
             player.sendMessage(Component.text("A gacha roll is already running.", NamedTextColor.YELLOW));
             return;
         }
+        if (eliteItemPool.isEmpty()) loadEliteItemPool();
+        removeUnavailableRewards();
+        if (eliteItemPool.isEmpty()) {
+            rolling.remove(player.getUniqueId());
+            player.sendMessage(Component.text("The Elite gacha pool has no valid loaded items. No currency was charged.", NamedTextColor.RED));
+            return;
+        }
         long cost = count == 1 ? singleCost() : fiveCost();
         if (useTickets) {
             if (!removeTickets(player, count)) {
@@ -146,6 +177,17 @@ public final class GachaService implements Listener {
             return;
         }
         animate(player, count);
+    }
+
+    private void removeUnavailableRewards() {
+        List<String> unavailable = eliteItemPool.stream()
+                .map(PoolEntry::id)
+                .filter(id -> findCustomItem(id) == null)
+                .toList();
+        if (unavailable.isEmpty()) return;
+        eliteItemPool.removeIf(entry -> unavailable.contains(entry.id()));
+        eliteItemPoolWeight = eliteItemPool.stream().mapToInt(PoolEntry::weight).sum();
+        plugin.getLogger().warning("Removed unavailable Elite gacha rewards: " + String.join(", ", unavailable));
     }
 
     private long singleCost() { return Math.max(1, config.getLong("single-coin-cost", 250)); }
@@ -169,8 +211,13 @@ public final class GachaService implements Listener {
     }
 
     private String roll() {
-        if (eliteItemPool.isEmpty()) return null;
-        return eliteItemPool.get(ThreadLocalRandom.current().nextInt(eliteItemPool.size()));
+        if (eliteItemPool.isEmpty() || eliteItemPoolWeight <= 0) return null;
+        int target = ThreadLocalRandom.current().nextInt(eliteItemPoolWeight);
+        for (PoolEntry entry : eliteItemPool) {
+            target -= entry.weight();
+            if (target < 0) return entry.id();
+        }
+        return eliteItemPool.get(eliteItemPool.size() - 1).id();
     }
 
     private void animate(Player player, int count) {
@@ -194,7 +241,7 @@ public final class GachaService implements Listener {
         final int[] tick = {0};
         holder.task = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             for (int slot : rollingSlots(count)) {
-                inventory.setItem(slot, preview(player, eliteItemPool.get(ThreadLocalRandom.current().nextInt(eliteItemPool.size()))));
+                inventory.setItem(slot, preview(player, roll()));
             }
             tick[0]++;
             if (tick[0] >= 30) {
@@ -245,7 +292,7 @@ public final class GachaService implements Listener {
 
     private ItemStack preview(Player player, String id) {
         try {
-            CustomItem custom = CustomItem.getCustomItem(id);
+            CustomItem custom = findCustomItem(id);
             if (custom != null) {
                 ItemStack generated = custom.generateDefaultsItemStack(player, false, null);
                 if (generated != null && !generated.getType().isAir()) return generated;
@@ -259,6 +306,13 @@ public final class GachaService implements Listener {
         meta.lore(List.of(Component.text("EliteMobs item", NamedTextColor.GRAY)));
         stack.setItemMeta(meta);
         return stack;
+    }
+
+    private CustomItem findCustomItem(String id) {
+        CustomItem custom = CustomItem.getCustomItem(id);
+        if (custom != null) return custom;
+        if (id.endsWith(".yml")) return CustomItem.getCustomItem(id.substring(0, id.length() - 4));
+        return CustomItem.getCustomItem(id + ".yml");
     }
 
     private void giveEliteItem(Player player, String id) {
@@ -386,6 +440,7 @@ public final class GachaService implements Listener {
     }
 
     private record Reward(String type, String id, int amount) { }
+    private record PoolEntry(String id, int weight) { }
 
     private static final class GachaHolder implements InventoryHolder {
         private Inventory inventory;

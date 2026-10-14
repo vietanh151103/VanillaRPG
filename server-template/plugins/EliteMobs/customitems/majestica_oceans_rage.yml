@@ -1,0 +1,18 @@
+isEnabled: true
+material: TRIDENT
+name: '<italic:false><aqua>Ocean''s Rage'
+customModelV2: minecraft:oceans_rage
+level: 75
+lore:
+- '&bThe sea answers only to a relentless wielder.'
+- '&7Thrown strikes return like a crashing tide.'
+enchantments:
+- IMPALING,6
+- LOYALTY,3
+- CHANNELING,1
+- elitemobs:lightning,1
+- elitemobs:hunter,1
+potionEffects:
+- DOLPHINS_GRACE,0,self,continuous
+scalability: scalable
+itemType: custom

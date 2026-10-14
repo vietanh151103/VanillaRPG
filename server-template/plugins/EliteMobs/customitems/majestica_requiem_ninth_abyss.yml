@@ -1,0 +1,18 @@
+isEnabled: true
+material: NETHERITE_SWORD
+name: '<italic:false><aqua>Requiem of the Ninth Abyss'
+customModelV2: minecraft:requiem_ninth_abyss
+level: 100
+lore:
+- '&5A blade that remembers every soul lost below the world.'
+- '&7Critical strikes tear open an abyssal wound.'
+enchantments:
+- DAMAGE_ALL,8
+- SWEEPING_EDGE,4
+- KNOCKBACK,2
+- elitemobs:critical_strikes,2
+- elitemobs:hunter,2
+potionEffects:
+- WITHER,1,target,onHit
+scalability: scalable
+itemType: custom
