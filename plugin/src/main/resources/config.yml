@@ -43,8 +43,8 @@ item-presentation:
   enabled: false
 
 market:
-  # Disabled while the market transaction layer is being migrated to Elite Coins.
-  enabled: false
+  # Every serializable ItemStack can be listed, including EliteMobs and custom items.
+  enabled: true
   min-price: 1
   max-price: 1000000000
   # Initial price shown in the GUI sell screen. It is clamped to min/max-price.

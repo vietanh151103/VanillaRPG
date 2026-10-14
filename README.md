@@ -28,7 +28,7 @@ Mục tiêu của pack là giữ nhịp chơi Minecraft quen thuộc nhưng tạ
 
 ### Kinh tế và hoạt động
 
-- Player market để mua bán giữa người chơi: `/market`.
+- Player market để mua bán giữa người chơi: `/market`. Mọi item không soulbound, gồm EliteMobs/custom item, đều có thể niêm yết.
 - Shop vật phẩm cơ bản và bán khoáng sản: `/shop`.
 - Profile, quest, achievement, title, token và dungeon do VanillaRPG-Core quản lý.
 - Hiển thị máu mob hostile và damage nổi khi chiến đấu.

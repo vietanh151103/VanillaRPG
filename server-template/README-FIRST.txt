@@ -1,5 +1,10 @@
 VanillaRPG portable server template - target: Minecraft/Paper 26.2, Java 25
 
+Release safety:
+- The release server ZIP is intentionally clean: it contains no world, player
+  inventories, EliteMobs player progression/pets, RPG database, operators,
+  cached skins, logs or backups. The first launch creates a new server state.
+
 1) Install Java 25, OR place a portable Java runtime in:
    runtime\bin\java.exe
 

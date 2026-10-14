@@ -178,8 +178,8 @@ shop:
       amount: 4
       price: 35
 market:
-  # Disabled while the market transaction layer is being migrated to Elite Coins.
-  enabled: false
+  # Every serializable ItemStack can be listed, including EliteMobs and custom items.
+  enabled: true
   gui-default-price: 100
   min-price: 1
   max-price: 1000000000

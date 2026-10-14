@@ -1,0 +1,10 @@
+VanillaRPG-Core 0.7.9 - Open Player Market
+
+- Re-enables the Player Market with Elite Coin transactions.
+- Every serializable non-soulbound ItemStack can be listed, including EliteMobs and custom items.
+- Soulbound EliteMobs items are rejected by both the command and GUI listing paths.
+
+After installing
+
+1. Replace the Core JAR with VanillaRPG-Core-0.7.9.jar.
+2. Run /rpg reload after confirming market.enabled: true in config.yml.

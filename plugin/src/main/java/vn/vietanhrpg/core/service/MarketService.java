@@ -2,6 +2,7 @@ package vn.vietanhrpg.core.service;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import com.magmaguy.elitemobs.api.utils.EliteItemManager;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -74,6 +75,10 @@ public final class MarketService {
         if (!ready(player)) return false;
         if (escrow == null || escrow.getType().isAir() || escrow.getAmount() <= 0) {
             player.sendMessage(Component.text("Place an item stack in the sell slot first.", NamedTextColor.RED));
+            return false;
+        }
+        if (isSoulbound(escrow)) {
+            player.sendMessage(Component.text("Soulbound items cannot be listed on the player market.", NamedTextColor.RED));
             return false;
         }
         if (price < minPrice() || price > maxPrice()) {
@@ -272,6 +277,16 @@ public final class MarketService {
             if (remaining <= 0) return true;
         }
         return false;
+    }
+
+    private boolean isSoulbound(ItemStack item) {
+        try {
+            return item.hasItemMeta()
+                    && Boolean.TRUE.equals(EliteItemManager.hasSoulbindEnchantment(item.getItemMeta()));
+        } catch (RuntimeException ignored) {
+            // A malformed third-party item must not make the market unusable.
+            return false;
+        }
     }
 
     private String pretty(String raw) {
