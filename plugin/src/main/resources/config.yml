@@ -20,6 +20,22 @@ economy:
 poker:
   # Enable after PokerPack is merged into the resource pack sent by server.properties.
   item-models-enabled: true
+  # Players may switch to their two private hole cards in hotbar slots 1 and 2.
+  # Note: a held card is visible to nearby players, like every normal Minecraft item.
+  allow-hold-hole-cards: true
+  room:
+    # The fallback room is built when false. To use a custom room, put a WorldEdit
+    # .schem file in plugins/VanillaRPG-Core/schematics/ and set this to true.
+    schematic:
+      enabled: false
+      file: poker_room.schem
+      # false means air in the schematic also clears blocks within its pasted area.
+      ignore-air-blocks: false
+    # The schematic origin, seats, spawn point and community cards use this anchor.
+    anchor:
+      x: 0
+      y: 64
+      z: 0
 
 # Disabled by default: EliteMobs owns item names, rarity, lore and gear
 # presentation. Enable only if VanillaRPG should modify item presentation.

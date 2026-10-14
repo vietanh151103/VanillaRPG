@@ -2,7 +2,7 @@ name: VanillaRPG-Core
 version: '${version}'
 main: vn.vietanhrpg.core.VanillaRpgPlugin
 api-version: '26.2'
-softdepend: [BetterStructures, EliteMobs]
+softdepend: [BetterStructures, EliteMobs, WorldEdit]
 author: VietAnh
 description: Portable Vanilla+ RPG core for a small Paper server.
 

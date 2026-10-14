@@ -15,6 +15,8 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:26.2.build.132-stable")
     // EliteMobs owns the server currency. The jar is shipped in the server template.
     compileOnly(files("../server-template/plugins/EliteMobs.jar"))
+    // Optional at runtime. Used only when poker.room.schematic.enabled is true.
+    compileOnly(files("../server-template/plugins/WorldEdit.jar"))
 }
 
 java {

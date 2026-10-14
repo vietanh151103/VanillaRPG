@@ -1,6 +1,16 @@
 package vn.vietanhrpg.core.service;
 
 import com.magmaguy.elitemobs.economy.EconomyHandler;
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
+import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.session.ClipboardHolder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -42,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -364,6 +375,7 @@ public final class PokerTableService implements Listener {
     @EventHandler
     public void onPokerHeldItem(PlayerItemHeldEvent event) {
         if (!seats.containsKey(event.getPlayer().getUniqueId())) return;
+        if (plugin.getConfig().getBoolean("poker.allow-hold-hole-cards", true)) return;
         if (event.getNewSlot() == 0 || event.getNewSlot() == 1) {
             event.setCancelled(true);
             event.getPlayer().sendMessage(Component.text("Your hole cards stay private; use the action items in slots 6-9.", NamedTextColor.YELLOW));
@@ -487,27 +499,80 @@ public final class PokerTableService implements Listener {
         if (world != null) return world;
         world = Bukkit.getWorld(WORLD_NAME);
         if (world == null) world = new WorldCreator(WORLD_NAME).type(org.bukkit.WorldType.FLAT).createWorld();
-        if (!layoutBuilt) { layoutBuilt = true; buildRoom(); }
+        configureWorld();
+        if (!layoutBuilt) {
+            layoutBuilt = true;
+            if (!pasteConfiguredSchematic()) buildRoom();
+        }
         if (!displayCleanupDone) {
             for (Entity entity : world.getEntities()) if (entity instanceof Display) entity.remove();
             displayCleanupDone = true;
         }
         return world;
     }
+
+    private void configureWorld() {
+        if (world == null) return;
+        world.setSpawnLocation(roomX(), roomY() + 1, roomZ());
+        try { world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false); } catch (Exception ignored) { }
+    }
+
+    /**
+     * Pastes a WorldEdit schematic only when explicitly enabled. The custom room
+     * must be authored around the configured anchor: the board is centered at
+     * anchor + (0, 3, 0.5), and seats are x=-3/0/3, z=-6/+6 from the anchor.
+     */
+    private boolean pasteConfiguredSchematic() {
+        if (!plugin.getConfig().getBoolean("poker.room.schematic.enabled", false)) return false;
+        if (Bukkit.getPluginManager().getPlugin("WorldEdit") == null) {
+            plugin.getLogger().warning("Poker schematic is enabled but WorldEdit is unavailable; building the fallback room.");
+            return false;
+        }
+        File directory = new File(plugin.getDataFolder(), "schematics");
+        String configuredName = plugin.getConfig().getString("poker.room.schematic.file", "poker_room.schem");
+        try {
+            File root = directory.getCanonicalFile();
+            File schematic = new File(root, configuredName).getCanonicalFile();
+            if (!schematic.getPath().startsWith(root.getPath() + File.separator) || !schematic.isFile()) {
+                plugin.getLogger().warning("Poker schematic not found: " + configuredName + ". Put it in " + root.getPath());
+                return false;
+            }
+            ClipboardFormat format = ClipboardFormats.findByFile(schematic);
+            if (format == null) {
+                plugin.getLogger().warning("Poker schematic has an unsupported format: " + schematic.getName());
+                return false;
+            }
+            try (ClipboardReader reader = format.getReader(new FileInputStream(schematic))) {
+                Clipboard clipboard = reader.read();
+                try (EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(world))) {
+                    Operations.complete(new ClipboardHolder(clipboard)
+                            .createPaste(editSession)
+                            .to(BlockVector3.at(roomX(), roomY(), roomZ()))
+                            .ignoreAirBlocks(plugin.getConfig().getBoolean("poker.room.schematic.ignore-air-blocks", false))
+                            .build());
+                }
+            }
+            plugin.getLogger().info("Pasted poker schematic " + schematic.getName() + " at " + roomX() + ", " + roomY() + ", " + roomZ());
+            return true;
+        } catch (Exception exception) {
+            plugin.getLogger().warning("Could not paste poker schematic: " + exception.getMessage());
+            return false;
+        }
+    }
+
     private void buildRoom() {
         if (world == null) return;
-        world.setSpawnLocation(0, 65, 0); try { world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false); } catch (Exception ignored) {}
-        for (int x = -12; x <= 12; x++) for (int z = -9; z <= 9; z++) for (int y = 63; y <= 69; y++) world.getBlockAt(x, y, z).setType(Material.AIR);
-        for (int x = -10; x <= 10; x++) for (int z = -7; z <= 7; z++) { world.getBlockAt(x, 63, z).setType(Material.BLACK_CONCRETE); world.getBlockAt(x, 64, z).setType(Material.GREEN_WOOL); }
-        for (int x = -5; x <= 5; x++) for (int z = -2; z <= 2; z++) world.getBlockAt(x, 65, z).setType(Material.LIME_WOOL);
-        for (int i = 0; i < MAX_PLAYERS; i++) { Location l = spawnFor(i); world.getBlockAt(l.getBlockX(), 64, l.getBlockZ()).setType(Material.DARK_OAK_STAIRS); }
+        for (int x = -12; x <= 12; x++) for (int z = -9; z <= 9; z++) for (int y = -1; y <= 5; y++) world.getBlockAt(roomX() + x, roomY() + y, roomZ() + z).setType(Material.AIR);
+        for (int x = -10; x <= 10; x++) for (int z = -7; z <= 7; z++) { world.getBlockAt(roomX() + x, roomY() - 1, roomZ() + z).setType(Material.BLACK_CONCRETE); world.getBlockAt(roomX() + x, roomY(), roomZ() + z).setType(Material.GREEN_WOOL); }
+        for (int x = -5; x <= 5; x++) for (int z = -2; z <= 2; z++) world.getBlockAt(roomX() + x, roomY() + 1, roomZ() + z).setType(Material.LIME_WOOL);
+        for (int i = 0; i < MAX_PLAYERS; i++) { Location l = spawnFor(i); world.getBlockAt(l.getBlockX(), roomY(), l.getBlockZ()).setType(Material.DARK_OAK_STAIRS); }
     }
     private Location spawnFor(int seat) {
         int row = seat < 3 ? 1 : -1;
         int index = seat % 3;
         int x = -3 + index * 3;
         int z = row * 6;
-        return new Location(ensureWorld(), x, 65, z, row > 0 ? 180.0f : 0.0f, 0.0f);
+        return new Location(ensureWorld(), roomX() + x, roomY() + 1, roomZ() + z, row > 0 ? 180.0f : 0.0f, 0.0f);
     }
     private int firstFreeSeat() { Set<Integer> used = new HashSet<>(); seats.values().forEach(s -> used.add(s.seat)); used.addAll(pendingSeats.values()); for (int i = 0; i < MAX_PLAYERS; i++) if (!used.contains(i)) return i; return 0; }
     private List<Seat> activeSeats() { return seats.values().stream().filter(s -> !s.folded).sorted(java.util.Comparator.comparingInt(s -> s.seat)).toList(); }
@@ -519,7 +584,7 @@ public final class PokerTableService implements Listener {
         clearCards();
         for (int i = 0; i < board.size(); i++) {
             // The table surface is one block above the original room floor.
-            Location location = new Location(ensureWorld(), -2 + i * 1.0, 67.1, 0.5);
+            Location location = new Location(ensureWorld(), roomX() - 2 + i * 1.0, roomY() + 3.1, roomZ() + 0.5);
             ItemDisplay display = world.spawn(location, ItemDisplay.class);
             display.setItemStack(cardStack(board.get(i)));
             // CENTER keeps the card visible from every seat instead of showing its edge.
@@ -535,6 +600,9 @@ public final class PokerTableService implements Listener {
         }
     }
     private void clearCards() { for (Entity display : cardDisplays) display.remove(); cardDisplays.clear(); }
+    private int roomX() { return plugin.getConfig().getInt("poker.room.anchor.x", 0); }
+    private int roomY() { return plugin.getConfig().getInt("poker.room.anchor.y", 64); }
+    private int roomZ() { return plugin.getConfig().getInt("poker.room.anchor.z", 0); }
     private static ItemStack cardStack(Card card) { ItemStack item = new ItemStack(Material.PAPER); ItemMeta meta = item.getItemMeta(); meta.displayName(Component.text(card.label(), card.color())); meta.setItemModel(new NamespacedKey("pokerpack", "card_" + card.modelCode())); item.setItemMeta(meta); return item; }
     private static List<Card> newDeck() { List<Card> deck = new ArrayList<>(); for (Suit suit : Suit.values()) for (int rank = 2; rank <= 14; rank++) deck.add(new Card(rank, suit)); Collections.shuffle(deck); return deck; }
     private enum Phase { WAITING, PREFLOP, FLOP, TURN, RIVER }

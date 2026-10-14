@@ -88,6 +88,7 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         saveResourceIfMissing("dungeons.yml");
         saveResourceIfMissing("gacha.yml");
         saveResourceIfMissing("bosses.yml");
+        saveResourceIfMissing("schematics/README.txt");
         if (!validateConfigurationFiles()) {
             getLogger().severe("Configuration validation failed. Existing files were left unchanged; disabling plugin.");
             getServer().getPluginManager().disablePlugin(this);
