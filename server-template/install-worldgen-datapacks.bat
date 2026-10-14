@@ -2,7 +2,7 @@
 setlocal
 
 set "SCRIPT_DIR=%~dp0"
-set "WORLD_NAME=vanillarpg_terraform_test"
+set "WORLD_NAME=world"
 set "PACK_SOURCE=%SCRIPT_DIR%worldgen-datapacks"
 set "PACK_TARGET=%SCRIPT_DIR%%WORLD_NAME%\datapacks"
 

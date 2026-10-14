@@ -1,0 +1,7 @@
+New worlds spawn structures: true
+Valid worlds v2:
+  world: true
+  world_nether: true
+  world_the_end: true
+  em_adventurers_guild: false
+  poker_room: true

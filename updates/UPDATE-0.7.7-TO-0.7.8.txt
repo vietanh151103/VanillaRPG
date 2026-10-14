@@ -1,0 +1,12 @@
+VanillaRPG-Core 0.7.8 - Default World Setup
+
+- Fresh server installs now use the standard `world` folder instead of `vanillarpg_terraform_test`.
+- TerraformGenerator, EliteMobs and BetterStructures are configured for `world`, `world_nether` and `world_the_end`.
+- The worldgen datapack installer now creates `world/datapacks` before Paper first generates the world.
+- Renamed the installer to `install-worldgen-datapacks.bat`.
+
+Upgrade notes
+
+1. This does not rename an existing world automatically.
+2. To use a fresh generated world, stop the server and ensure `server-template/world/` does not exist before starting it.
+3. Keep old worlds as backups; they are server data and are not part of Git releases.

@@ -21,7 +21,7 @@ setupDoneV5: true
 # Sets if elites will prevent spawning vanilla reinforcements, such as for the Zombie reinforcement feature.
 preventVanillaReinforcementsForEliteEntities: true
 # Sets the default spawn location of the server for EliteMobs. /em spawntp will lead to this location.
-defaultSpawnLocation: vanillarpg_terraform_test,0.0,81.0,0.0,0.0,0.0
+defaultSpawnLocation: world,0.0,81.0,0.0,0.0,0.0
 # Sets if EliteMobs will regenerate blocks blown up by elites.
 doExplosionRegen: true
 # Sets if the explosion regen will also regenerate the contents of containers such as chests.

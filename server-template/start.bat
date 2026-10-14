@@ -10,7 +10,7 @@ set "PAPER_URL=https://api.papermc.io/v2/projects/paper/versions/%PAPER_VERSION%
 set "JAVA_CMD=java"
 if exist "runtime\bin\java.exe" set "JAVA_CMD=%CD%\runtime\bin\java.exe"
 
-call "%~dp0install-worldgen-test-datapacks.bat"
+call "%~dp0install-worldgen-datapacks.bat"
 if errorlevel 1 (
   echo [ERROR] Worldgen datapacks could not be installed. Paper was not started.
   pause

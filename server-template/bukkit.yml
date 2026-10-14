@@ -42,8 +42,7 @@ ticks-per:
   autosave: 6000
 aliases: now-in-commands.yml
 
-# Isolated worldgen trial. Keep the existing `world` untouched; create this
-# world only when testing TerraformGenerator.
+# Generate the default world with TerraformGenerator on a fresh server.
 worlds:
-  vanillarpg_terraform_test:
+  world:
     generator: TerraformGenerator

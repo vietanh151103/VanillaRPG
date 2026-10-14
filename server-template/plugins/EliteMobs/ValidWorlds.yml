@@ -1,0 +1,9 @@
+validWorlds:
+  poker_room: true
+  em_steamworks_lair_1: true
+  em_the_dark_cathedral_1: true
+  em_adventurers_guild: true
+  em_fireworks_1: true
+  world: true
+  world_nether: true
+  world_the_end: true
