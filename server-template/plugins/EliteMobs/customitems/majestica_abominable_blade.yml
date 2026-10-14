@@ -2,17 +2,18 @@ isEnabled: true
 material: NETHERITE_SWORD
 name: '<italic:false><aqua>Abominable Blade'
 customModelV2: minecraft:abominable_blade
-level: 70
+level: 100
 lore:
 - '&5A cursed blade from a forgotten winter tomb.'
 - '&7Hits inflict decay and reward ruthless execution.'
 enchantments:
-- DAMAGE_ALL,6
-- SWEEPING_EDGE,3
-- KNOCKBACK,1
-- elitemobs:critical_strikes,1
-- elitemobs:hunter,1
+- DAMAGE_ALL,8
+- SWEEPING_EDGE,4
+- KNOCKBACK,2
+- elitemobs:critical_strikes,2
+- elitemobs:hunter,2
 potionEffects:
-- WITHER,0,target,onHit
+- WITHER,1,target,onHit
 scalability: scalable
 itemType: custom
+soulbound: true

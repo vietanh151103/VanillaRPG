@@ -7,13 +7,14 @@ lore:
 - '&eThe sword of a rightful champion.'
 - '&7Its light grows stronger against elite enemies.'
 enchantments:
-- DAMAGE_ALL,8
-- SWEEPING_EDGE,4
+- DAMAGE_ALL,10
+- SWEEPING_EDGE,5
 - DURABILITY,5
-- elitemobs:critical_strikes,2
-- elitemobs:hunter,2
-- elitemobs:loud_strikes,1
+- elitemobs:critical_strikes,3
+- elitemobs:hunter,3
+- elitemobs:loud_strikes,2
 potionEffects:
 - REGENERATION,0,self,onHit
 scalability: scalable
 itemType: custom
+soulbound: true

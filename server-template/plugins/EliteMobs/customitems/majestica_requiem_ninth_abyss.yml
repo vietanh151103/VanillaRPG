@@ -7,12 +7,14 @@ lore:
 - '&5A blade that remembers every soul lost below the world.'
 - '&7Critical strikes tear open an abyssal wound.'
 enchantments:
-- DAMAGE_ALL,8
-- SWEEPING_EDGE,4
-- KNOCKBACK,2
-- elitemobs:critical_strikes,2
-- elitemobs:hunter,2
+- DAMAGE_ALL,10
+- SWEEPING_EDGE,5
+- KNOCKBACK,3
+- elitemobs:critical_strikes,3
+- elitemobs:hunter,3
+- elitemobs:lightning,1
 potionEffects:
 - WITHER,1,target,onHit
 scalability: scalable
 itemType: custom
+soulbound: true
