@@ -1,0 +1,9 @@
+{
+  "pack": {
+    "description": "VanillaRPG Pack - Majestica weapons and Poker cards",
+    "supported_formats": [63, 88],
+    "pack_format": 88,
+    "min_format": 63,
+    "max_format": 88
+  }
+}

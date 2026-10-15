@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:item_frame",
+    "minecraft:glass_pane"
+  ],
+  "result": {
+    "components": {
+      "minecraft:entity_data": {
+        "id": "minecraft:item_frame",
+        "Invisible": true
+      },
+      "minecraft:item_model": "pokerpack:invisible_item_frame",
+      "minecraft:item_name": {
+        "translate": "Invisible Item Frame"
+      }
+    },
+    "count": 1,
+    "id": "minecraft:item_frame"
+  }
+}

@@ -55,16 +55,14 @@ public final class ProgressionGuiService implements Listener {
         skull.displayName(text(player.getName(), NamedTextColor.GOLD, true));
         List<Component> headLore = new ArrayList<>();
         headLore.add(gray("Title: " + progression.selectedTitleName(player)));
-        headLore.add(gray("Blueprints: " + database.blueprintCount(player.getUniqueId())));
-        headLore.add(gray("Dungeon clears: " + database.getStat(player.getUniqueId(), "dungeon_clears")));
+        headLore.add(gray("Elite items: " + database.counter(player.getUniqueId(), "elite_items_received")));
+        headLore.add(gray("Gacha pulls: " + database.counter(player.getUniqueId(), "gacha_spins")));
         skull.lore(headLore);
         head.setItemMeta(skull);
         inventory.setItem(4, head);
 
         inventory.setItem(10, item(Material.GOLD_INGOT, "Elite Coins", NamedTextColor.GOLD,
                 List.of(gray(String.valueOf(economy.coin(player.getUniqueId()))))));
-        inventory.setItem(11, item(Material.AMETHYST_SHARD, "Token", NamedTextColor.AQUA,
-                List.of(gray(String.valueOf(economy.token(player.getUniqueId()))))));
 
         int dailyDone = progression.completedCount(player, QuestPeriod.DAILY);
         int dailyTotal = progression.totalCount(player, QuestPeriod.DAILY);
@@ -82,15 +80,11 @@ public final class ProgressionGuiService implements Listener {
         inventory.setItem(16, item(Material.NETHER_STAR, "Achievements", NamedTextColor.YELLOW,
                 List.of(gray(database.achievements(player.getUniqueId()).size() + " unlocked"), yellow("Click to view"))));
 
-        inventory.setItem(21, item(Material.ENDER_EYE, "Dungeons", NamedTextColor.DARK_AQUA,
-                List.of(gray(database.getStat(player.getUniqueId(), "dungeon_clears") + " clears"), yellow("Click to open"))));
-
-        List<Component> craftLore = new ArrayList<>();
-        craftLore.add(line("Rare: " + database.getStat(player.getUniqueId(), "rare_crafted"), NamedTextColor.BLUE));
-        craftLore.add(line("Epic: " + database.getStat(player.getUniqueId(), "epic_crafted"), NamedTextColor.DARK_PURPLE));
-        craftLore.add(line("Legendary: " + database.getStat(player.getUniqueId(), "legendary_crafted"), NamedTextColor.GOLD));
-        craftLore.add(line("Mythic: " + database.getStat(player.getUniqueId(), "mythic_crafted"), NamedTextColor.RED));
-        inventory.setItem(22, item(Material.SMITHING_TABLE, "Forge Statistics", NamedTextColor.WHITE, craftLore));
+        List<Component> activityLore = new ArrayList<>();
+        activityLore.add(line("Hostile mobs: " + database.counter(player.getUniqueId(), "kills_hostile"), NamedTextColor.RED));
+        activityLore.add(line("Fish caught: " + database.counter(player.getUniqueId(), "fish_caught"), NamedTextColor.BLUE));
+        activityLore.add(line("Blocks mined: " + database.counter(player.getUniqueId(), "mined_blocks"), NamedTextColor.GRAY));
+        inventory.setItem(22, item(Material.COMPASS, "Adventure Statistics", NamedTextColor.WHITE, activityLore));
 
         player.openInventory(inventory);
     }
@@ -98,19 +92,37 @@ public final class ProgressionGuiService implements Listener {
     public void openQuests(Player player) {
         progression.ensure(player);
         QuestHolder holder = new QuestHolder();
-        Inventory inv = Bukkit.createInventory(holder, 54, Component.text("Daily & Weekly Quests", NamedTextColor.GREEN));
+        Inventory inv = Bukkit.createInventory(holder, 27, Component.text("Quest Hub", NamedTextColor.GOLD));
         holder.inventory = inv;
-        int[] dailySlots = {10, 12, 14};
-        int[] weeklySlots = {28, 30, 32};
+
         List<QuestProgressView> daily = progression.quests(player, QuestPeriod.DAILY);
         List<QuestProgressView> weekly = progression.quests(player, QuestPeriod.WEEKLY);
-        for (int i = 0; i < daily.size() && i < dailySlots.length; i++) inv.setItem(dailySlots[i], questItem(daily.get(i)));
-        for (int i = 0; i < weekly.size() && i < weeklySlots.length; i++) inv.setItem(weeklySlots[i], questItem(weekly.get(i)));
-        inv.setItem(4, item(Material.SUNFLOWER, "Daily Quests", NamedTextColor.GREEN,
-                List.of(gray("Reset key: " + progression.periodKey(QuestPeriod.DAILY)))));
-        inv.setItem(22, item(Material.CLOCK, "Weekly Quests", NamedTextColor.AQUA,
-                List.of(gray("Reset key: " + progression.periodKey(QuestPeriod.WEEKLY)))));
-        inv.setItem(49, item(Material.PLAYER_HEAD, "Back to Profile", NamedTextColor.YELLOW, List.of()));
+        inv.setItem(11, item(Material.WRITABLE_BOOK, "Daily Quests", NamedTextColor.GREEN,
+                List.of(gray(completed(daily) + " / " + daily.size() + " completed"),
+                        gray("Resets daily"), yellow("Click to open"))));
+        inv.setItem(13, item(Material.CLOCK, "Weekly Quests", NamedTextColor.AQUA,
+                List.of(gray(completed(weekly) + " / " + weekly.size() + " completed"),
+                        gray("Resets every Monday"), yellow("Click to open"))));
+        inv.setItem(15, item(Material.VILLAGER_SPAWN_EGG, "EliteMobs NPC Quests", NamedTextColor.LIGHT_PURPLE,
+                List.of(gray("Visit the Adventurer's Guild"), gray("to accept and turn in NPC quests."),
+                        yellow("Click to open Adventurer's Guild"))));
+        inv.setItem(22, item(Material.PLAYER_HEAD, "Back to Profile", NamedTextColor.YELLOW, List.of()));
+        player.openInventory(inv);
+    }
+
+    private void openQuestPeriod(Player player, QuestPeriod period) {
+        progression.ensure(player);
+        QuestPeriodHolder holder = new QuestPeriodHolder(period);
+        String title = period == QuestPeriod.DAILY ? "Daily Quests" : "Weekly Quests";
+        NamedTextColor color = period == QuestPeriod.DAILY ? NamedTextColor.GREEN : NamedTextColor.AQUA;
+        Inventory inv = Bukkit.createInventory(holder, 27, Component.text(title, color));
+        holder.inventory = inv;
+        List<QuestProgressView> quests = progression.quests(player, period);
+        int[] slots = {11, 13, 15};
+        for (int i = 0; i < quests.size() && i < slots.length; i++) inv.setItem(slots[i], questItem(quests.get(i)));
+        inv.setItem(4, item(period == QuestPeriod.DAILY ? Material.SUNFLOWER : Material.CLOCK, title, color,
+                List.of(gray(period == QuestPeriod.DAILY ? "Resets daily" : "Resets every Monday"))));
+        inv.setItem(22, item(Material.ARROW, "Back to Quest Hub", NamedTextColor.YELLOW, List.of()));
         player.openInventory(inv);
     }
 
@@ -182,7 +194,8 @@ public final class ProgressionGuiService implements Listener {
     public void onClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
         InventoryHolder holder = event.getView().getTopInventory().getHolder();
-        if (!(holder instanceof ProfileHolder || holder instanceof QuestHolder || holder instanceof AchievementHolder || holder instanceof TitleHolder)) return;
+        if (!(holder instanceof ProfileHolder || holder instanceof QuestHolder || holder instanceof QuestPeriodHolder
+                || holder instanceof AchievementHolder || holder instanceof TitleHolder)) return;
         event.setCancelled(true);
         int slot = event.getRawSlot();
         if (slot < 0 || slot >= event.getView().getTopInventory().getSize()) return;
@@ -190,10 +203,19 @@ public final class ProgressionGuiService implements Listener {
             if (slot == 13 || slot == 14) openQuests(player);
             else if (slot == 15) openTitles(player);
             else if (slot == 16) openAchievements(player);
-            else if (slot == 21) {
+            return;
+        }
+        if (holder instanceof QuestHolder) {
+            if (slot == 11) openQuestPeriod(player, QuestPeriod.DAILY);
+            else if (slot == 13) openQuestPeriod(player, QuestPeriod.WEEKLY);
+            else if (slot == 15) {
                 player.closeInventory();
-                player.performCommand("dungeons");
-            }
+                player.performCommand("ag");
+            } else if (slot == 22) openProfile(player);
+            return;
+        }
+        if (holder instanceof QuestPeriodHolder) {
+            if (slot == 22) openQuests(player);
             return;
         }
         if (slot == 49) {
@@ -215,7 +237,8 @@ public final class ProgressionGuiService implements Listener {
     @EventHandler
     public void onDrag(InventoryDragEvent event) {
         InventoryHolder holder = event.getView().getTopInventory().getHolder();
-        if (holder instanceof ProfileHolder || holder instanceof QuestHolder || holder instanceof AchievementHolder || holder instanceof TitleHolder) {
+        if (holder instanceof ProfileHolder || holder instanceof QuestHolder || holder instanceof QuestPeriodHolder
+                || holder instanceof AchievementHolder || holder instanceof TitleHolder) {
             event.setCancelled(true);
         }
     }
@@ -238,9 +261,16 @@ public final class ProgressionGuiService implements Listener {
     private Component yellow(String s) { return line(s, NamedTextColor.YELLOW); }
     private Component green(String s) { return line(s, NamedTextColor.GREEN); }
     private Component red(String s) { return line(s, NamedTextColor.RED); }
+    private int completed(List<QuestProgressView> quests) { return (int) quests.stream().filter(QuestProgressView::rewarded).count(); }
 
     private static final class ProfileHolder implements InventoryHolder { private Inventory inventory; public Inventory getInventory(){return inventory;} }
     private static final class QuestHolder implements InventoryHolder { private Inventory inventory; public Inventory getInventory(){return inventory;} }
+    private static final class QuestPeriodHolder implements InventoryHolder {
+        private final QuestPeriod period;
+        private Inventory inventory;
+        private QuestPeriodHolder(QuestPeriod period) { this.period = period; }
+        public Inventory getInventory(){return inventory;}
+    }
     private static final class AchievementHolder implements InventoryHolder { private Inventory inventory; public Inventory getInventory(){return inventory;} }
     private static final class TitleHolder implements InventoryHolder {
         private Inventory inventory;

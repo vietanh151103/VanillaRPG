@@ -1,5 +1,6 @@
 package vn.vietanhrpg.core.listener;
 
+import com.magmaguy.elitemobs.api.utils.EliteItemManager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -9,6 +10,7 @@ import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.inventory.PrepareSmithingEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.world.LootGenerateEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.inventory.ItemStack;
@@ -42,6 +44,7 @@ public final class PlayerListener implements Listener {
                 plugin.getConfig().getLong("starting-balance.token", 0)
         );
         progression.ensure(event.getPlayer());
+        scanForEliteItem(event.getPlayer());
         progression.applyTitleDisplay(event.getPlayer());
 
         // EliteMobs owns item names, rarity and lore. VanillaRPG item
@@ -66,6 +69,9 @@ public final class PlayerListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onPickup(EntityPickupItemEvent event) {
+        if (event.getEntity() instanceof org.bukkit.entity.Player player) {
+            scanForEliteItem(player, event.getItem().getItemStack());
+        }
         if (!itemPresentationEnabled()) {
             return;
         }
@@ -95,8 +101,31 @@ public final class PlayerListener implements Listener {
         plugin.getServer().getScheduler().runTask(plugin, () -> {
             for (ItemStack stack : player.getInventory().getContents()) {
                 items.applyCommonRarityIfNeeded(stack);
+                scanForEliteItem(player, stack);
             }
         });
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onCommand(PlayerCommandPreprocessEvent event) {
+        String command = event.getMessage().trim().toLowerCase(java.util.Locale.ROOT);
+        if (command.equals("/ag") || command.startsWith("/ag ")
+                || command.equals("/em ag") || command.startsWith("/em ag ")
+                || command.equals("/em adventurersguild") || command.startsWith("/em adventurersguild ")) {
+            progression.recordAchievementCounter(event.getPlayer(), "adventurers_guild_visits", 1);
+        }
+    }
+
+    private void scanForEliteItem(org.bukkit.entity.Player player) {
+        for (ItemStack stack : player.getInventory().getContents()) scanForEliteItem(player, stack);
+    }
+
+    private void scanForEliteItem(org.bukkit.entity.Player player, ItemStack stack) {
+        if (stack == null || stack.getType().isAir()) return;
+        if (EliteItemManager.isEliteMobsItem(stack)
+                && database.counter(player.getUniqueId(), "elite_items_received") == 0) {
+            progression.recordAchievementCounter(player, "elite_items_received", 1);
+        }
     }
 
     @EventHandler(ignoreCancelled = true)

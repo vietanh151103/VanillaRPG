@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "minecraft:paper",
+  "result": {
+    "id": "minecraft:paper",
+    "count": 1,
+    "components": {
+      "minecraft:item_model": "pokerpack:card_d6",
+      "minecraft:item_name": {"translate":"6 of Diamonds"},
+      "minecraft:lore": [
+        "6\u2666"
+      ]
+    }
+  }
+}

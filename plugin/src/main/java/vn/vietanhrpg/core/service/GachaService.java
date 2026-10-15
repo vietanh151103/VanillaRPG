@@ -23,9 +23,11 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.magmaguy.elitemobs.items.customitems.CustomItem;
 import com.magmaguy.elitemobs.items.customenchantments.SoulbindEnchantment;
+import com.magmaguy.elitemobs.api.utils.EliteItemManager;
 import vn.vietanhrpg.core.content.ContentService;
 import vn.vietanhrpg.core.data.Database;
 import vn.vietanhrpg.core.item.ItemService;
+import vn.vietanhrpg.core.progression.ProgressionService;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -44,6 +46,7 @@ public final class GachaService implements Listener {
     private final EconomyService economy;
     private final ItemService items;
     private final ContentService content;
+    private final ProgressionService progression;
     private final NamespacedKey ticketKey;
     private final List<PoolEntry> eliteItemPool = new ArrayList<>();
     private int eliteItemPoolWeight;
@@ -51,12 +54,13 @@ public final class GachaService implements Listener {
     private YamlConfiguration config;
 
     public GachaService(JavaPlugin plugin, Database database, EconomyService economy,
-                        ItemService items, ContentService content) {
+                        ItemService items, ContentService content, ProgressionService progression) {
         this.plugin = plugin;
         this.database = database;
         this.economy = economy;
         this.items = items;
         this.content = content;
+        this.progression = progression;
         this.ticketKey = new NamespacedKey(plugin, "elite_gacha_ticket");
         reload();
     }
@@ -80,11 +84,12 @@ public final class GachaService implements Listener {
             List<ItemStack> specialBlacksmithItems = new ArrayList<>();
             List<String> fallbackItems = new ArrayList<>();
             try {
-                // This is the exact dynamic source used by EliteMobs' Special Blacksmith.
-                // It returns ItemStacks, not file IDs: retain them directly so no item is
-                // discarded merely because its displayed name is not a configuration ID.
+                // The Special Blacksmith exposes its complete GUI contents, including
+                // decorative panes. Keep only genuine EliteMobs gear as rewards.
                 CustomItem.getCustomItemStackShopList().forEach(stack -> {
-                    if (stack != null && !stack.getType().isAir()) specialBlacksmithItems.add(stack.clone());
+                    if (stack != null && !stack.getType().isAir() && EliteItemManager.isEliteMobsItem(stack)) {
+                        specialBlacksmithItems.add(stack.clone());
+                    }
                 });
                 if (specialBlacksmithItems.isEmpty()) {
                     CustomItem.getCustomItems().forEach((id, item) -> {
@@ -289,6 +294,7 @@ public final class GachaService implements Listener {
                 for (int i = 0; i < rewards.size(); i++) inventory.setItem(slots[i], preview(player, rewards.get(i)));
                 for (PoolEntry reward : rewards) giveReward(player, reward);
                 long total = database.addCounter(player.getUniqueId(), "gacha_spins", count);
+                progression.checkAchievementCounter(player, "gacha_spins", total);
                 grantMilestones(player, total - count, total);
                 rolling.remove(player.getUniqueId());
                 player.sendMessage(Component.text("Gacha complete: " + count + " pull(s). Total pulls: " + total, NamedTextColor.LIGHT_PURPLE));

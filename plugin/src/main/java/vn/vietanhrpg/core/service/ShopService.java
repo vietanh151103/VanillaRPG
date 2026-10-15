@@ -1,5 +1,6 @@
 package vn.vietanhrpg.core.service;
 
+import com.magmaguy.elitemobs.items.ItemTagger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
@@ -7,13 +8,13 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.configuration.file.YamlConfiguration;
 import vn.vietanhrpg.core.data.Database;
 import vn.vietanhrpg.core.shop.ShopCategory;
 import vn.vietanhrpg.core.shop.ShopEntry;
 import vn.vietanhrpg.core.shop.ShopTransaction;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -37,13 +38,6 @@ public final class ShopService {
             Material.COBBLESTONE, Material.STONE, Material.DEEPSLATE, Material.DIRT,
             Material.SAND, Material.GRAVEL, Material.OAK_LOG, Material.OAK_PLANKS,
             Material.GLASS, Material.BRICKS
-    );
-    private static final EnumSet<Material> SELLABLE_MINERALS = EnumSet.of(
-            Material.COAL, Material.RAW_COPPER, Material.RAW_IRON, Material.RAW_GOLD,
-            Material.REDSTONE, Material.LAPIS_LAZULI, Material.QUARTZ,
-            Material.AMETHYST_SHARD, Material.EMERALD, Material.DIAMOND,
-            Material.CHARCOAL, Material.COPPER_INGOT, Material.IRON_INGOT,
-            Material.GOLD_INGOT, Material.FLINT
     );
     private final JavaPlugin plugin;
     private final EconomyService economy;
@@ -143,7 +137,7 @@ public final class ShopService {
         }
     }
 
-    /** Sells an eligible unmodified stack without removing it. The caller removes the returned amount on success. */
+    /** Sells any priced stack without removing it. The caller removes the returned amount on success. */
     public int sellEscrow(Player player, ItemStack hand) {
         return sellEscrow(player, hand, true);
     }
@@ -155,168 +149,95 @@ public final class ShopService {
 
     private int sellEscrow(Player player, ItemStack hand, boolean announce) {
         if (hand == null || hand.getType().isAir() || hand.getAmount() <= 0) {
-            message(player, announce, "Place a plain mineral stack in the sell slot first.", NamedTextColor.RED);
+            message(player, announce, "Place an item stack in the sell slot first.", NamedTextColor.RED);
             return 0;
         }
-        if (hand.hasItemMeta() || !SELLABLE_MINERALS.contains(hand.getType())) {
-            message(player, announce, "The shop only buys plain configured minerals, not rare or RPG items.", NamedTextColor.RED);
+        SellPreview preview = sellPreview(hand);
+        if (preview.pricePerItem() <= 0) {
+            message(player, announce, "This item has no sell price.", NamedTextColor.RED);
             return 0;
         }
-        SellOffer offer = sellOffer(hand.getType());
-        if (offer == null) {
-            message(player, announce, "The shop is not buying this mineral right now.", NamedTextColor.RED);
-            return 0;
-        }
-
-        long remainingCoin = dailySellRemaining(player);
-        int remainingItems = Math.max(0, offer.maxPerDay()
-                - database.shopSaleItemAmountToday(player.getUniqueId(), todayKey(), hand.getType().name()));
-        int quantity = (int) Math.min(hand.getAmount(), Math.min(remainingCoin / offer.pricePerItem(), remainingItems));
-        if (quantity <= 0) {
-            message(player, announce, "You reached today's Coin or item sale limit. Try again tomorrow.", NamedTextColor.RED);
-            return 0;
-        }
-        long payout = quantity * offer.pricePerItem();
 
         try {
-            if (!database.creditShopSale(player.getUniqueId(), todayKey(), hand.getType().name(), quantity, payout,
-                    dailySellLimit(), offer.maxPerDay())) {
-                message(player, announce, "Sale limit changed; your minerals were not sold.", NamedTextColor.RED);
-                return 0;
-            }
+            economy.addCoin(player.getUniqueId(), preview.payout());
+            database.recordShopSale(player.getUniqueId(), hand.getType().name(), hand.getAmount(), Math.round(preview.payout()));
         } catch (RuntimeException exception) {
             message(player, announce, "Sale failed; your minerals were not sold.", NamedTextColor.RED);
             plugin.getLogger().severe("Shop sale failed for " + player.getName() + ": " + exception.getMessage());
             return 0;
         }
-
-        long remainingAfter = dailySellRemaining(player);
-        int itemRemainingAfter = Math.max(0, offer.maxPerDay()
-                - database.shopSaleItemAmountToday(player.getUniqueId(), todayKey(), hand.getType().name()));
-        message(player, announce, "Sold " + quantity + "x " + pretty(hand.getType()) + " for " + payout
-                + " Coin. Remaining today: " + itemRemainingAfter + " item(s), " + remainingAfter + " Coin.", NamedTextColor.GREEN);
-        return quantity;
+        message(player, announce, "Sold " + hand.getAmount() + "x " + pretty(hand.getType()) + " for "
+                + formatCoin(preview.payout()) + " Coin.", NamedTextColor.GREEN);
+        return hand.getAmount();
     }
 
-    public long dailySellRemaining(Player player) {
-        return Math.max(0, dailySellLimit() - database.shopSaleCoinToday(player.getUniqueId(), todayKey()));
+    /** Calculates the full-stack payout without changing contents or balance. */
+    public SellPreview sellPreview(ItemStack item) {
+        if (item == null || item.getType().isAir() || item.getAmount() <= 0) return SellPreview.unavailable(0);
+        double unitPrice = ItemTagger.isEliteItem(item)
+                ? ItemTagger.getItemValue(item) * eliteResalePercent() / 100.0
+                : configuredSellPrice(item.getType());
+        unitPrice = Math.max(0, Math.round(unitPrice * 100.0) / 100.0);
+        return new SellPreview(item.getAmount(), unitPrice, item.getAmount(), unitPrice * item.getAmount());
     }
 
-    public List<SellPrice> sellPrices() {
-        List<SellPrice> prices = new ArrayList<>();
-        ConfigurationSection section = plugin.getConfig().getConfigurationSection("shop.sell-items");
-        if (section == null) return prices;
-        for (String id : section.getKeys(false)) {
-            ConfigurationSection item = section.getConfigurationSection(id);
-            if (item == null) continue;
-            Material material = Material.matchMaterial(item.getString("material", ""));
-            long price = Math.max(0, item.getLong("price-per-item", 0));
-            int max = Math.max(1, item.getInt("max-per-day", 64));
-            if (material != null && SELLABLE_MINERALS.contains(material) && price > 0) {
-                prices.add(new SellPrice(material, price, max));
-            }
-        }
-        return prices;
-    }
-
-    public int dailySellItemRemaining(Player player, Material material) {
-        SellOffer offer = sellOffer(material);
-        if (offer == null) return 0;
-        return Math.max(0, offer.maxPerDay()
-                - database.shopSaleItemAmountToday(player.getUniqueId(), todayKey(), material.name()));
-    }
-
-    /** Calculates what a plain stack would pay without changing its contents or the player's balance. */
-    public SellPreview sellPreview(Player player, Material material, int requestedAmount) {
-        SellOffer offer = sellOffer(material);
-        if (offer == null || requestedAmount <= 0) return SellPreview.unavailable(material, requestedAmount);
-        int itemRemaining = dailySellItemRemaining(player, material);
-        long coinRemaining = dailySellRemaining(player);
-        int sellableAmount = (int) Math.min(requestedAmount,
-                Math.min(itemRemaining, coinRemaining / offer.pricePerItem()));
-        return new SellPreview(material, requestedAmount, offer.pricePerItem(), itemRemaining,
-                coinRemaining, Math.max(0, sellableAmount), Math.max(0, sellableAmount) * offer.pricePerItem());
-    }
-
-    /** Previews the whole sell chest in its slot order, sharing the player's daily Coin cap between stacks. */
-    public SellCartPreview sellCartPreview(Player player, List<ItemStack> items) {
-        long coinRemaining = dailySellRemaining(player);
-        long payout = 0;
+    /** Previews the whole sell chest. No daily or per-material caps apply. */
+    public SellCartPreview sellCartPreview(List<ItemStack> items) {
+        double payout = 0;
         int sellableItems = 0;
-        int eligibleStacks = 0;
-        int rejectedStacks = 0;
-        Map<Material, Integer> plannedPerMaterial = new java.util.EnumMap<>(Material.class);
+        int stacks = 0;
         for (ItemStack item : items) {
             if (item == null || item.getType().isAir()) continue;
-            if (item.hasItemMeta() || !SELLABLE_MINERALS.contains(item.getType())) {
-                rejectedStacks++;
-                continue;
-            }
-            SellOffer offer = sellOffer(item.getType());
-            if (offer == null) {
-                rejectedStacks++;
-                continue;
-            }
-            int alreadyPlanned = plannedPerMaterial.getOrDefault(item.getType(), 0);
-            int itemRemaining = Math.max(0, dailySellItemRemaining(player, item.getType()) - alreadyPlanned);
-            int quantity = (int) Math.min(item.getAmount(), Math.min(itemRemaining, coinRemaining / offer.pricePerItem()));
-            if (quantity <= 0) {
-                rejectedStacks++;
-                continue;
-            }
-            eligibleStacks++;
-            sellableItems += quantity;
-            long stackPayout = quantity * offer.pricePerItem();
-            payout += stackPayout;
-            coinRemaining -= stackPayout;
-            plannedPerMaterial.put(item.getType(), alreadyPlanned + quantity);
+            SellPreview preview = sellPreview(item);
+            if (preview.payout() <= 0) continue;
+            stacks++;
+            sellableItems += item.getAmount();
+            payout += preview.payout();
         }
-        return new SellCartPreview(payout, sellableItems, eligibleStacks, rejectedStacks, coinRemaining);
+        return new SellCartPreview(payout, sellableItems, stacks);
     }
 
     public List<ShopTransaction> history(Player player, int limit) {
         return database.shopHistory(player.getUniqueId(), limit);
     }
 
-    private long dailySellLimit() {
-        return Math.max(0, plugin.getConfig().getLong("shop.max-sell-coin-per-day", 750));
-    }
-
-    private SellOffer sellOffer(Material material) {
+    private double configuredSellPrice(Material material) {
         ConfigurationSection section = plugin.getConfig().getConfigurationSection("shop.sell-items");
-        if (section == null) return null;
-        for (String id : section.getKeys(false)) {
-            ConfigurationSection item = section.getConfigurationSection(id);
-            if (item == null) continue;
-            Material configured = Material.matchMaterial(item.getString("material", ""));
-            if (configured == material && SELLABLE_MINERALS.contains(configured)) {
-                long price = Math.max(0, item.getLong("price-per-item", 0));
-                int max = Math.max(1, item.getInt("max-per-day", 64));
-                return price < 1 ? null : new SellOffer(price, max);
+        if (section != null) {
+            for (String id : section.getKeys(false)) {
+                ConfigurationSection item = section.getConfigurationSection(id);
+                if (item == null) continue;
+                Material configured = Material.matchMaterial(item.getString("material", ""));
+                if (configured == material) {
+                    return Math.max(0, item.getDouble("price-per-item", 0));
+                }
             }
         }
-        return null;
+        return Math.max(0, plugin.getConfig().getDouble("shop.fallback-sell-price-per-item", 1));
     }
 
-    private String todayKey() {
-        return LocalDate.now(ZoneId.systemDefault()).toString();
+    private double eliteResalePercent() {
+        JavaPlugin eliteMobs = (JavaPlugin) org.bukkit.Bukkit.getPluginManager().getPlugin("EliteMobs");
+        if (eliteMobs != null) {
+            File economySettings = new File(eliteMobs.getDataFolder(), "EconomySettings.yml");
+            if (economySettings.isFile()) {
+                return Math.max(0, YamlConfiguration.loadConfiguration(economySettings).getDouble("itemResaleValue", 5.0));
+            }
+        }
+        return Math.max(0, plugin.getConfig().getDouble("shop.elite-resale-percent-fallback", 5.0));
     }
 
-    private record SellOffer(long pricePerItem, int maxPerDay) {
+    private String formatCoin(double amount) {
+        return amount == Math.rint(amount) ? String.valueOf((long) amount) : String.format(Locale.ROOT, "%.2f", amount);
     }
 
-    public record SellPrice(Material material, long pricePerItem, int maxPerDay) {
-    }
-
-    public record SellPreview(Material material, int requestedAmount, long pricePerItem, int itemRemaining,
-                              long coinRemaining, int sellableAmount, long payout) {
-        private static SellPreview unavailable(Material material, int requestedAmount) {
-            return new SellPreview(material, requestedAmount, 0, 0, 0, 0, 0);
+    public record SellPreview(int requestedAmount, double pricePerItem, int sellableAmount, double payout) {
+        private static SellPreview unavailable(int requestedAmount) {
+            return new SellPreview(requestedAmount, 0, 0, 0);
         }
     }
 
-    public record SellCartPreview(long payout, int sellableItems, int eligibleStacks, int unavailableStacks,
-                                  long coinRemainingAfter) {
+    public record SellCartPreview(double payout, int sellableItems, int eligibleStacks) {
     }
 
     private void message(Player player, boolean announce, String text, NamedTextColor color) {

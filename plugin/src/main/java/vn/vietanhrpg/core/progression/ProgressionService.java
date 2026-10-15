@@ -47,6 +47,7 @@ public final class ProgressionService {
         economy.ensure(player);
         ensureAssignments(player.getUniqueId(), QuestPeriod.DAILY);
         ensureAssignments(player.getUniqueId(), QuestPeriod.WEEKLY);
+        refreshAchievements(player);
     }
 
     public List<QuestProgressView> quests(Player player, QuestPeriod period) {
@@ -118,6 +119,7 @@ public final class ProgressionService {
                 long progress = database.addQuestProgress(player.getUniqueId(), q.id(), key, amount);
                 if (progress >= q.target()) {
                     database.markQuestRewarded(player.getUniqueId(), q.id(), key);
+                    recordAchievementCounter(player, "quests_completed", 1);
                     grantReward(player, q.reward());
                     player.sendMessage(Component.text("Quest complete: ", NamedTextColor.GREEN)
                             .append(Component.text(q.name(), NamedTextColor.GOLD)));
@@ -147,6 +149,25 @@ public final class ProgressionService {
                     player.sendMessage(Component.text("New title: [" + title.name() + "]", title.color()));
                 }
             }
+        }
+    }
+
+    /** Records a permanent milestone counter used by achievements/titles. */
+    public void recordAchievementCounter(Player player, String counterId, long amount) {
+        if (amount <= 0) return;
+        long total = database.addCounter(player.getUniqueId(), counterId, amount);
+        checkAchievements(player, counterId, total);
+    }
+
+    /** Checks achievements after a counter maintained by another service changes. */
+    public void checkAchievementCounter(Player player, String counterId, long currentValue) {
+        checkAchievements(player, counterId, currentValue);
+    }
+
+    /** Re-evaluates milestones from counters earned before a content update. */
+    public void refreshAchievements(Player player) {
+        for (AchievementDefinition achievement : progressionContent.achievements().values()) {
+            checkAchievements(player, achievement.counterId(), database.counter(player.getUniqueId(), achievement.counterId()));
         }
     }
 
@@ -203,6 +224,7 @@ public final class ProgressionService {
     public void applyTitleDisplay(Player player) {
         TitleDefinition title = selectedTitle(player);
         if (title == null) {
+            if (database.selectedTitle(player.getUniqueId()) != null) database.setSelectedTitle(player.getUniqueId(), null);
             player.displayName(Component.text(player.getName(), NamedTextColor.WHITE));
             return;
         }

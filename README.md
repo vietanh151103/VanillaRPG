@@ -9,7 +9,7 @@ Mục tiêu của pack là giữ nhịp chơi Minecraft quen thuộc nhưng tạ
 - Paper `26.2`
 - Java `25`
 - EliteMobs `10.9.8` (cài vào `server-template/plugins/`)
-- Client dùng resource pack của server để thấy bài Poker và vũ khí Majestica
+- Client dùng resource pack của server để thấy bài Poker, vũ khí Majestica và icon EliteMobs.
 
 ## Tính năng
 
@@ -29,8 +29,8 @@ Mục tiêu của pack là giữ nhịp chơi Minecraft quen thuộc nhưng tạ
 ### Kinh tế và hoạt động
 
 - Player market để mua bán giữa người chơi: `/market`. Mọi item không soulbound, gồm EliteMobs/custom item, đều có thể niêm yết.
-- Shop vật phẩm cơ bản và bán khoáng sản: `/shop`.
-- Profile, quest, achievement, title, token và dungeon do VanillaRPG-Core quản lý.
+- Shop vật phẩm cơ bản và bán mọi item: `/shop`. Đồ EliteMobs bán theo giá resale của EliteMobs; các item còn lại dùng giá fallback cấu hình.
+- Profile, quest, achievement và title do VanillaRPG-Core quản lý.
 - Hiển thị máu mob hostile và damage nổi khi chiến đấu.
 
 ### Thế giới
@@ -44,24 +44,18 @@ Mục tiêu của pack là giữ nhịp chơi Minecraft quen thuộc nhưng tạ
 2. Mở `server-template/`, chấp nhận EULA trong `eula.txt` nếu cần.
 3. Đặt `VanillaRPG-Core-<version>.jar` hiện hành trong `server-template/plugins/` và chỉ giữ một JAR VanillaRPG-Core.
 4. Cài `EliteMobs.jar` phiên bản `10.9.8` vào `server-template/plugins/`.
-5. Cấu hình URL resource pack trong `server-template/server.properties`:
-
-   ```properties
-   require-resource-pack=true
-   resource-pack=https://your-host/BladesOfMajestica-PokerPack-v1.3.zip
-   resource-pack-sha1=E319EDC017A45C2AD13512DA1E0F0124CE433191
-   ```
+5. ResourcePackManager sẽ tự trộn và tự host resource pack. Không cần đặt URL pack thủ công trong `server.properties`.
 
 6. Chạy `server-template/start.bat`.
-7. Khi server đã khởi động, dùng `/em reload`, đợi EliteMobs nạp xong, rồi dùng `/rpg reload` nếu vừa chỉnh cấu hình gacha.
+7. Khi server đã khởi động, đợi dòng `Resource pack is live`, rồi vào lại Minecraft. Dùng `/rpg reload` nếu vừa chỉnh quest/gacha.
 
-Resource pack gộp nằm ở `server-template/resourcepacks/BladesOfMajestica-PokerPack-v1.3.zip`. Hãy upload ZIP này lên một URL HTTPS tải trực tiếp trước khi đặt vào `server.properties`.
+Resource pack nguồn Majestica/Poker nằm trong `server-template/plugins/ResourcePackManager/resource_pack/`; RSPM sẽ tự tạo pack gộp trong `output/`.
 
 ## Cập nhật
 
 1. Tắt server và sao lưu `plugins/VanillaRPG-Core/rpg.db`.
 2. Thay JAR cũ bằng một JAR VanillaRPG-Core mới duy nhất.
-3. Nếu release đổi resource pack, upload pack mới, cập nhật URL + SHA-1, rồi khởi động lại server.
+3. Nếu release đổi resource pack, chạy `/rspm reload`, đợi pack sẵn sàng rồi vào lại server.
 4. Không thay hoặc commit `rpg.db`, `ops.json`, `usercache.json` hay thư mục world. Đây là dữ liệu runtime của server.
 
 ## Lệnh chính
@@ -72,7 +66,6 @@ Resource pack gộp nằm ở `server-template/resourcepacks/BladesOfMajestica-P
 | `/quests` | Xem nhiệm vụ |
 | `/achievements` | Xem thành tựu |
 | `/titles` | Chọn danh hiệu |
-| `/dungeons` | Mở danh sách dungeon |
 | `/market` | Mở chợ người chơi |
 | `/shop` | Mở shop |
 | `/gacha` | Mở Elite Gacha |

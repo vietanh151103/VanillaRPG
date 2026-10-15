@@ -10,14 +10,11 @@ libraries:
   - org.xerial:sqlite-jdbc:3.50.3.0
 
 commands:
-  token:
-    description: View Token balance.
-    usage: /token
   profile:
     description: Open your RPG profile.
     usage: /profile
   quests:
-    description: View Daily and Weekly quests.
+    description: Open the Quest Hub.
     usage: /quests
   achievements:
     description: View RPG achievements.
@@ -25,12 +22,6 @@ commands:
   titles:
     description: View and select unlocked titles.
     usage: /titles
-  dungeons:
-    description: Open the dungeon finder.
-    usage: /dungeons
-  dungeon:
-    description: Join, leave or configure VanillaRPG dungeons.
-    usage: /dungeon [join <id>|leave|status|setspawn <id>|resetcooldown <id>|reload]
   particles:
     description: Configure Legendary/Mythic particle effects.
     usage: /particles [all|legendary|mythic|combat|craft|materials|others] [on|off]
@@ -48,14 +39,11 @@ commands:
     usage: /poker [start|hand|fold|check|call|raise <total>|status|leave]
   rpg:
     description: VanillaRPG administration.
-    usage: /rpg <reload|givecoin|givetoken|giveitem|givegear|giveblueprint|setrarity|loot refresh <tier>>
+    usage: /rpg <reload|givecoin|giveitem|givegear|giveblueprint|setrarity|loot refresh <tier>>
 
 permissions:
   vanillarpg.admin:
     description: VanillaRPG administrative commands.
-    default: op
-  vanillarpg.dungeon.admin:
-    description: Configure and reload VanillaRPG dungeons.
     default: op
   vanillarpg.market.use:
     description: Browse, buy and claim items from the player market.

@@ -1,0 +1,6 @@
+isEnabled: true
+pluginName: EliteMobs
+zips: false
+reloadCommand: elitemobs reload
+localPath: EliteMobs/resource_pack
+cluster: true

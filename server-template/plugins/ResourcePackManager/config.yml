@@ -1,0 +1,120 @@
+# Sets the list, from highest priority (top) to lowest priority (bottom), in which the resource packs will automatically resolve merge conflicts.
+# The defaults use plugin names. If you manually added your own resource pack in the mixer folder to be merged in, add its exact filename, including .zip in the name
+priorityOrder:
+- ResourcePackManager
+- EliteMobs
+- FreeMinecraftModels
+- ModelEngine
+- Nova
+- ItemsAdder
+- Oraxen
+- BetterHUD
+- ValhallaMMO
+- MMOInventory
+- vane-core
+- RealisticSurvival
+# Automatically host the resource pack on MagmaGuy's servers
+# These servers cost money to keep running. There is no guarantee this will be an option forever.
+autoHost: true
+# Sets whether the resource pack use will be forced to clients
+forceResourcePack: true
+# Sets the message shown to players when they are prompted to accept the resource pack
+resourcePackPrompt: VanillaRPG cần resource pack để hiển thị đúng giao diện và vật
+  phẩm.
+# OPTIONAL: Copy the merged directory to a custom directory location. Useful for unusual setups, like people trying to host with a different plugin.
+# If you are hosting with a different plugin make sure to disable Auto-hosting here!
+# This will use the plugin directory as the base directory.
+# As an example, if you wanted to target ResourcePackManager's output folder, you'd do:
+# ResourcePackManage/output
+# If you don't know what any of what is written here means, just don't touch this setting!
+resourcePackRerouting: ''
+# Enables automatic conversion of the merged Java resource pack to a Bedrock resource pack for GeyserMC.
+bedrockConversionEnabled: true
+# Automatically installs and updates the universal ResourcePackManager.jar as a Geyser extension for custom Bedrock entity models.
+# Set false to prevent future extension installation and update staging. Existing extension JARs must be removed while Geyser is stopped.
+geyserExtensionAutoInstall: true
+# Automatically deploy the converted Bedrock resource pack to the Geyser packs folder.
+bedrockAutoDeployToGeyser: true
+# Path to the Geyser packs folder. Leave empty to auto-detect.
+bedrockGeyserFolder: ''
+# Enables verbose per-item / per-bone progress logging from the Bedrock conversion pipeline.
+# Default false — when Geyser is installed the converter walks every items definition in the
+# merged Java pack and previously emitted dozens to hundreds of progress and 'unsupported
+# Java condition X' lines per /reload, which looked alarming despite indicating normal
+# operation. Leave this off for clean console output; flip on if you are debugging a Bedrock
+# conversion issue and want to see every per-item / per-attachable / per-mapping step.
+bedrockConverterDebug: false
+# Prints every step of resource pack preparation: each pack staged, each cluster merged,
+# each stability check, the hosting handshake, and so on.
+# Default false. Normally the only thing worth reporting is whether the pack ended up
+# reaching players and, if it did not, why. Turn this on when a pack is not behaving and
+# you want to see exactly which step produced the result.
+verboseLogging: false
+# Fallback to a local HTTP server when uploading the pack to magmaguy.com fails.
+# When enabled (default), if the upload fails for any reason (server down, file too large, etc.)
+# RPM will start a local HTTP server on `selfHostPort` and use that URL to push the pack to players.
+# The pack URL must pass local download and external reachability checks before use.
+# If verification fails or is unavailable, RPM keeps trying remote hosting.
+# Interaction with selfHostForce: forced=true always self-hosts regardless of this flag.
+selfHostEnabled: true
+# Port for the self-host HTTP server.
+# -1 (default) = auto-derive: HTTP port = Minecraft server port + networkHttpOffset-v2.
+#   This makes single-host networks (multiple backends on localhost) auto-stagger:
+#   each backend already has a unique MC port, so each gets a unique HTTP port,
+#   with zero admin configuration.
+# Set to any positive value to force an explicit port (legacy behaviour, default was 25567).
+selfHostPort: -1
+# Fallback offset added to the Minecraft server port to derive the HTTP port when selfHostPort = -1.
+# Default 1 => MC 25565 -> HTTP 25566, MC 25584 -> HTTP 25585, etc.
+# Why 1: most shared / managed Minecraft hosting (Pterodactyl-based panels, etc.)
+#   allocates a narrow port range per container (often only 4–10 ports). Larger
+#   offsets land outside the range and the host firewall silently blocks the HTTP
+#   port. Offset 1 fits even tight allocations. Self-hosted admins with full port
+#   control can bump this to any value; proxies receive the exact bound HTTP port
+#   through RSPM's automatic backend endpoint announcement.
+# Note: if your host enables rcon by default on MC port + 1, choose 2 or 3 instead
+#   to avoid a collision. Check server.properties `rcon.port=`.
+networkHttpOffset-v2: 1
+# Public hostname or IP that clients use to reach your self-host server.
+# Leave empty to auto-detect, in priority order:
+#   1. api.ipify.org / checkip.amazonaws.com (returns the public IPv4 of THIS host)
+#   2. Bukkit.getIp() (the server's bind address — usually 0.0.0.0 or a LAN IP)
+#   3. InetAddress.getLocalHost() (best-effort)
+#   4. localhost (last-resort fallback; clients outside the box won't reach this)
+# Unless selfHostForce=true, if auto-detection lands on a non-routable
+# address (10.*, 172.16-31.*, 192.168.*, 127.*) the reachability probe will fail
+# and the plugin will switch to remote hosting. Set this explicitly to your public
+# hostname (e.g. play.example.com) for the most reliable self-host setup.
+selfHostExternalHost: ''
+# Optional complete URL players use to download the self-hosted Java resource pack.
+# Example: https://packs.example.com/rspm.zip (HTTPS defaults to external port 443).
+# Leave empty to keep the existing host detection and selfHostExternalHost/selfHostPort behavior.
+# When set, this exact URL is used for player delivery and the external reachability probe.
+# Include the public pack path; no /rspm.zip suffix is added automatically.
+# selfHostPort still controls the internal HTTP listener. Backend/proxy polling is unchanged.
+# Your reverse proxy must route this URL to the internal /rspm.zip endpoint and handle TLS.
+# Only HTTP/HTTPS URLs without embedded credentials or fragments are accepted.
+# An invalid value prevents self-hosting; normal remote-hosting fallback remains available.
+selfHostExternalUrl: ''
+# Skip ALL other delivery paths and force self-hosting.
+# Mainly for testing the self-host path. Bypasses both the reachability probe AND the remote upload.
+# When true, this overrides preferSelfHost and selfHostEnabled (self-hosting always happens).
+selfHostForce: false
+# Default (true): try self-hosting first, then use magmaguy.com if verification fails.
+# Automatic self-hosting requires a public address and all of these checks:
+#   1. A small download through localhost must match the resource pack.
+#   2. The advertised pack URL must return the same sample from this server's network.
+#      This catches routers that cannot reach their own public address locally.
+#   3. The magmaguy.com probe must confirm external reachability.
+# A failed or unavailable check means self-hosting is not verified; try remote hosting.
+# These checks do not guarantee a full download from every player's network.
+# Set to false to try remote hosting first, with verified self-hosting as fallback.
+# selfHostForce=true bypasses verification. selfHostEnabled=false disables automatic self-hosting.
+preferSelfHost: true
+nightbreak:
+  # When true, this plugin automatically downloads available plugin updates
+  # and content update files on startup. Downloaded plugin and content
+  # updates are used after the server restarts.
+  # Automatic plugin downloads require a valid account token and an active supporter
+  # Patreon membership. Leave this false if you prefer to use the in-game update button.
+  autoDownloadPluginUpdates: false

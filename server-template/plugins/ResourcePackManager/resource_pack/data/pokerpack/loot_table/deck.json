@@ -1,0 +1,673 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "functions": [
+            {
+              "function": "minecraft:set_components",
+              "components": {
+                "minecraft:bundle_contents": [
+                  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "2 of Spades"
+                      },
+                      "minecraft:item_model": "pokerpack:card_s2",
+                      "minecraft:lore": [
+                        "2♠"
+                      ]
+                    }
+                  },
+                  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "3 of Spades"
+                      },
+                      "minecraft:item_model": "pokerpack:card_s3",
+                      "minecraft:lore": [
+                        "3♠"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "4 of Spades"
+                      },
+                      "minecraft:item_model": "pokerpack:card_s4",
+                      "minecraft:lore": [
+                        "4♠"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "5 of Spades"
+                      },
+                      "minecraft:item_model": "pokerpack:card_s5",
+                      "minecraft:lore": [
+                        "5♠"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "6 of Spades"
+                      },
+                      "minecraft:item_model": "pokerpack:card_s6",
+                      "minecraft:lore": [
+                        "6♠"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "7 of Spades"
+                      },
+                      "minecraft:item_model": "pokerpack:card_s7",
+                      "minecraft:lore": [
+                        "7♠"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "8 of Spades"
+                      },
+                      "minecraft:item_model": "pokerpack:card_s8",
+                      "minecraft:lore": [
+                        "8♠"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "9 of Spades"
+                      },
+                      "minecraft:item_model": "pokerpack:card_s9",
+                      "minecraft:lore": [
+                        "9♠"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "10 of Spades"
+                      },
+                      "minecraft:item_model": "pokerpack:card_s10",
+                      "minecraft:lore": [
+                        "10♠"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "Jack of Spades"
+                      },
+                      "minecraft:item_model": "pokerpack:card_sj",
+                      "minecraft:lore": [
+                        "J♠"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "Queen of Spades"
+                      },
+                      "minecraft:item_model": "pokerpack:card_sq",
+                      "minecraft:lore": [
+                        "Q♠"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "King of Spades"
+                      },
+                      "minecraft:item_model": "pokerpack:card_sk",
+                      "minecraft:lore": [
+                        "K♠"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "Ace of Spades"
+                      },
+                      "minecraft:item_model": "pokerpack:card_sa",
+                      "minecraft:lore": [
+                        "A♠"
+                      ]
+                    }
+                  },
+                  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "2 of Clubs"
+                      },
+                      "minecraft:item_model": "pokerpack:card_c2",
+                      "minecraft:lore": [
+                        "2♣"
+                      ]
+                    }
+                  },
+                  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "3 of Clubs"
+                      },
+                      "minecraft:item_model": "pokerpack:card_c3",
+                      "minecraft:lore": [
+                        "3♣"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "4 of Clubs"
+                      },
+                      "minecraft:item_model": "pokerpack:card_c4",
+                      "minecraft:lore": [
+                        "4♣"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "5 of Clubs"
+                      },
+                      "minecraft:item_model": "pokerpack:card_c5",
+                      "minecraft:lore": [
+                        "5♣"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "6 of Clubs"
+                      },
+                      "minecraft:item_model": "pokerpack:card_c6",
+                      "minecraft:lore": [
+                        "6♣"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "7 of Clubs"
+                      },
+                      "minecraft:item_model": "pokerpack:card_c7",
+                      "minecraft:lore": [
+                        "7♣"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "8 of Clubs"
+                      },
+                      "minecraft:item_model": "pokerpack:card_c8",
+                      "minecraft:lore": [
+                        "8♣"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "9 of Clubs"
+                      },
+                      "minecraft:item_model": "pokerpack:card_c9",
+                      "minecraft:lore": [
+                        "9♣"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "10 of Clubs"
+                      },
+                      "minecraft:item_model": "pokerpack:card_c10",
+                      "minecraft:lore": [
+                        "10♣"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "Jack of Clubs"
+                      },
+                      "minecraft:item_model": "pokerpack:card_cj",
+                      "minecraft:lore": [
+                        "J♣"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "Queen of Clubs"
+                      },
+                      "minecraft:item_model": "pokerpack:card_cq",
+                      "minecraft:lore": [
+                        "Q♣"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "King of Clubs"
+                      },
+                      "minecraft:item_model": "pokerpack:card_ck",
+                      "minecraft:lore": [
+                        "K♣"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "Ace of Clubs"
+                      },
+                      "minecraft:item_model": "pokerpack:card_ca",
+                      "minecraft:lore": [
+                        "A♣"
+                      ]
+                    }
+                  },
+                  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "2 of Diamonds"
+                      },
+                      "minecraft:item_model": "pokerpack:card_d2",
+                      "minecraft:lore": [
+                        "2♦"
+                      ]
+                    }
+                  },
+                  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "3 of Diamonds"
+                      },
+                      "minecraft:item_model": "pokerpack:card_d3",
+                      "minecraft:lore": [
+                        "3♦"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "4 of Diamonds"
+                      },
+                      "minecraft:item_model": "pokerpack:card_d4",
+                      "minecraft:lore": [
+                        "4♦"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "5 of Diamonds"
+                      },
+                      "minecraft:item_model": "pokerpack:card_d5",
+                      "minecraft:lore": [
+                        "5♦"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "6 of Diamonds"
+                      },
+                      "minecraft:item_model": "pokerpack:card_d6",
+                      "minecraft:lore": [
+                        "6♦"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "7 of Diamonds"
+                      },
+                      "minecraft:item_model": "pokerpack:card_d7",
+                      "minecraft:lore": [
+                        "7♦"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "8 of Diamonds"
+                      },
+                      "minecraft:item_model": "pokerpack:card_d8",
+                      "minecraft:lore": [
+                        "8♦"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "9 of Diamonds"
+                      },
+                      "minecraft:item_model": "pokerpack:card_d9",
+                      "minecraft:lore": [
+                        "9♦"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "10 of Diamonds"
+                      },
+                      "minecraft:item_model": "pokerpack:card_d10",
+                      "minecraft:lore": [
+                        "10♦"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "Jack of Diamonds"
+                      },
+                      "minecraft:item_model": "pokerpack:card_dj",
+                      "minecraft:lore": [
+                        "J♦"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "Queen of Diamonds"
+                      },
+                      "minecraft:item_model": "pokerpack:card_dq",
+                      "minecraft:lore": [
+                        "Q♦"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "King of Diamonds"
+                      },
+                      "minecraft:item_model": "pokerpack:card_dk",
+                      "minecraft:lore": [
+                        "K♦"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "Ace of Diamonds"
+                      },
+                      "minecraft:item_model": "pokerpack:card_da",
+                      "minecraft:lore": [
+                        "A♦"
+                      ]
+                    }
+                  },
+                  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "2 of Hearts"
+                      },
+                      "minecraft:item_model": "pokerpack:card_h2",
+                      "minecraft:lore": [
+                        "2♥"
+                      ]
+                    }
+                  },
+                  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "3 of Hearts"
+                      },
+                      "minecraft:item_model": "pokerpack:card_h3",
+                      "minecraft:lore": [
+                        "3♥"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "4 of Hearts"
+                      },
+                      "minecraft:item_model": "pokerpack:card_h4",
+                      "minecraft:lore": [
+                        "4♥"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "5 of Hearts"
+                      },
+                      "minecraft:item_model": "pokerpack:card_h5",
+                      "minecraft:lore": [
+                        "5♥"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "6 of Hearts"
+                      },
+                      "minecraft:item_model": "pokerpack:card_h6",
+                      "minecraft:lore": [
+                        "6♥"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "7 of Hearts"
+                      },
+                      "minecraft:item_model": "pokerpack:card_h7",
+                      "minecraft:lore": [
+                        "7♥"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "8 of Hearts"
+                      },
+                      "minecraft:item_model": "pokerpack:card_h8",
+                      "minecraft:lore": [
+                        "8♥"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "9 of Hearts"
+                      },
+                      "minecraft:item_model": "pokerpack:card_h9",
+                      "minecraft:lore": [
+                        "9♥"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "10 of Hearts"
+                      },
+                      "minecraft:item_model": "pokerpack:card_h10",
+                      "minecraft:lore": [
+                        "10♥"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "Jack of Hearts"
+                      },
+                      "minecraft:item_model": "pokerpack:card_hj",
+                      "minecraft:lore": [
+                        "J♥"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "Queen of Hearts"
+                      },
+                      "minecraft:item_model": "pokerpack:card_hq",
+                      "minecraft:lore": [
+                        "Q♥"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "King of Hearts"
+                      },
+                      "minecraft:item_model": "pokerpack:card_hk",
+                      "minecraft:lore": [
+                        "K♥"
+                      ]
+                    }
+                  },
+				  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "Ace of Hearts"
+                      },
+                      "minecraft:item_model": "pokerpack:card_ha",
+                      "minecraft:lore": [
+                        "A♥"
+                      ]
+                    }
+                  },
+                  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "Black Joker"
+                      },
+                      "minecraft:item_model": "pokerpack:card_joker_b",
+                      "minecraft:lore": [
+                        "🃏"
+                      ]
+                    }
+                  },
+                  {
+                    "id": "paper",
+                    "components": {
+                      "minecraft:item_name": {
+                        "translate": "Red Joker"
+                      },
+                      "minecraft:item_model": "pokerpack:card_joker_r",
+                      "minecraft:lore": [
+                        "🃏"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "name": "bundle"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "minecraft:blocks/petrified_oak_slab"
+}

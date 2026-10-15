@@ -38,6 +38,10 @@ poker:
 
 shop:
   max-sell-coin-per-day: 750
+  # Every item is accepted. EliteMobs items use their own resale value.
+  # Other items use this fallback price per item; no daily or quantity limits apply.
+  fallback-sell-price-per-item: 1
+  elite-resale-percent-fallback: 5.0
   sell-items:
     coal:
       material: COAL
@@ -217,6 +221,10 @@ particles:
 starting-balance:
   coin: 250
   token: 0
+
+# Legacy VanillaRPG dungeons are disabled; use EliteMobs content instead.
+dungeons:
+  enabled: false
 
 forge:
   lock-named-endgame-reroll: true

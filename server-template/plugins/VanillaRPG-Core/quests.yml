@@ -1,260 +1,36 @@
-# VanillaRPG 0.3 progression content.
-# Edit names, targets and rewards here without recompiling the plugin.
-# Each player receives 3 Daily and 3 Weekly quests per reset period.
-
-# Supported quest types in 0.3:
-# KILL_HOSTILE
-# MINE_BLOCK      (requires material:)
-# FISH
-# FORGE_RARITY    (requires rarity:)
-# DUNGEON_CLEAR   (reserved for 0.4 integration)
-# BOSS_KILL       (reserved for later boss integration)
-
+# Current progression pools: combat, mining and fishing. No crafting, tokens or dungeons.
 daily:
-  hunter:
-    name: Hunter
-    description: Kill 30 hostile mobs.
-    type: KILL_HOSTILE
-    target: 30
-    reward:
-      coin: 200
-  
-  iron_miner:
-    name: Iron Miner
-    description: Mine 32 Iron Ore.
-    type: MINE_BLOCK
-    material: IRON_ORE
-    target: 32
-    reward:
-      coin: 180
-  
-  deep_iron_miner:
-    name: Deepslate Miner
-    description: Mine 24 Deepslate Iron Ore.
-    type: MINE_BLOCK
-    material: DEEPSLATE_IRON_ORE
-    target: 24
-    reward:
-      coin: 200
-  
-  diamond_seeker:
-    name: Diamond Seeker
-    description: Mine 4 Diamond Ore.
-    type: MINE_BLOCK
-    material: DIAMOND_ORE
-    target: 4
-    reward:
-      coin: 260
-  
-  fisherman:
-    name: Fisherman
-    description: Catch 8 fish.
-    type: FISH
-    target: 8
-    reward:
-      coin: 150
-  
-  rare_smith:
-    name: Rare Smith
-    description: Forge one Rare item.
-    type: FORGE_RARITY
-    rarity: RARE
-    target: 1
-    reward:
-      coin: 250
-  
-  epic_smith:
-    name: Epic Smith
-    description: Forge one Epic item.
-    type: FORGE_RARITY
-    rarity: EPIC
-    target: 1
-    reward:
-      coin: 350
-      token: 1
-  dungeon_delver:
-    name: Dungeon Delver
-    description: Clear one dungeon.
-    type: DUNGEON_CLEAR
-    target: 1
-    reward:
-      coin: 400
-      token: 1
-
+  hunter: { name: "Hunter", description: "Kill 30 hostile mobs.", type: KILL_HOSTILE, target: 30, reward: { coin: 200 } }
+  elite_hunter: { name: "Elite Hunter", description: "Kill 10 hostile mobs.", type: KILL_HOSTILE, target: 10, reward: { coin: 120 } }
+  boss_hunter: { name: "Boss Hunt", description: "Defeat one boss.", type: BOSS_KILL, target: 1, reward: { coin: 350 } }
+  iron_miner: { name: "Iron Miner", description: "Mine 32 Iron Ore.", type: MINE_BLOCK, material: IRON_ORE, target: 32, reward: { coin: 180 } }
+  deep_iron_miner: { name: "Deepslate Miner", description: "Mine 24 Deepslate Iron Ore.", type: MINE_BLOCK, material: DEEPSLATE_IRON_ORE, target: 24, reward: { coin: 200 } }
+  diamond_seeker: { name: "Diamond Seeker", description: "Mine 4 Diamond Ore.", type: MINE_BLOCK, material: DIAMOND_ORE, target: 4, reward: { coin: 260 } }
+  fisherman: { name: "Fisherman", description: "Catch 8 fish.", type: FISH, target: 8, reward: { coin: 150 } }
+  deep_fisher: { name: "Deepwater Fisher", description: "Catch 15 fish.", type: FISH, target: 15, reward: { coin: 240 } }
 weekly:
-  monster_hunter:
-    name: Monster Hunter
-    description: Kill 300 hostile mobs this week.
-    type: KILL_HOSTILE
-    target: 300
-    reward:
-      coin: 1500
-      token: 2
-  
-  diamond_hunter:
-    name: Diamond Hunter
-    description: Mine 24 Diamond Ore this week.
-    type: MINE_BLOCK
-    material: DIAMOND_ORE
-    target: 24
-    reward:
-      coin: 1800
-      token: 2
-  
-  deep_diamond_hunter:
-    name: Deep Diamond Hunter
-    description: Mine 20 Deepslate Diamond Ore this week.
-    type: MINE_BLOCK
-    material: DEEPSLATE_DIAMOND_ORE
-    target: 20
-    reward:
-      coin: 1800
-      token: 2
-  
-  master_angler:
-    name: Master Angler
-    description: Catch 50 fish this week.
-    type: FISH
-    target: 50
-    reward:
-      coin: 1000
-      token: 1
-  
-  epic_week:
-    name: Epic Week
-    description: Forge 3 Epic items.
-    type: FORGE_RARITY
-    rarity: EPIC
-    target: 3
-    reward:
-      coin: 2000
-      token: 3
-      custom-materials:
-        epic_shard: 2
-  
-  legendary_week:
-    name: Legendary Craftsman
-    description: Forge a Legendary item.
-    type: FORGE_RARITY
-    rarity: LEGENDARY
-    target: 1
-    reward:
-      coin: 2500
-      token: 4
-      custom-materials:
-        epic_shard: 4
-  dungeon_runner:
-    name: Dungeon Runner
-    description: Clear 5 dungeons this week.
-    type: DUNGEON_CLEAR
-    target: 5
-    reward:
-      coin: 2200
-      token: 3
-      custom-materials:
-        epic_shard: 2
-
-# Achievements use permanent counters and never reset.
+  monster_hunter: { name: "Monster Hunter", description: "Kill 300 hostile mobs this week.", type: KILL_HOSTILE, target: 300, reward: { coin: 1500 } }
+  elite_slayer: { name: "Elite Slayer", description: "Kill 100 hostile mobs this week.", type: KILL_HOSTILE, target: 100, reward: { coin: 900 } }
+  boss_breaker: { name: "Boss Breaker", description: "Defeat 5 bosses this week.", type: BOSS_KILL, target: 5, reward: { coin: 2200 } }
+  diamond_hunter: { name: "Diamond Hunter", description: "Mine 24 Diamond Ore this week.", type: MINE_BLOCK, material: DIAMOND_ORE, target: 24, reward: { coin: 1800 } }
+  deep_diamond_hunter: { name: "Deep Diamond Hunter", description: "Mine 20 Deepslate Diamond Ore this week.", type: MINE_BLOCK, material: DEEPSLATE_DIAMOND_ORE, target: 20, reward: { coin: 1800 } }
+  master_angler: { name: "Master Angler", description: "Catch 50 fish this week.", type: FISH, target: 50, reward: { coin: 1000 } }
+  deep_sea_angler: { name: "Deep Sea Angler", description: "Catch 100 fish this week.", type: FISH, target: 100, reward: { coin: 1800 } }
 achievements:
-  first_blood:
-    name: First Blood
-    description: Kill your first hostile mob.
-    counter: kills_hostile
-    target: 1
-    reward:
-      coin: 50
-      title: adventurer
-  
-  slayer:
-    name: Monster Slayer
-    description: Kill 1,000 hostile mobs.
-    counter: kills_hostile
-    target: 1000
-    reward:
-      coin: 3000
-      token: 5
-      title: slayer
-  
-  diamond_prospector:
-    name: Diamond Prospector
-    description: Mine 64 Diamond Ore.
-    counter: mined_diamond_ore
-    target: 64
-    reward:
-      coin: 2000
-      token: 3
-      title: prospector
-  
-  angler:
-    name: Master Angler
-    description: Catch 100 fish.
-    counter: fish_caught
-    target: 100
-    reward:
-      coin: 1500
-      token: 2
-      title: angler
-  
-  legendary_smith:
-    name: Master Smith
-    description: Forge your first Legendary item.
-    counter: forge_legendary
-    target: 1
-    reward:
-      coin: 2500
-      token: 4
-      title: master_smith
-  
-  mythic_ascendant:
-    name: Mythic Ascendant
-    description: Forge your first Mythic item.
-    counter: forge_mythic
-    target: 1
-    reward:
-      coin: 5000
-      token: 8
-      title: ascendant
-  first_dungeon:
-    name: First Delve
-    description: Clear your first dungeon.
-    counter: dungeon_clears
-    target: 1
-    reward:
-      coin: 500
-      token: 1
-      title: delver
-  veteran_delver:
-    name: Veteran Delver
-    description: Clear 25 dungeons.
-    counter: dungeon_clears
-    target: 25
-    reward:
-      coin: 5000
-      token: 8
-      title: dungeon_veteran
-
+  first_blood: { name: "First Blood", description: "Kill your first hostile mob.", counter: kills_hostile, target: 1, reward: { coin: 50, title: adventurer } }
+  slayer: { name: "Monster Slayer", description: "Kill 1,000 hostile mobs.", counter: kills_hostile, target: 1000, reward: { coin: 3000, title: slayer } }
+  diamond_prospector: { name: "Diamond Prospector", description: "Mine 64 Diamond Ore.", counter: mined_diamond_ore, target: 64, reward: { coin: 2000, title: prospector } }
+  angler: { name: "Master Angler", description: "Catch 100 fish.", counter: fish_caught, target: 100, reward: { coin: 1500, title: angler } }
+  first_quest: { name: "First Quest Complete", description: "Complete your first Daily or Weekly quest.", counter: quests_completed, target: 1, reward: { coin: 150, title: quest_pioneer } }
+  first_adventurers_guild: { name: "First Visit to the Guild", description: "Visit the Adventurer's Guild for the first time.", counter: adventurers_guild_visits, target: 1, reward: { coin: 100, title: guild_visitor } }
+  first_gacha: { name: "First Spin", description: "Complete your first Elite Gacha pull.", counter: gacha_spins, target: 1, reward: { coin: 100, title: lucky_draw } }
+  first_elite_item: { name: "First Elite Item", description: "Receive your first EliteMobs item.", counter: elite_items_received, target: 1, reward: { coin: 150, title: elite_initiate } }
 titles:
-  adventurer:
-    name: Adventurer
-    color: GREEN
-  slayer:
-    name: Slayer
-    color: RED
-  prospector:
-    name: Prospector
-    color: AQUA
-  angler:
-    name: Angler
-    color: BLUE
-  master_smith:
-    name: Master Smith
-    color: GOLD
-  ascendant:
-    name: Ascendant
-    color: LIGHT_PURPLE
-  delver:
-    name: Delver
-    color: DARK_AQUA
-  dungeon_veteran:
-    name: Dungeon Veteran
-    color: GOLD
+  adventurer: { name: "Adventurer", color: GREEN }
+  slayer: { name: "Slayer", color: RED }
+  prospector: { name: "Prospector", color: AQUA }
+  angler: { name: "Angler", color: BLUE }
+  quest_pioneer: { name: "Quest Pioneer", color: GREEN }
+  guild_visitor: { name: "Guild Visitor", color: AQUA }
+  lucky_draw: { name: "Lucky Draw", color: LIGHT_PURPLE }
+  elite_initiate: { name: "Elite Initiate", color: GOLD }

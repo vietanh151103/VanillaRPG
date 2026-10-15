@@ -61,6 +61,12 @@ public final class EconomyService {
         }
     }
 
+    public void addCoin(UUID uuid, double amount) {
+        if (amount > 0 && EconomyHandler.isReady(uuid)) {
+            EconomyHandler.addCurrency(uuid, amount);
+        }
+    }
+
     public void addToken(UUID uuid, long amount) {
         database.setToken(uuid, Math.max(0, token(uuid) + amount));
     }

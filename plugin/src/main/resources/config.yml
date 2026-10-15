@@ -13,6 +13,10 @@ starting-balance:
   coin: 250
   token: 0
 
+# Legacy VanillaRPG dungeons are disabled; use EliteMobs content instead.
+dungeons:
+  enabled: false
+
 # Coin source is EliteMobs. The legacy VanillaRPG coin column is no longer used.
 economy:
   source: elitemobs
@@ -52,13 +56,15 @@ market:
   max-active-listings-per-player: 10
   page-size: 45
 
-# The server shop sells consumables and common building supplies. It buys only
-# plain basic minerals with a daily Coin limit. Rare/RPG items are rejected.
+# The server shop sells consumables and common building supplies. Its sell chest
+# accepts every item without a daily or quantity cap. EliteMobs items use their
+# own stored worth and EliteMobs resale percentage; all other items use fallback.
 shop:
   enabled: true
   page-size: 45
-  # This cap controls inflation from mining farms. It resets at local midnight.
-  max-sell-coin-per-day: 750
+  fallback-sell-price-per-item: 1
+  # Used only when EliteMobs/EconomySettings.yml cannot be read.
+  elite-resale-percent-fallback: 5.0
   items:
     bread_bundle:
       category: FOOD
@@ -135,7 +141,7 @@ shop:
       material: BRICKS
       amount: 32
       price: 160
-  # Price is per single item, not per stack. Only the listed basic minerals are accepted.
+  # Price is per single item, not per stack. Listed materials override fallback.
   sell-items:
     coal:
       material: COAL

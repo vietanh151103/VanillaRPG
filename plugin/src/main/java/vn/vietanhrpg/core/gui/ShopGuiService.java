@@ -134,11 +134,11 @@ public final class ShopGuiService implements Listener {
     }
 
     private ItemStack sellItem(Player player) {
-        ItemStack stack = button(Material.GOLD_INGOT, "Sell minerals", NamedTextColor.GOLD);
+        ItemStack stack = button(Material.GOLD_INGOT, "Sell items", NamedTextColor.GOLD);
         ItemMeta meta = stack.getItemMeta();
         meta.lore(List.of(
                 line("Open the 36-slot sell chest", NamedTextColor.GRAY),
-                line("Daily Elite Coins remaining: " + shop.dailySellRemaining(player), NamedTextColor.GOLD),
+                line("Any item can be sold; no daily limit", NamedTextColor.GOLD),
                 line("Click to sell", NamedTextColor.YELLOW)
         ));
         stack.setItemMeta(meta);
@@ -185,7 +185,7 @@ public final class ShopGuiService implements Listener {
         meta.lore(List.of(
                 line(total + " configured bundle(s)", NamedTextColor.GRAY),
                 line("Page " + (page + 1) + "/" + (maxPage + 1), NamedTextColor.GRAY),
-                line("Use Sell minerals for mining resources.", NamedTextColor.YELLOW)
+                line("Use Sell items to sell any inventory item.", NamedTextColor.YELLOW)
         ));
         stack.setItemMeta(meta);
         return stack;

@@ -16,7 +16,6 @@ import vn.vietanhrpg.core.command.QuestCommand;
 import vn.vietanhrpg.core.command.RpgCommand;
 import vn.vietanhrpg.core.command.ShopCommand;
 import vn.vietanhrpg.core.command.TitleCommand;
-import vn.vietanhrpg.core.command.TokenCommand;
 import vn.vietanhrpg.core.content.ContentService;
 import vn.vietanhrpg.core.data.Database;
 import vn.vietanhrpg.core.dungeon.DungeonContentService;
@@ -99,7 +98,6 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         getConfig().options().copyDefaults(true);
         saveConfig();
         upgradeLegacyQuestResource();
-        ensureDungeonProgressionDefaults();
         upgradeLegacyDungeonResource();
 
         try {
@@ -132,27 +130,31 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         this.progressionService = new ProgressionService(this, database, economyService, itemService, contentService, progressionContentService);
         this.progressionGuiService = new ProgressionGuiService(database, economyService, progressionService, progressionContentService);
         this.forgeService.setProgressionService(progressionService);
-        this.dungeonContentService = new DungeonContentService(this);
-        this.dungeonContentService.reload();
-        this.dungeonService = new DungeonService(this, database, economyService, itemService, contentService, progressionService, dungeonContentService);
-        this.dungeonGuiService = new DungeonGuiService(dungeonContentService, dungeonService, database);
+        boolean dungeonsEnabled = getConfig().getBoolean("dungeons.enabled", false);
+        if (dungeonsEnabled) {
+            this.dungeonContentService = new DungeonContentService(this);
+            this.dungeonContentService.reload();
+            this.dungeonService = new DungeonService(this, database, economyService, itemService, contentService, progressionService, dungeonContentService);
+            this.dungeonGuiService = new DungeonGuiService(dungeonContentService, dungeonService, database);
+        }
         this.marketService = new MarketService(this, database);
         this.marketSellGuiService = new MarketSellGuiService(marketService);
         this.marketGuiService = new MarketGuiService(marketService, marketSellGuiService);
         this.shopService = new ShopService(this, economyService, database);
         this.shopSellGuiService = new ShopSellGuiService(this, shopService);
-        this.gachaService = new GachaService(this, database, economyService, itemService, contentService);
+        this.gachaService = new GachaService(this, database, economyService, itemService, contentService, progressionService);
         this.shopGuiService = new ShopGuiService(shopService, shopSellGuiService, gachaService);
         this.mobHealthDisplayService = new MobHealthDisplayService(this);
         this.pokerTableService = new PokerTableService(this);
 
-        registerCommand("token", new TokenCommand(economyService));
         registerCommand("profile", new ProfileCommand(progressionGuiService));
         registerCommand("quests", new QuestCommand(progressionGuiService));
         registerCommand("achievements", new AchievementCommand(progressionGuiService));
         registerCommand("titles", new TitleCommand(progressionGuiService));
-        registerCommand("dungeons", new DungeonsCommand(dungeonGuiService));
-        registerCommand("dungeon", new DungeonCommand(dungeonContentService, dungeonService, dungeonGuiService));
+        if (dungeonsEnabled) {
+            registerCommand("dungeons", new DungeonsCommand(dungeonGuiService));
+            registerCommand("dungeon", new DungeonCommand(dungeonContentService, dungeonService, dungeonGuiService));
+        }
         registerCommand("particles", new ParticleCommand(particleGuiService));
         registerCommand("market", new MarketCommand(marketService, marketGuiService));
         registerCommand("shop", new ShopCommand(shopGuiService, shopService));
@@ -165,14 +167,14 @@ public final class VanillaRpgPlugin extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new PlayerListener(this, database, itemService, contentService, progressionService), this);
         getServer().getPluginManager().registerEvents(new ProgressionListener(progressionService), this);
-        getServer().getPluginManager().registerEvents(new DungeonListener(dungeonService), this);
+        if (dungeonsEnabled) getServer().getPluginManager().registerEvents(new DungeonListener(dungeonService), this);
         getServer().getPluginManager().registerEvents(new CombatListener(this, itemService, contentService,
                 particleService, mobHealthDisplayService), this);
         getServer().getPluginManager().registerEvents(new WeaponEffectListener(particleService), this);
         getServer().getPluginManager().registerEvents(new MarketListener(marketService), this);
         getServer().getPluginManager().registerEvents(particleGuiService, this);
         getServer().getPluginManager().registerEvents(progressionGuiService, this);
-        getServer().getPluginManager().registerEvents(dungeonGuiService, this);
+        if (dungeonsEnabled) getServer().getPluginManager().registerEvents(dungeonGuiService, this);
         getServer().getPluginManager().registerEvents(marketGuiService, this);
         getServer().getPluginManager().registerEvents(marketSellGuiService, this);
         getServer().getPluginManager().registerEvents(shopGuiService, this);
@@ -195,7 +197,7 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         });
 
         particleService.start();
-        dungeonService.start();
+        if (dungeonService != null) dungeonService.start();
         mobHealthDisplayService.start();
         getLogger().info("VanillaRPG-Core " + getPluginMeta().getVersion()
                 + " enabled. Data: " + new File(getDataFolder(), "rpg.db").getPath());

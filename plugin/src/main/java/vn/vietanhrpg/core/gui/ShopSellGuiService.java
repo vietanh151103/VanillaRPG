@@ -44,7 +44,7 @@ public final class ShopSellGuiService implements Listener {
     public void open(Player player) {
         SellHolder holder = new SellHolder();
         Inventory inventory = Bukkit.createInventory(holder, 54,
-                Component.text("Sell Minerals - Chest", NamedTextColor.DARK_GREEN));
+                Component.text("Sell Items - Chest", NamedTextColor.DARK_GREEN));
         holder.inventory = inventory;
         drawControls(player, holder);
         player.openInventory(inventory);
@@ -117,9 +117,10 @@ public final class ShopSellGuiService implements Listener {
 
     private ItemStack decorate(Player player, ItemStack item) {
         if (hasPreview(item)) return decorate(player, undecorate(item));
-        // Only unmodified vanilla minerals receive a preview. Other items are left untouched and cannot be sold.
+        // Never rewrite custom/EliteMobs item metadata just to add a temporary
+        // preview. Their existing lore already carries the authoritative value.
         if (item.hasItemMeta()) return item;
-        ShopService.SellPreview preview = shop.sellPreview(player, item.getType(), item.getAmount());
+        ShopService.SellPreview preview = shop.sellPreview(item);
         if (preview.pricePerItem() <= 0) return item;
 
         ItemStack display = item.clone();
@@ -129,9 +130,8 @@ public final class ShopSellGuiService implements Listener {
                 line("SELL PRICE: " + preview.pricePerItem() + " Elite Coins each", NamedTextColor.GOLD),
                 line("Stack total: " + (preview.requestedAmount() * preview.pricePerItem()) + " Elite Coins", NamedTextColor.YELLOW),
                 line("Can sell now: " + preview.sellableAmount() + "/" + preview.requestedAmount(), NamedTextColor.GREEN),
-                line("Payout now: " + preview.payout() + " Elite Coins", NamedTextColor.GOLD),
-                line("Item limit left today: " + preview.itemRemaining(), NamedTextColor.GRAY),
-                line("Elite Coins limit left today: " + preview.coinRemaining(), NamedTextColor.GRAY)
+                line("Payout: " + formatCoin(preview.payout()) + " Elite Coins", NamedTextColor.GOLD),
+                line("No daily sale limit", NamedTextColor.GRAY)
         ));
         display.setItemMeta(meta);
         return display;
@@ -164,7 +164,7 @@ public final class ShopSellGuiService implements Listener {
             ItemStack item = holder.inventory.getItem(slot);
             if (item != null && !item.getType().isAir()) items.add(undecorate(item));
         }
-        return shop.sellCartPreview(player, items);
+        return shop.sellCartPreview(items);
     }
 
     private void sellAll(Player player, SellHolder holder) {
@@ -175,12 +175,12 @@ public final class ShopSellGuiService implements Listener {
             ItemStack item = holder.inventory.getItem(slot);
             if (item == null || item.getType().isAir()) continue;
             ItemStack plainItem = undecorate(item);
-            ShopService.SellPreview preview = shop.sellPreview(player, plainItem.getType(), plainItem.getAmount());
+            ShopService.SellPreview preview = shop.sellPreview(plainItem);
             int sold = shop.sellEscrowSilently(player, plainItem);
             if (sold <= 0) continue;
             totalSold += sold;
             stacksSold++;
-            totalPayout += sold * preview.pricePerItem();
+            totalPayout += preview.payout();
             if (sold >= plainItem.getAmount()) {
                 holder.inventory.setItem(slot, new ItemStack(Material.AIR));
             } else {
@@ -189,10 +189,10 @@ public final class ShopSellGuiService implements Listener {
             }
         }
         if (stacksSold == 0) {
-            player.sendMessage(Component.text("No eligible mineral stack could be sold. Check each item's hover preview and daily limits.", NamedTextColor.RED));
+            player.sendMessage(Component.text("No item stack could be sold.", NamedTextColor.RED));
         } else {
             player.sendMessage(Component.text("Sold " + totalSold + " item(s) from " + stacksSold + " stack(s) for "
-                    + totalPayout + " Elite Coins. Unsold items remain in the chest.", NamedTextColor.GREEN));
+                    + formatCoin(totalPayout) + " Elite Coins. Unsold items remain in the chest.", NamedTextColor.GREEN));
         }
         decorateInputs(player, holder);
         drawControls(player, holder);
@@ -202,13 +202,12 @@ public final class ShopSellGuiService implements Listener {
         ItemStack stack = button(Material.CHEST, "Sell cart summary", NamedTextColor.AQUA);
         ItemMeta meta = stack.getItemMeta();
         meta.lore(List.of(
-                line("Put plain minerals in any of the 36 chest slots.", NamedTextColor.GRAY),
-                line("Hover a stack to view its price and current limits.", NamedTextColor.YELLOW),
-                line("EXPECTED CART PAYOUT: " + cart.payout() + " Elite Coins", NamedTextColor.GOLD).decorate(TextDecoration.BOLD),
+                line("Put any item in any of the 36 chest slots.", NamedTextColor.GRAY),
+                line("EliteMobs item uses its displayed resale value.", NamedTextColor.YELLOW),
+                line("EXPECTED CART PAYOUT: " + formatCoin(cart.payout()) + " Elite Coins", NamedTextColor.GOLD).decorate(TextDecoration.BOLD),
                 line("Can sell: " + cart.sellableItems() + " item(s) in " + cart.eligibleStacks() + " stack(s)", NamedTextColor.GREEN),
-                line("Unavailable stack(s): " + cart.unavailableStacks(), NamedTextColor.GRAY),
-                line("Daily Elite Coins remaining: " + shop.dailySellRemaining(player), NamedTextColor.GOLD),
-                line("Rare/RPG and modified items stay unsold.", NamedTextColor.RED)
+                line("No daily or quantity limit.", NamedTextColor.GOLD),
+                line("Other items use the configured fallback price.", NamedTextColor.GRAY)
         ));
         stack.setItemMeta(meta);
         return stack;
@@ -218,10 +217,9 @@ public final class ShopSellGuiService implements Listener {
         ItemStack stack = button(Material.GOLD_INGOT, "Sell all stacks", NamedTextColor.GOLD);
         ItemMeta meta = stack.getItemMeta();
         meta.lore(List.of(
-                line("Sell every eligible stack in the 36 chest slots.", NamedTextColor.GRAY),
-                line("Expected payout: " + cart.payout() + " Elite Coins", NamedTextColor.GOLD),
-                line("Daily Elite Coins remaining: " + shop.dailySellRemaining(player), NamedTextColor.GOLD),
-                line("Invalid or limited items stay in the chest.", NamedTextColor.YELLOW)
+                line("Sell every stack in the 36 chest slots.", NamedTextColor.GRAY),
+                line("Expected payout: " + formatCoin(cart.payout()) + " Elite Coins", NamedTextColor.GOLD),
+                line("No daily or quantity limit.", NamedTextColor.GOLD)
         ));
         stack.setItemMeta(meta);
         return stack;
@@ -237,6 +235,10 @@ public final class ShopSellGuiService implements Listener {
 
     private Component line(String text, NamedTextColor color) {
         return Component.text(text, color).decoration(TextDecoration.ITALIC, false);
+    }
+
+    private String formatCoin(double amount) {
+        return amount == Math.rint(amount) ? String.valueOf((long) amount) : String.format(java.util.Locale.ROOT, "%.2f", amount);
     }
 
     private boolean isInputSlot(int rawSlot) {

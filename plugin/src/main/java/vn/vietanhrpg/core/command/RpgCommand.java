@@ -91,22 +91,6 @@ public final class RpgCommand implements CommandExecutor {
                 sender.sendMessage(Component.text("Added " + amount + " Coin to " + target.getName() + ".", NamedTextColor.GREEN));
                 return true;
             }
-            case "givetoken" -> {
-                if (args.length != 3) {
-                    usage(sender);
-                    return true;
-                }
-                Player target = Bukkit.getPlayerExact(args[1]);
-                Long amount = parseAmount(args[2]);
-                if (target == null || amount == null) {
-                    sender.sendMessage(Component.text("Online player and valid amount required.", NamedTextColor.RED));
-                    return true;
-                }
-                economy.ensure(target);
-                economy.addToken(target.getUniqueId(), amount);
-                sender.sendMessage(Component.text("Added " + amount + " Token to " + target.getName() + ".", NamedTextColor.GREEN));
-                return true;
-            }
             case "giveitem" -> {
                 if (args.length < 3 || args.length > 4) {
                     usage(sender);
@@ -299,7 +283,6 @@ public final class RpgCommand implements CommandExecutor {
     private void usage(CommandSender sender) {
         sender.sendMessage(Component.text("/rpg reload", NamedTextColor.YELLOW));
         sender.sendMessage(Component.text("/rpg givecoin <player> <amount>", NamedTextColor.YELLOW));
-        sender.sendMessage(Component.text("/rpg givetoken <player> <amount>", NamedTextColor.YELLOW));
         sender.sendMessage(Component.text("/rpg giveitem <player> <material-id> [amount]", NamedTextColor.YELLOW));
         sender.sendMessage(Component.text("/rpg givegear <player> <gear-id>", NamedTextColor.YELLOW));
         sender.sendMessage(Component.text("/rpg giveblueprint <player> <blueprint-id>", NamedTextColor.YELLOW));

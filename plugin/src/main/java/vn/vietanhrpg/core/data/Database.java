@@ -499,6 +499,24 @@ public final class Database {
         }
     }
 
+    public synchronized void recordShopSale(UUID uuid, String material, int amount, long coinAmount) {
+        requireConnection();
+        if (amount <= 0 || coinAmount < 0) return;
+        try (PreparedStatement statement = connection.prepareStatement("""
+                INSERT INTO shop_transactions(uuid, direction, material, amount, coin_amount, created_at)
+                VALUES(?, 'SELL', ?, ?, ?, ?)
+                """)) {
+            statement.setString(1, uuid.toString());
+            statement.setString(2, material);
+            statement.setInt(3, amount);
+            statement.setLong(4, coinAmount);
+            statement.setLong(5, System.currentTimeMillis());
+            statement.executeUpdate();
+        } catch (SQLException exception) {
+            throw new IllegalStateException("Could not record shop sale", exception);
+        }
+    }
+
     public synchronized List<ShopTransaction> shopHistory(UUID uuid, int limit) {
         requireConnection();
         List<ShopTransaction> result = new ArrayList<>();

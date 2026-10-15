@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "minecraft:copper_nugget",
+  "result": {
+    "id": "minecraft:copper_nugget",
+    "count": 1,
+    "components": {
+      "minecraft:item_model": "pokerpack:chip_5",
+      "minecraft:item_name": {"translate":"Red Chip"},
+      "minecraft:lore": [
+        "$5"
+      ]
+    }
+  }
+}
