@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -24,6 +25,7 @@ import vn.vietanhrpg.core.world.MysticForestService;
 import vn.vietanhrpg.core.progression.ProgressionService;
 
 import java.util.Locale;
+import java.io.File;
 
 public final class RpgCommand implements CommandExecutor {
     private final VanillaRpgPlugin plugin;
@@ -79,21 +81,56 @@ public final class RpgCommand implements CommandExecutor {
                 return true;
             }
             case "title" -> {
-                if (args.length != 3 || !args[1].equalsIgnoreCase("owner")) {
-                    sender.sendMessage(Component.text("Usage: /rpg title owner <player>", NamedTextColor.YELLOW));
+                if (args.length < 3) {
+                    titleUsage(sender);
                     return true;
                 }
-                Player target = Bukkit.getPlayerExact(args[2]);
-                if (target == null) {
-                    sender.sendMessage(Component.text("The target player must be online.", NamedTextColor.RED));
+                if (args[1].equalsIgnoreCase("give")) {
+                    if (args.length != 4) {
+                        titleUsage(sender);
+                        return true;
+                    }
+                    Player target = Bukkit.getPlayerExact(args[2]);
+                    if (target == null) {
+                        sender.sendMessage(Component.text("The target player must be online.", NamedTextColor.RED));
+                        return true;
+                    }
+                    database.ensurePlayer(target.getUniqueId(), target.getName(),
+                            plugin.getConfig().getLong("starting-balance.coin", 250),
+                            plugin.getConfig().getLong("starting-balance.token", 0));
+                    if (!progression.grantTitle(target, args[3], true)) {
+                        sender.sendMessage(Component.text("Unknown title ID: " + args[3], NamedTextColor.RED));
+                        return true;
+                    }
+                    sender.sendMessage(Component.text("Granted and selected title " + args[3] + " for " + target.getName() + ".", NamedTextColor.GREEN));
                     return true;
                 }
-                database.ensurePlayer(target.getUniqueId(), target.getName(),
-                        plugin.getConfig().getLong("starting-balance.coin", 250),
-                        plugin.getConfig().getLong("starting-balance.token", 0));
-                database.unlockTitle(target.getUniqueId(), "owner");
-                progression.selectTitle(target, "owner");
-                sender.sendMessage(Component.text("Granted and selected the Owner title for " + target.getName() + ".", NamedTextColor.GREEN));
+                if (args[1].equalsIgnoreCase("create")) {
+                    if (args.length < 5) {
+                        titleUsage(sender);
+                        return true;
+                    }
+                    String id = args[2].toLowerCase(Locale.ROOT).replace('-', '_');
+                    String color = args[args.length - 1].toUpperCase(Locale.ROOT);
+                    String name = String.join(" ", java.util.Arrays.copyOfRange(args, 3, args.length - 1)).trim();
+                    if (id.isBlank() || name.isBlank() || !validTitleColor(color)) {
+                        sender.sendMessage(Component.text("Invalid title. Color must be a Minecraft color such as GOLD or AQUA.", NamedTextColor.RED));
+                        return true;
+                    }
+                    File file = new File(plugin.getDataFolder(), "quests.yml");
+                    YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+                    yaml.set("titles." + id + ".name", name);
+                    yaml.set("titles." + id + ".color", color);
+                    try {
+                        yaml.save(file);
+                        plugin.reloadAll();
+                        sender.sendMessage(Component.text("Created title " + id + " (" + name + "). Use /rpg title give <player> " + id + ".", NamedTextColor.GREEN));
+                    } catch (Exception exception) {
+                        sender.sendMessage(Component.text("Could not save title: " + exception.getMessage(), NamedTextColor.RED));
+                    }
+                    return true;
+                }
+                titleUsage(sender);
                 return true;
             }
             case "givecoin" -> {
@@ -303,7 +340,7 @@ public final class RpgCommand implements CommandExecutor {
 
     private void usage(CommandSender sender) {
         sender.sendMessage(Component.text("/rpg reload", NamedTextColor.YELLOW));
-        sender.sendMessage(Component.text("/rpg title owner <player>", NamedTextColor.YELLOW));
+        titleUsage(sender);
         sender.sendMessage(Component.text("/rpg givecoin <player> <amount>", NamedTextColor.YELLOW));
         sender.sendMessage(Component.text("/rpg giveitem <player> <material-id> [amount]", NamedTextColor.YELLOW));
         sender.sendMessage(Component.text("/rpg givegear <player> <gear-id>", NamedTextColor.YELLOW));
@@ -311,5 +348,19 @@ public final class RpgCommand implements CommandExecutor {
         sender.sendMessage(Component.text("/rpg setrarity <rarity>", NamedTextColor.YELLOW));
         sender.sendMessage(Component.text("/rpg loot refresh <tier>", NamedTextColor.YELLOW));
         sender.sendMessage(Component.text("/rpg mysticforest", NamedTextColor.YELLOW));
+    }
+
+    private void titleUsage(CommandSender sender) {
+        sender.sendMessage(Component.text("/rpg title give <player> <titleId>", NamedTextColor.YELLOW));
+        sender.sendMessage(Component.text("/rpg title create <id> <name> <color>", NamedTextColor.YELLOW));
+        sender.sendMessage(Component.text("Example: /rpg title create champion Champion GOLD", NamedTextColor.GRAY));
+    }
+
+    private boolean validTitleColor(String color) {
+        return switch (color) {
+            case "BLACK", "DARK_BLUE", "DARK_GREEN", "DARK_AQUA", "DARK_RED", "DARK_PURPLE",
+                    "GOLD", "GRAY", "DARK_GRAY", "BLUE", "GREEN", "AQUA", "RED", "LIGHT_PURPLE", "YELLOW", "WHITE" -> true;
+            default -> false;
+        };
     }
 }

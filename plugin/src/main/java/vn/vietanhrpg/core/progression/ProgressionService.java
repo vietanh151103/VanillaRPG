@@ -276,6 +276,16 @@ public final class ProgressionService {
         return true;
     }
 
+    public boolean grantTitle(Player player, String titleId, boolean select) {
+        if (progressionContent.title(titleId) == null) return false;
+        database.unlockTitle(player.getUniqueId(), titleId);
+        if (select) {
+            database.setSelectedTitle(player.getUniqueId(), titleId);
+            applyTitleDisplay(player);
+        }
+        return true;
+    }
+
     public void unlockConfiguredStarterTitles(Player player) {
         // Reserved for future starter titles. Keeping method makes migrations easy.
     }
