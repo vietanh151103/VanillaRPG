@@ -21,6 +21,7 @@ import vn.vietanhrpg.core.item.Rarity;
 import vn.vietanhrpg.core.service.EconomyService;
 import vn.vietanhrpg.core.service.BetterStructuresLootBridge;
 import vn.vietanhrpg.core.world.MysticForestService;
+import vn.vietanhrpg.core.progression.ProgressionService;
 
 import java.util.Locale;
 
@@ -32,10 +33,11 @@ public final class RpgCommand implements CommandExecutor {
     private final ContentService content;
     private final MysticForestService mysticForest;
     private final BetterStructuresLootBridge betterStructuresLoot;
+    private final ProgressionService progression;
 
     public RpgCommand(VanillaRpgPlugin plugin, Database database, EconomyService economy,
                       ItemService items, ContentService content, MysticForestService mysticForest,
-                      BetterStructuresLootBridge betterStructuresLoot) {
+                      BetterStructuresLootBridge betterStructuresLoot, ProgressionService progression) {
         this.plugin = plugin;
         this.database = database;
         this.economy = economy;
@@ -43,6 +45,7 @@ public final class RpgCommand implements CommandExecutor {
         this.content = content;
         this.mysticForest = mysticForest;
         this.betterStructuresLoot = betterStructuresLoot;
+        this.progression = progression;
     }
 
     @Override
@@ -73,6 +76,24 @@ public final class RpgCommand implements CommandExecutor {
                 } else {
                     sender.sendMessage(Component.text("Reload cancelled because a YAML file is invalid. Check the server log.", NamedTextColor.RED));
                 }
+                return true;
+            }
+            case "title" -> {
+                if (args.length != 3 || !args[1].equalsIgnoreCase("owner")) {
+                    sender.sendMessage(Component.text("Usage: /rpg title owner <player>", NamedTextColor.YELLOW));
+                    return true;
+                }
+                Player target = Bukkit.getPlayerExact(args[2]);
+                if (target == null) {
+                    sender.sendMessage(Component.text("The target player must be online.", NamedTextColor.RED));
+                    return true;
+                }
+                database.ensurePlayer(target.getUniqueId(), target.getName(),
+                        plugin.getConfig().getLong("starting-balance.coin", 250),
+                        plugin.getConfig().getLong("starting-balance.token", 0));
+                database.unlockTitle(target.getUniqueId(), "owner");
+                progression.selectTitle(target, "owner");
+                sender.sendMessage(Component.text("Granted and selected the Owner title for " + target.getName() + ".", NamedTextColor.GREEN));
                 return true;
             }
             case "givecoin" -> {
@@ -282,6 +303,7 @@ public final class RpgCommand implements CommandExecutor {
 
     private void usage(CommandSender sender) {
         sender.sendMessage(Component.text("/rpg reload", NamedTextColor.YELLOW));
+        sender.sendMessage(Component.text("/rpg title owner <player>", NamedTextColor.YELLOW));
         sender.sendMessage(Component.text("/rpg givecoin <player> <amount>", NamedTextColor.YELLOW));
         sender.sendMessage(Component.text("/rpg giveitem <player> <material-id> [amount]", NamedTextColor.YELLOW));
         sender.sendMessage(Component.text("/rpg givegear <player> <gear-id>", NamedTextColor.YELLOW));

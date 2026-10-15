@@ -39,7 +39,7 @@ commands:
     usage: /poker [start|hand|fold|check|call|raise <total>|status|leave]
   rpg:
     description: VanillaRPG administration.
-    usage: /rpg <reload|givecoin|giveitem|givegear|giveblueprint|setrarity|loot refresh <tier>>
+    usage: /rpg <reload|title owner <player>|givecoin|giveitem|givegear|giveblueprint|setrarity|loot refresh <tier>>
 
 permissions:
   vanillarpg.admin:

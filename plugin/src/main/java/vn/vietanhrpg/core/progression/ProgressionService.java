@@ -2,7 +2,10 @@ package vn.vietanhrpg.core.progression;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,6 +28,7 @@ import java.util.Random;
 import java.util.UUID;
 
 public final class ProgressionService {
+    private static final String TITLE_TEAM_PREFIX = "vrpgT";
     private final JavaPlugin plugin;
     private final Database database;
     private final EconomyService economy;
@@ -226,10 +230,37 @@ public final class ProgressionService {
         if (title == null) {
             if (database.selectedTitle(player.getUniqueId()) != null) database.setSelectedTitle(player.getUniqueId(), null);
             player.displayName(Component.text(player.getName(), NamedTextColor.WHITE));
+            clearTitleNameTag(player);
             return;
         }
         player.displayName(Component.text("[" + title.name() + "] ", title.color())
                 .append(Component.text(player.getName(), NamedTextColor.WHITE)));
+        applyTitleNameTag(player, title);
+    }
+
+    private void applyTitleNameTag(Player player, TitleDefinition title) {
+        Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+        String teamName = TITLE_TEAM_PREFIX + player.getUniqueId().toString().replace("-", "").substring(0, 10);
+        Team team = scoreboard.getTeam(teamName);
+        if (team == null) team = scoreboard.registerNewTeam(teamName);
+        for (String entry : List.copyOf(team.getEntries())) team.removeEntry(entry);
+        team.prefix(Component.text("[" + title.name() + "] ", title.color()));
+        team.addEntry(player.getName());
+    }
+
+    private void clearTitleNameTag(Player player) {
+        Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+        String teamName = TITLE_TEAM_PREFIX + player.getUniqueId().toString().replace("-", "").substring(0, 10);
+        Team team = scoreboard.getTeam(teamName);
+        if (team != null) team.unregister();
+    }
+
+    /** Removes the plugin-owned nametag teams during plugin shutdown. */
+    public void clearTitleNameTags() {
+        Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+        for (Team team : List.copyOf(scoreboard.getTeams())) {
+            if (team.getName().startsWith(TITLE_TEAM_PREFIX)) team.unregister();
+        }
     }
 
     public boolean selectTitle(Player player, String titleId) {

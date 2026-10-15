@@ -26,6 +26,7 @@ achievements:
   first_gacha: { name: "First Spin", description: "Complete your first Elite Gacha pull.", counter: gacha_spins, target: 1, reward: { coin: 100, title: lucky_draw } }
   first_elite_item: { name: "First Elite Item", description: "Receive your first EliteMobs item.", counter: elite_items_received, target: 1, reward: { coin: 150, title: elite_initiate } }
 titles:
+  owner: { name: "Owner", color: GOLD }
   adventurer: { name: "Adventurer", color: GREEN }
   slayer: { name: "Slayer", color: RED }
   prospector: { name: "Prospector", color: AQUA }

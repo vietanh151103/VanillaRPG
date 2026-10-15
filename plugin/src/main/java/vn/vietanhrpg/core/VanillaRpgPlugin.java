@@ -163,7 +163,7 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         BetterStructuresLootBridge betterStructuresLoot = new BetterStructuresLootBridge(this, itemService, contentService);
         VanillaLootBridge vanillaLoot = new VanillaLootBridge(this, itemService, contentService);
         registerCommand("rpg", new RpgCommand(this, database, economyService, itemService, contentService,
-                new MysticForestService(this), betterStructuresLoot));
+                new MysticForestService(this), betterStructuresLoot, progressionService));
 
         getServer().getPluginManager().registerEvents(new PlayerListener(this, database, itemService, contentService, progressionService), this);
         getServer().getPluginManager().registerEvents(new ProgressionListener(progressionService), this);
@@ -216,6 +216,9 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         }
         if (pokerTableService != null) {
             pokerTableService.shutdown();
+        }
+        if (progressionService != null) {
+            progressionService.clearTitleNameTags();
         }
         if (database != null) {
             database.close();
