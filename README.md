@@ -1,86 +1,177 @@
-# VanillaRPG-Core
+# VanillaRPG
 
-VanillaRPG-Core là bộ lõi RPG cho server Paper Minecraft, kết hợp gameplay vanilla với EliteMobs, dungeon, kinh tế người chơi, Texas Hold'em Poker và Elite Gacha.
+VanillaRPG là bộ server Paper 26.2 kết hợp Minecraft vanilla, EliteMobs, Elite Gacha, chợ người chơi, shop, quest, achievement, title và Texas Hold’em Poker.
 
-Mục tiêu của pack là giữ nhịp chơi Minecraft quen thuộc nhưng tạo một endgame dài hơi: người chơi vẫn cần cày gear, Elite Coins, dungeon và trao đổi với nhau thay vì đạt Netherite rồi vượt qua mọi nội dung quá dễ dàng.
+README này hướng dẫn cài một server mới từ release hiện tại. Dữ liệu người chơi, database và world runtime không nằm trong release sạch.
 
 ## Yêu cầu
 
-- Paper `26.2`
-- Java `25`
-- EliteMobs `10.9.8` (cài vào `server-template/plugins/`)
-- Client dùng resource pack của server để thấy bài Poker, vũ khí Majestica và icon EliteMobs.
+- Paper Minecraft `26.2` (template tự tải đúng build khi khởi động lần đầu).
+- Java `25`.
+- EliteMobs `10.9.8`, đặt trong `server-template/plugins/`.
+- Windows: dùng `start.bat`; Linux/macOS: dùng `start.sh`.
+- Internet trong lần chạy đầu để tải Paper và để ResourcePackManager host resource pack.
 
-## Tính năng
+## Cài server mới
 
-### EliteMobs và endgame
+### 1. Tải release
 
-- Elite mob, boss, dungeon, class, quest và Elite Coin do EliteMobs quản lý.
-- Gacha thay thế shop của Special Blacksmith: quay bằng Elite Coin hoặc Elite Gacha Ticket.
-- Pool hiển thị tỉ lệ trực tiếp qua `/gacha odds`, có phần thưởng tiến trình, ticket và Soulbind Remover.
-- Mười vũ khí Majestica cấp 100 là giải thưởng cực hiếm, khoảng `0.01%` mỗi món (`0.1%` tổng). Các món này soulbound.
+Tải source ZIP hoặc server package từ [GitHub Releases](https://github.com/vietanh151103/VanillaRPG/releases), rồi giải nén vào một thư mục riêng.
 
-### Poker
+Nếu tải source ZIP, thư mục chạy server là `server-template/`.
 
-- Phòng Texas Hold'em riêng qua `/poker`.
-- Có blind, pre-flop, flop, turn, river, raise/check/call/fold và boss bar cập nhật pot/lượt chơi.
-- Khi vào phòng, inventory được tạm thay bằng bài và vật phẩm thao tác; đồ được hoàn lại khi rời phòng hoặc ngắt kết nối.
+### 2. Chuẩn bị Java
 
-### Kinh tế và hoạt động
+Kiểm tra Java:
 
-- Player market để mua bán giữa người chơi: `/market`. Mọi item không soulbound, gồm EliteMobs/custom item, đều có thể niêm yết.
-- Shop vật phẩm cơ bản và bán mọi item: `/shop`. Đồ EliteMobs bán theo giá resale của EliteMobs; các item còn lại dùng giá fallback cấu hình.
-- Profile, quest, achievement và title do VanillaRPG-Core quản lý.
-- Hiển thị máu mob hostile và damage nổi khi chiến đấu.
+```text
+java -version
+```
 
-### Thế giới
+Phải hiển thị Java 25. Nếu không muốn cài Java hệ thống, đặt Java portable tại:
 
-- Template hỗ trợ TerraformGenerator, BetterStructures, Amplified Nether và Nullscape.
-- Loot vanilla/BetterStructures của VanillaRPG mặc định tắt để tránh đè lên gear của EliteMobs.
+```text
+server-template/runtime/bin/java.exe
+```
 
-## Cài đặt server mới
+### 3. Cài EliteMobs
 
-1. Tải source hoặc bản release và giải nén.
-2. Mở `server-template/`, chấp nhận EULA trong `eula.txt` nếu cần.
-3. Đặt `VanillaRPG-Core-<version>.jar` hiện hành trong `server-template/plugins/` và chỉ giữ một JAR VanillaRPG-Core.
-4. Cài `EliteMobs.jar` phiên bản `10.9.8` vào `server-template/plugins/`.
-5. ResourcePackManager sẽ tự trộn và tự host resource pack. Không cần đặt URL pack thủ công trong `server.properties`.
+Đặt file plugin vào:
 
-6. Chạy `server-template/start.bat`.
-7. Khi server đã khởi động, đợi dòng `Resource pack is live`, rồi vào lại Minecraft. Dùng `/rpg reload` nếu vừa chỉnh quest/gacha.
+```text
+server-template/plugins/EliteMobs.jar
+```
 
-Resource pack nguồn Majestica/Poker nằm trong `server-template/plugins/ResourcePackManager/resource_pack/`; RSPM sẽ tự tạo pack gộp trong `output/`.
+Không đặt nhiều bản EliteMobs cùng lúc. VanillaRPG-Core cần EliteMobs để dùng Elite Coins, item EliteMobs và gacha.
 
-## Cập nhật
+### 4. Chấp nhận EULA
 
-1. Tắt server và sao lưu `plugins/VanillaRPG-Core/rpg.db`.
-2. Thay JAR cũ bằng một JAR VanillaRPG-Core mới duy nhất.
-3. Nếu release đổi resource pack, chạy `/rspm reload`, đợi pack sẵn sàng rồi vào lại server.
-4. Không thay hoặc commit `rpg.db`, `ops.json`, `usercache.json` hay thư mục world. Đây là dữ liệu runtime của server.
+Mở `server-template/eula.txt` và đổi:
+
+```text
+eula=true
+```
+
+### 5. Khởi động server
+
+Windows:
+
+```text
+cd server-template
+start.bat
+```
+
+Linux/macOS:
+
+```text
+cd server-template
+chmod +x start.sh
+./start.sh
+```
+
+Lần chạy đầu sẽ tạo world mới và tải Paper nếu `paper.jar` chưa có. Sau khi server khởi động, cấp quyền quản trị trong console:
+
+```text
+op <ten-nguoi-choi>
+whitelist add <ten-nguoi-choi>
+```
+
+## Resource pack
+
+ResourcePackManager tự gộp và host resource pack. Không cần tự đặt URL pack trong `server.properties`.
+
+Sau khi thấy log:
+
+```text
+Resource pack is live via automatic hosting
+```
+
+hãy vào server bằng Minecraft. Nếu vừa thay model hoặc resource pack, dùng:
+
+```text
+/rspm reload
+```
+
+Sau đó chờ log báo pack sẵn sàng rồi rejoin nếu client chưa nhận pack. Nguồn pack nằm tại:
+
+```text
+server-template/plugins/ResourcePackManager/resource_pack/
+```
 
 ## Lệnh chính
 
 | Lệnh | Chức năng |
 | --- | --- |
 | `/profile` | Mở hồ sơ RPG |
-| `/quests` | Xem nhiệm vụ |
-| `/achievements` | Xem thành tựu |
-| `/titles` | Chọn danh hiệu |
-| `/market` | Mở chợ người chơi |
-| `/shop` | Mở shop |
+| `/quests` | Xem daily/weekly quest |
+| `/achievements` | Xem achievement |
+| `/titles` | Chọn title đã mở khóa |
+| `/market` | Chợ mua bán giữa người chơi |
+| `/shop` | Shop vật phẩm và bán item |
 | `/gacha` | Mở Elite Gacha |
-| `/gacha odds` | Xem pool và tỉ lệ quay |
-| `/poker` | Vào phòng Poker |
-| `/em` | Mở menu EliteMobs |
-| `/rpg reload` | Reload cấu hình VanillaRPG (OP) |
+| `/gacha odds` | Xem pool và tỷ lệ gacha |
+| `/poker` | Vào phòng Texas Hold’em |
+| `/em` hoặc `/ag` | Menu/Adventurer’s Guild của EliteMobs |
+| `/rpg reload` | Reload cấu hình VanillaRPG-Core (OP) |
 
-## Cấu hình quan trọng
+Lệnh quản trị title:
 
-- `server-template/plugins/VanillaRPG-Core/gacha.yml`: giá, pool, tỉ lệ và milestone Gacha.
-- `server-template/plugins/EliteMobs/customitems/`: custom item EliteMobs, gồm vũ khí Majestica.
-- `server-template/plugins/EliteMobs/config.yml`: phải bật `useResourcePackEvenIfResourcePackManagerIsNotInstalled: true` để model Majestica hoạt động khi không dùng ResourcePackManager.
-- `server-template/server.properties`: URL và SHA-1 resource pack.
+```text
+/rpg title give <player> <titleId>
+/rpg title create <id> <name> <color>
+```
 
-## Phiên bản và release notes
+Ví dụ:
 
-README chỉ chứa hướng dẫn dùng bản hiện tại. Thông tin thay đổi theo từng phiên bản được phát hành ở [GitHub Releases](https://github.com/vietanh151103/VanillaRPG/releases) và [Git tags](https://github.com/vietanh151103/VanillaRPG/tags).
+```text
+/rpg title give vanh owner
+/rpg title create champion Champion GOLD
+/rpg title create guild_master "Guild Master" AQUA
+```
+
+Các lệnh `/rpg` quản trị yêu cầu quyền `vanillarpg.admin`.
+
+## Cập nhật server đang chạy
+
+1. Dừng server bằng `stop` và chờ tắt hoàn toàn.
+2. Sao lưu toàn bộ thư mục server, đặc biệt:
+   ```text
+   plugins/VanillaRPG-Core/rpg.db
+   plugins/EliteMobs/data/player_data.db
+   world/
+   ```
+3. Thay JAR VanillaRPG-Core bằng bản mới và chỉ giữ một JAR VanillaRPG-Core trong `plugins/`.
+4. Không xoá `rpg.db`, `player_data.db`, world hoặc thư mục `playerdata` nếu muốn giữ tiến trình người chơi.
+5. Khởi động lại server. Dùng `/rpg reload` cho thay đổi YAML; thay đổi Java/plugin cần restart.
+
+## Các file cấu hình quan trọng
+
+- `plugins/VanillaRPG-Core/config.yml`: economy, shop, market, poker và các module RPG.
+- `plugins/VanillaRPG-Core/gacha.yml`: giá roll, pool, tỷ lệ và milestone gacha.
+- `plugins/VanillaRPG-Core/quests.yml`: daily/weekly quest, achievement và title.
+- `plugins/EliteMobs/customitems/`: custom item EliteMobs.
+- `plugins/EliteMobs/data/player_data.db`: dữ liệu người chơi EliteMobs; không đưa lên Git.
+- `plugins/ResourcePackManager/resource_pack/`: nguồn resource pack được gộp và host.
+
+VanillaRPG legacy dungeon đang tắt trong config; dungeon EliteMobs vẫn hoạt động độc lập nếu nội dung EliteMobs được cài.
+
+## Sao lưu và reset dữ liệu
+
+Để chuyển server sang máy khác, dừng server rồi copy toàn bộ thư mục server. Giữ nguyên `world/`, `plugins/VanillaRPG-Core/rpg.db` và `plugins/EliteMobs/data/player_data.db`.
+
+Để reset toàn bộ tiến trình EliteMobs, dừng server và sao lưu trước, sau đó xoá `plugins/EliteMobs/data/player_data.db` cùng các file `-wal`/`-shm` nếu có. Thao tác này reset tất cả người chơi, không chỉ một người.
+
+## Build plugin từ source
+
+Yêu cầu Gradle và Java 25. Từ thư mục project:
+
+```text
+cd plugin
+gradle clean build
+```
+
+JAR được tạo tại `plugin/build/libs/`. Khi triển khai, copy JAR mới vào `server-template/plugins/` và xoá JAR phiên bản cũ.
+
+## Release
+
+README chỉ mô tả cách cài bản hiện tại. Lịch sử thay đổi và file tải xuống nằm tại [GitHub Releases](https://github.com/vietanh151103/VanillaRPG/releases).

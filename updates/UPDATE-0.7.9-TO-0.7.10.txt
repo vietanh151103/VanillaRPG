@@ -1,0 +1,12 @@
+VanillaRPG-Core 0.7.10 - Unlimited Shop Sales
+
+- The /shop sell chest now accepts all item stacks.
+- EliteMobs items use their stored worth and the itemResaleValue percentage from EliteMobs/EconomySettings.yml.
+- Other items use shop.fallback-sell-price-per-item (default: 1 Elite Coin per item).
+- Removed daily Coin and per-material sale limits.
+
+After installing
+
+1. Replace the Core JAR with VanillaRPG-Core-0.7.10.jar.
+2. Confirm fallback-sell-price-per-item is set in plugins/VanillaRPG-Core/config.yml.
+3. Restart the server. A plugin reload cannot replace running Java code.
