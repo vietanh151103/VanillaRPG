@@ -45,7 +45,6 @@ public final class PlayerListener implements Listener {
         );
         progression.ensure(event.getPlayer());
         scanForEliteItem(event.getPlayer());
-        progression.applyTitleDisplay(event.getPlayer());
 
         // EliteMobs owns item names, rarity and lore. VanillaRPG item
         // presentation is opt-in so it cannot overwrite EliteMobs gear.

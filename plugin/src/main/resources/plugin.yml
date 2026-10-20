@@ -2,7 +2,7 @@ name: VanillaRPG-Core
 version: '${version}'
 main: vn.vietanhrpg.core.VanillaRpgPlugin
 api-version: '26.2'
-softdepend: [BetterStructures, EliteMobs, WorldEdit]
+softdepend: [AuctionHouse, BetterStructures, EliteMobs, WorldEdit]
 author: VietAnh
 description: Portable Vanilla+ RPG core for a small Paper server.
 
@@ -10,47 +10,17 @@ libraries:
   - org.xerial:sqlite-jdbc:3.50.3.0
 
 commands:
-  profile:
-    description: Open your RPG profile.
-    usage: /profile
-  quests:
-    description: Open the Quest Hub.
-    usage: /quests
-  achievements:
-    description: View RPG achievements.
-    usage: /achievements
-  titles:
-    description: View and select unlocked titles.
-    usage: /titles
   particles:
     description: Configure Legendary/Mythic particle effects.
     usage: /particles [all|legendary|mythic|combat|craft|materials|others] [on|off]
-  market:
-    description: Browse, sell, buy, cancel and claim player market items.
-    usage: /market [browse|sell <price>|buy <id>|cancel <id>|claim|mine|history]
-  shop:
-    description: Browse supplies, sell minerals or view shop history.
-    usage: /shop [history]
-  gacha:
-    description: Open the Elite item gacha.
-    usage: /gacha [odds|ticket <amount>]
   poker:
     description: Enter and play the Texas Hold'em poker room.
     usage: /poker [start|hand|fold|check|call|raise <total>|status|leave]
   rpg:
     description: VanillaRPG administration.
-    usage: /rpg <reload|title give <player> <titleId>|title create <id> <name> <color>|givecoin|giveitem|givegear|giveblueprint|setrarity|loot refresh <tier>>
+    usage: /rpg <help|version|reload|mysticforest>
 
 permissions:
   vanillarpg.admin:
     description: VanillaRPG administrative commands.
     default: op
-  vanillarpg.market.use:
-    description: Browse, buy and claim items from the player market.
-    default: true
-  vanillarpg.market.sell:
-    description: Create and cancel player market listings.
-    default: true
-  vanillarpg.shop.use:
-    description: Open the everyday supplies shop.
-    default: true

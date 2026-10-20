@@ -64,6 +64,11 @@ public final class ContentService {
     private YamlConfiguration loadMergedYaml(String resourceName) {
         File target = new File(plugin.getDataFolder(), resourceName);
         if (!target.exists()) {
+            // VanillaRPG custom item content was retired. Missing resources now
+            // intentionally produce an empty content set instead of being recreated.
+            if (plugin.getResource(resourceName) == null) {
+                return new YamlConfiguration();
+            }
             plugin.saveResource(resourceName, false);
         }
 

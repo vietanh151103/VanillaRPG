@@ -23,7 +23,6 @@ achievements:
   angler: { name: "Master Angler", description: "Catch 100 fish.", counter: fish_caught, target: 100, reward: { coin: 1500, title: angler } }
   first_quest: { name: "First Quest Complete", description: "Complete your first Daily or Weekly quest.", counter: quests_completed, target: 1, reward: { coin: 150, title: quest_pioneer } }
   first_adventurers_guild: { name: "First Visit to the Guild", description: "Visit the Adventurer's Guild for the first time.", counter: adventurers_guild_visits, target: 1, reward: { coin: 100, title: guild_visitor } }
-  first_gacha: { name: "First Spin", description: "Complete your first Elite Gacha pull.", counter: gacha_spins, target: 1, reward: { coin: 100, title: lucky_draw } }
   first_elite_item: { name: "First Elite Item", description: "Receive your first EliteMobs item.", counter: elite_items_received, target: 1, reward: { coin: 150, title: elite_initiate } }
 titles:
   owner: { name: "Owner", color: GOLD }
@@ -33,5 +32,4 @@ titles:
   angler: { name: "Angler", color: BLUE }
   quest_pioneer: { name: "Quest Pioneer", color: GREEN }
   guild_visitor: { name: "Guild Visitor", color: AQUA }
-  lucky_draw: { name: "Lucky Draw", color: LIGHT_PURPLE }
   elite_initiate: { name: "Elite Initiate", color: GOLD }

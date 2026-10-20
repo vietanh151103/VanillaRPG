@@ -4,18 +4,11 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import vn.vietanhrpg.core.command.AchievementCommand;
 import vn.vietanhrpg.core.command.DungeonCommand;
 import vn.vietanhrpg.core.command.DungeonsCommand;
-import vn.vietanhrpg.core.command.GachaCommand;
-import vn.vietanhrpg.core.command.MarketCommand;
 import vn.vietanhrpg.core.command.ParticleCommand;
 import vn.vietanhrpg.core.command.PokerCommand;
-import vn.vietanhrpg.core.command.ProfileCommand;
-import vn.vietanhrpg.core.command.QuestCommand;
 import vn.vietanhrpg.core.command.RpgCommand;
-import vn.vietanhrpg.core.command.ShopCommand;
-import vn.vietanhrpg.core.command.TitleCommand;
 import vn.vietanhrpg.core.content.ContentService;
 import vn.vietanhrpg.core.data.Database;
 import vn.vietanhrpg.core.dungeon.DungeonContentService;
@@ -23,29 +16,18 @@ import vn.vietanhrpg.core.dungeon.DungeonGuiService;
 import vn.vietanhrpg.core.dungeon.DungeonListener;
 import vn.vietanhrpg.core.dungeon.DungeonService;
 import vn.vietanhrpg.core.gui.ForgeGuiService;
-import vn.vietanhrpg.core.gui.MarketGuiService;
-import vn.vietanhrpg.core.gui.MarketSellGuiService;
 import vn.vietanhrpg.core.gui.ParticleGuiService;
-import vn.vietanhrpg.core.gui.ProgressionGuiService;
-import vn.vietanhrpg.core.gui.ShopGuiService;
-import vn.vietanhrpg.core.gui.ShopSellGuiService;
 import vn.vietanhrpg.core.item.ItemService;
 import vn.vietanhrpg.core.listener.CombatListener;
-import vn.vietanhrpg.core.listener.MarketListener;
 import vn.vietanhrpg.core.listener.PlayerListener;
-import vn.vietanhrpg.core.listener.ProgressionListener;
+import vn.vietanhrpg.core.listener.SoulboundAuctionListener;
 import vn.vietanhrpg.core.listener.WeaponEffectListener;
 import vn.vietanhrpg.core.service.BlueprintService;
-import vn.vietanhrpg.core.service.BetterStructuresLootBridge;
 import vn.vietanhrpg.core.service.EconomyService;
 import vn.vietanhrpg.core.service.ForgeService;
-import vn.vietanhrpg.core.service.GachaService;
-import vn.vietanhrpg.core.service.MarketService;
 import vn.vietanhrpg.core.service.MobHealthDisplayService;
 import vn.vietanhrpg.core.service.ParticleService;
 import vn.vietanhrpg.core.service.PokerTableService;
-import vn.vietanhrpg.core.service.ShopService;
-import vn.vietanhrpg.core.service.VanillaLootBridge;
 import vn.vietanhrpg.core.progression.ProgressionContentService;
 import vn.vietanhrpg.core.progression.ProgressionService;
 import vn.vietanhrpg.core.world.MysticForestService;
@@ -65,29 +47,18 @@ public final class VanillaRpgPlugin extends JavaPlugin {
     private ParticleGuiService particleGuiService;
     private ProgressionContentService progressionContentService;
     private ProgressionService progressionService;
-    private ProgressionGuiService progressionGuiService;
     private DungeonContentService dungeonContentService;
     private DungeonService dungeonService;
     private DungeonGuiService dungeonGuiService;
-    private MarketService marketService;
-    private MarketGuiService marketGuiService;
-    private MarketSellGuiService marketSellGuiService;
-    private ShopService shopService;
-    private ShopGuiService shopGuiService;
-    private ShopSellGuiService shopSellGuiService;
     private MobHealthDisplayService mobHealthDisplayService;
     private PokerTableService pokerTableService;
-    private GachaService gachaService;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        saveResourceIfMissing("items.yml");
         saveResourceIfMissing("quests.yml");
-        saveResourceIfMissing("dungeons.yml");
-        saveResourceIfMissing("gacha.yml");
-        saveResourceIfMissing("bosses.yml");
         saveResourceIfMissing("schematics/README.txt");
+        removeRetiredVanillaRpgContent();
         if (!validateConfigurationFiles()) {
             getLogger().severe("Configuration validation failed. Existing files were left unchanged; disabling plugin.");
             getServer().getPluginManager().disablePlugin(this);
@@ -98,7 +69,7 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         getConfig().options().copyDefaults(true);
         saveConfig();
         upgradeLegacyQuestResource();
-        upgradeLegacyDungeonResource();
+        removeLegacyGachaProgression();
 
         try {
             this.database = new Database(this);
@@ -128,7 +99,6 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         this.progressionContentService = new ProgressionContentService(this);
         this.progressionContentService.reload();
         this.progressionService = new ProgressionService(this, database, economyService, itemService, contentService, progressionContentService);
-        this.progressionGuiService = new ProgressionGuiService(database, economyService, progressionService, progressionContentService);
         this.forgeService.setProgressionService(progressionService);
         boolean dungeonsEnabled = getConfig().getBoolean("dungeons.enabled", false);
         if (dungeonsEnabled) {
@@ -137,53 +107,30 @@ public final class VanillaRpgPlugin extends JavaPlugin {
             this.dungeonService = new DungeonService(this, database, economyService, itemService, contentService, progressionService, dungeonContentService);
             this.dungeonGuiService = new DungeonGuiService(dungeonContentService, dungeonService, database);
         }
-        this.marketService = new MarketService(this, database);
-        this.marketSellGuiService = new MarketSellGuiService(marketService);
-        this.marketGuiService = new MarketGuiService(marketService, marketSellGuiService);
-        this.shopService = new ShopService(this, economyService, database);
-        this.shopSellGuiService = new ShopSellGuiService(this, shopService);
-        this.gachaService = new GachaService(this, database, economyService, itemService, contentService, progressionService);
-        this.shopGuiService = new ShopGuiService(shopService, shopSellGuiService, gachaService);
         this.mobHealthDisplayService = new MobHealthDisplayService(this);
         this.pokerTableService = new PokerTableService(this);
 
-        registerCommand("profile", new ProfileCommand(progressionGuiService));
-        registerCommand("quests", new QuestCommand(progressionGuiService));
-        registerCommand("achievements", new AchievementCommand(progressionGuiService));
-        registerCommand("titles", new TitleCommand(progressionGuiService));
         if (dungeonsEnabled) {
             registerCommand("dungeons", new DungeonsCommand(dungeonGuiService));
             registerCommand("dungeon", new DungeonCommand(dungeonContentService, dungeonService, dungeonGuiService));
         }
         registerCommand("particles", new ParticleCommand(particleGuiService));
-        registerCommand("market", new MarketCommand(marketService, marketGuiService));
-        registerCommand("shop", new ShopCommand(shopGuiService, shopService));
         registerCommand("poker", new PokerCommand(pokerTableService));
-        registerCommand("gacha", new GachaCommand(gachaService));
-        BetterStructuresLootBridge betterStructuresLoot = new BetterStructuresLootBridge(this, itemService, contentService);
-        VanillaLootBridge vanillaLoot = new VanillaLootBridge(this, itemService, contentService);
-        registerCommand("rpg", new RpgCommand(this, database, economyService, itemService, contentService,
-                new MysticForestService(this), betterStructuresLoot, progressionService));
+        registerCommand("rpg", new RpgCommand(this, database,
+                new MysticForestService(this), progressionService));
 
         getServer().getPluginManager().registerEvents(new PlayerListener(this, database, itemService, contentService, progressionService), this);
-        getServer().getPluginManager().registerEvents(new ProgressionListener(progressionService), this);
+        if (getServer().getPluginManager().getPlugin("AuctionHouse") != null) {
+            getServer().getPluginManager().registerEvents(new SoulboundAuctionListener(), this);
+        }
         if (dungeonsEnabled) getServer().getPluginManager().registerEvents(new DungeonListener(dungeonService), this);
         getServer().getPluginManager().registerEvents(new CombatListener(this, itemService, contentService,
                 particleService, mobHealthDisplayService), this);
         getServer().getPluginManager().registerEvents(new WeaponEffectListener(particleService), this);
-        getServer().getPluginManager().registerEvents(new MarketListener(marketService), this);
         getServer().getPluginManager().registerEvents(particleGuiService, this);
-        getServer().getPluginManager().registerEvents(progressionGuiService, this);
         if (dungeonsEnabled) getServer().getPluginManager().registerEvents(dungeonGuiService, this);
-        getServer().getPluginManager().registerEvents(marketGuiService, this);
-        getServer().getPluginManager().registerEvents(marketSellGuiService, this);
-        getServer().getPluginManager().registerEvents(shopGuiService, this);
-        getServer().getPluginManager().registerEvents(shopSellGuiService, this);
         getServer().getPluginManager().registerEvents(mobHealthDisplayService, this);
         getServer().getPluginManager().registerEvents(pokerTableService, this);
-        getServer().getPluginManager().registerEvents(gachaService, this);
-        getServer().getPluginManager().registerEvents(vanillaLoot, this);
-        betterStructuresLoot.registerIfAvailable();
 
         getServer().getOnlinePlayers().forEach(player -> {
             database.ensurePlayer(
@@ -193,7 +140,6 @@ public final class VanillaRpgPlugin extends JavaPlugin {
                     getConfig().getLong("starting-balance.token", 0)
             );
             progressionService.ensure(player);
-            progressionService.applyTitleDisplay(player);
         });
 
         particleService.start();
@@ -218,7 +164,7 @@ public final class VanillaRpgPlugin extends JavaPlugin {
             pokerTableService.shutdown();
         }
         if (progressionService != null) {
-            progressionService.clearTitleNameTags();
+            progressionService.clearTitleDisplays();
         }
         if (database != null) {
             database.close();
@@ -239,11 +185,11 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         if (progressionContentService != null) {
             progressionContentService.reload();
         }
+        if (progressionService != null) {
+            progressionService.clearTitleDisplays();
+        }
         if (dungeonContentService != null) {
             dungeonContentService.reload();
-        }
-        if (gachaService != null) {
-            gachaService.reload();
         }
         if (particleService != null) {
             particleService.start();
@@ -269,6 +215,21 @@ public final class VanillaRpgPlugin extends JavaPlugin {
             }
         } catch (Exception exception) {
             getLogger().warning("Could not inspect quests.yml for migration: " + exception.getMessage());
+        }
+    }
+
+    /** Removes the retired VanillaRPG gacha milestone from existing quest files. */
+    private void removeLegacyGachaProgression() {
+        File target = new File(getDataFolder(), "quests.yml");
+        try {
+            org.bukkit.configuration.file.YamlConfiguration yaml =
+                    org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(target);
+            if (!yaml.contains("achievements.first_gacha")) return;
+            yaml.set("achievements.first_gacha", null);
+            yaml.save(target);
+            getLogger().info("Removed retired VanillaRPG gacha achievement from quests.yml.");
+        } catch (Exception exception) {
+            getLogger().warning("Could not remove retired gacha achievement: " + exception.getMessage());
         }
     }
 
@@ -350,6 +311,20 @@ public final class VanillaRpgPlugin extends JavaPlugin {
         }
     }
 
+    /** Removes retired VanillaRPG item and dungeon content from existing installs. */
+    private void removeRetiredVanillaRpgContent() {
+        for (String name : java.util.List.of("items.yml", "dungeons.yml", "bosses.yml")) {
+            File target = new File(getDataFolder(), name);
+            try {
+                if (target.delete()) {
+                    getLogger().info("Removed retired VanillaRPG content file: " + name);
+                }
+            } catch (SecurityException exception) {
+                getLogger().warning("Could not remove retired content file " + name + ": " + exception.getMessage());
+            }
+        }
+    }
+
 
     private void saveResourceIfMissing(String name) {
         File target = new File(getDataFolder(), name);
@@ -361,7 +336,7 @@ public final class VanillaRpgPlugin extends JavaPlugin {
     private boolean validateConfigurationFiles() {
         boolean valid = true;
         for (String name : java.util.List.of(
-                "config.yml", "items.yml", "quests.yml", "dungeons.yml", "gacha.yml", "bosses.yml")) {
+                "config.yml", "quests.yml")) {
             valid &= validateYaml(name);
         }
         return valid;

@@ -36,7 +36,8 @@ public final class ProgressionGuiService implements Listener {
     private final ProgressionContentService content;
 
     public ProgressionGuiService(Database database, EconomyService economy,
-                                 ProgressionService progression, ProgressionContentService content) {
+                                 ProgressionService progression,
+                                 ProgressionContentService content) {
         this.database = database;
         this.economy = economy;
         this.progression = progression;
@@ -55,14 +56,12 @@ public final class ProgressionGuiService implements Listener {
         skull.displayName(text(player.getName(), NamedTextColor.GOLD, true));
         List<Component> headLore = new ArrayList<>();
         headLore.add(gray("Title: " + progression.selectedTitleName(player)));
-        headLore.add(gray("Elite items: " + database.counter(player.getUniqueId(), "elite_items_received")));
-        headLore.add(gray("Gacha pulls: " + database.counter(player.getUniqueId(), "gacha_spins")));
         skull.lore(headLore);
         head.setItemMeta(skull);
         inventory.setItem(4, head);
 
-        inventory.setItem(10, item(Material.GOLD_INGOT, "Elite Coins", NamedTextColor.GOLD,
-                List.of(gray(String.valueOf(economy.coin(player.getUniqueId()))))));
+        inventory.setItem(10, item(Material.GOLD_INGOT, "Money", NamedTextColor.GOLD,
+                List.of(gray(economy.currencyName() + economy.coin(player.getUniqueId())))));
 
         int dailyDone = progression.completedCount(player, QuestPeriod.DAILY);
         int dailyTotal = progression.totalCount(player, QuestPeriod.DAILY);

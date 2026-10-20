@@ -20,6 +20,8 @@ dungeons:
 # Coin source is EliteMobs. The legacy VanillaRPG coin column is no longer used.
 economy:
   source: elitemobs
+  # Display name for the shared Vault/EssentialsX balance used by Gacha and Poker.
+  currency-name: '$'
 
 poker:
   # Enable after PokerPack is merged into the resource pack sent by server.properties.

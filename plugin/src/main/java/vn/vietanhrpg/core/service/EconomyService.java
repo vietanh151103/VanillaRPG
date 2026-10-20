@@ -32,6 +32,11 @@ public final class EconomyService {
         return Math.max(0L, Math.round(EconomyHandler.checkCurrency(uuid)));
     }
 
+    public String currencyName() {
+        String configured = plugin.getConfig().getString("economy.currency-name", "$");
+        return configured == null || configured.isBlank() ? "$" : configured.trim();
+    }
+
     public long token(UUID uuid) {
         return database.getToken(uuid);
     }

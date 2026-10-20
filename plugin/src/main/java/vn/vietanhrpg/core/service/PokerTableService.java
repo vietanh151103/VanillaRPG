@@ -202,7 +202,7 @@ public final class PokerTableService implements Listener {
             if (committed.getOrDefault(small.uuid, 0L) >= SMALL_BLIND) EconomyHandler.addCurrency(small.uuid, SMALL_BLIND);
             phase = Phase.WAITING;
             pot = 0;
-            player.sendMessage(Component.text("Every player needs enough Elite Coins for the blinds.", NamedTextColor.RED));
+            player.sendMessage(Component.text("Every player needs enough " + currencyName() + " for the blinds.", NamedTextColor.RED));
             return;
         }
         currentBet = BIG_BLIND;
@@ -210,7 +210,7 @@ public final class PokerTableService implements Listener {
         phase = Phase.PREFLOP;
         turn = order.get((dealerIndex + 3) % order.size()).uuid;
         renderBoard();
-        broadcast("Texas Hold'em started. Blinds: 10/20 Elite Coins. " + nameOf(turn) + " acts first.");
+        broadcast("Texas Hold'em started. Blinds: 10/20 " + currencyName() + ". " + nameOf(turn) + " acts first.");
         notifyTurns();
     }
 
@@ -255,7 +255,7 @@ public final class PokerTableService implements Listener {
         if (!pay(player, amount)) return;
         currentBet = total; acted.clear(); acted.add(player.getUniqueId()); broadcast(player.getName() + " raised to " + total + "."); advanceTurn();
     }
-    private boolean pay(Player p, long amount) { if (amount <= 0) return true; if (!EconomyHandler.isReady(p.getUniqueId()) || !EconomyHandler.tryWithdraw(p.getUniqueId(), amount)) { p.sendMessage(Component.text("Not enough Elite Coins.", NamedTextColor.RED)); return false; } committed.merge(p.getUniqueId(), amount, Long::sum); pot += amount; return true; }
+    private boolean pay(Player p, long amount) { if (amount <= 0) return true; if (!EconomyHandler.isReady(p.getUniqueId()) || !EconomyHandler.tryWithdraw(p.getUniqueId(), amount)) { p.sendMessage(Component.text("Not enough " + currencyName() + ".", NamedTextColor.RED)); return false; } committed.merge(p.getUniqueId(), amount, Long::sum); pot += amount; return true; }
     private void advanceTurn() {
         List<Seat> active = activeSeats();
         if (active.isEmpty()) { phase = Phase.WAITING; pot = 0; clearCards(); return; }
@@ -270,7 +270,7 @@ public final class PokerTableService implements Listener {
         else if (phase == Phase.FLOP) { burn(); board.add(deck.remove(0)); phase = Phase.TURN; }
         else if (phase == Phase.TURN) { burn(); board.add(deck.remove(0)); phase = Phase.RIVER; }
         else { showdown(); return; }
-        renderBoard(); broadcast("" + phase.name() + " dealt. " + pot + " Elite Coins in the pot."); turn = activeSeats().get(0).uuid; notifyTurns();
+        renderBoard(); broadcast("" + phase.name() + " dealt. " + pot + " " + currencyName() + " in the pot."); turn = activeSeats().get(0).uuid; notifyTurns();
     }
     private void burn() { if (!deck.isEmpty()) deck.remove(0); }
     private void showdown() {
@@ -279,10 +279,15 @@ public final class PokerTableService implements Listener {
         if (active.isEmpty()) { phase = Phase.WAITING; return; }
         Seat winner = active.get(0); long share = pot / active.size();
         for (Seat seat : active) { if (handScore(seat) > handScore(winner)) winner = seat; }
-        EconomyHandler.addCurrency(winner.uuid, pot); broadcast(nameOf(winner.uuid) + " wins " + pot + " Elite Coins. Board: " + boardLabels());
+        EconomyHandler.addCurrency(winner.uuid, pot); broadcast(nameOf(winner.uuid) + " wins " + pot + " " + currencyName() + ". Board: " + boardLabels());
         phase = Phase.WAITING; pot = 0; clearCards();
     }
-    private void finish(Seat winner) { EconomyHandler.addCurrency(winner.uuid, pot); broadcast(nameOf(winner.uuid) + " wins " + pot + " Elite Coins - everyone else folded."); phase = Phase.WAITING; pot = 0; clearCards(); }
+    private void finish(Seat winner) { EconomyHandler.addCurrency(winner.uuid, pot); broadcast(nameOf(winner.uuid) + " wins " + pot + " " + currencyName() + " - everyone else folded."); phase = Phase.WAITING; pot = 0; clearCards(); }
+
+    private String currencyName() {
+        String configured = plugin.getConfig().getString("economy.currency-name", "$");
+        return configured == null || configured.isBlank() ? "$" : configured.trim();
+    }
 
     private long handScore(Seat seat) {
         List<Card> all = new ArrayList<>(seat.hole); all.addAll(board);

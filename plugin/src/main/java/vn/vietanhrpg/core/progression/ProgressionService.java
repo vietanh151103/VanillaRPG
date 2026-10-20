@@ -197,7 +197,7 @@ public final class ProgressionService {
 
     public String rewardSummary(RewardDefinition reward) {
         List<String> parts = new ArrayList<>();
-        if (reward.coin() > 0) parts.add(reward.coin() + " Elite Coins");
+        if (reward.coin() > 0) parts.add(reward.coin() + " " + economy.currencyName());
         if (reward.token() > 0) parts.add(reward.token() + " Token");
         for (Map.Entry<String, Integer> e : reward.customMaterials().entrySet()) {
             MaterialDefinition material = content.material(e.getKey());
@@ -235,7 +235,9 @@ public final class ProgressionService {
         }
         player.displayName(Component.text("[" + title.name() + "] ", title.color())
                 .append(Component.text(player.getName(), NamedTextColor.WHITE)));
-        applyTitleNameTag(player, title);
+        // Titles remain available in the profile/chat display, but are no longer
+        // injected into the player's overhead name tag.
+        clearTitleNameTag(player);
     }
 
     private void applyTitleNameTag(Player player, TitleDefinition title) {
@@ -261,6 +263,14 @@ public final class ProgressionService {
         for (Team team : List.copyOf(scoreboard.getTeams())) {
             if (team.getName().startsWith(TITLE_TEAM_PREFIX)) team.unregister();
         }
+    }
+
+    /** Clears legacy title prefixes from players after the title feature is disabled. */
+    public void clearTitleDisplays() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.displayName(Component.text(player.getName(), NamedTextColor.WHITE));
+        }
+        clearTitleNameTags();
     }
 
     public boolean selectTitle(Player player, String titleId) {
